@@ -1,0 +1,8 @@
+[package]
+name = "lua-parser"
+version = "0.1.0"
+authors = ["lgreathouse <me@lpghatguy.com>"]
+
+[dependencies]
+regex = "0.2"
+lazy_static = "1.0"
