@@ -1,6 +1,6 @@
 use regex::Regex;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token<'a> {
     Keyword(&'a str),
     Whitespace(&'a str),
