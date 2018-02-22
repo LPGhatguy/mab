@@ -36,6 +36,7 @@ where
     }
 }
 
+// TODO: Change to iterator!
 pub fn lex<'a>(source: &'a str) -> Vec<Token<'a>> {
     let mut tokens = Vec::new();
     let mut current = source;
