@@ -87,6 +87,33 @@ fn eat_whitespace<'a>(state: ParseState<'a>) -> ParseState<'a> {
     }
 }
 
+fn parse_chunk<'a>(state: ParseState<'a>) -> Option<(ParseState<'a>, Chunk<'a>)> {
+    let mut statements = Vec::new();
+    let mut state = state;
+
+    loop {
+        state = match parse_statement(state) {
+            Some((next_state, statement)) => {
+                statements.push(statement);
+                next_state
+            },
+            None => break,
+        }
+    }
+
+    let chunk = Chunk {
+        statements,
+    };
+
+    Some((state, chunk))
+}
+
+fn parse_statement<'a>(state: ParseState<'a>) -> Option<(ParseState<'a>, Statement<'a>)> {
+    let (state, assignment) = parse_local_assignment(state)?;
+
+    Some((state, Statement::LocalAssignment(assignment)))
+}
+
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> Option<(ParseState<'a>, LocalAssignment<'a>)> {
     let (state, _) = state.eat_simple(Token::Keyword("local"))?;
     let state = eat_whitespace(state);
