@@ -74,15 +74,15 @@ pub enum AstNode<'a> {
     Chunk(Chunk<'a>),
 }
 
-pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<AstNode<'a>> {
+pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
-    let assignment = match parse_local_assignment(state) {
-        Ok((_, assignment)) => assignment,
+    let chunk = match parse_chunk(state) {
+        Ok((_, chunk)) => chunk,
         Err(_) => return None,
     };
 
-    Some(AstNode::Statement(Statement::LocalAssignment(assignment)))
+    Some(chunk)
 }
 
 fn eat_whitespace<'a>(state: ParseState<'a>) -> ParseState<'a> {
@@ -102,7 +102,10 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
                 statements.push(statement);
                 next_state
             },
-            Err(state) => return Err(state),
+            Err(next_state) => {
+                state = next_state;
+                break;
+            },
         };
     }
 
@@ -142,8 +145,22 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
     }))
 }
 
+fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLiteral<'a>> {
+    let (state, value) = {
+        match state.peek() {
+            Some(&Token::NumberLiteral(value)) => (state.advance(1), value),
+            _ => return Err(state),
+        }
+    };
+    let state = eat_whitespace(state);
+
+    Ok((state, NumberLiteral {
+        value,
+    }))
+}
+
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    Ok((state, Expression::NumberLiteral(NumberLiteral {
-        value: "5",
-    })))
+    let (state, literal) = parse_number_literal(state)?;
+
+    Ok((state, Expression::NumberLiteral(literal)))
 }
