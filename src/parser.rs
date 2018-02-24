@@ -27,18 +27,18 @@ impl<'a> ParseState<'a> {
             position: self.position + amount,
         }
     }
+}
 
-    pub fn eat_simple(self, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
-        match self.peek() {
-            Some(token) => {
-                if token.kind == eat_token {
-                    Ok((self.advance(1), token))
-                } else {
-                    Err(self)
-                }
-            },
-            None => Err(self),
-        }
+fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
+    match state.peek() {
+        Some(token) => {
+            if token.kind == eat_token {
+                Ok((state.advance(1), token))
+            } else {
+                Err(state)
+            }
+        },
+        None => Err(state),
     }
 }
 
@@ -120,11 +120,11 @@ fn parse_statement<'a>(mut state: ParseState<'a>) -> ParseResult<'a, Statement<'
 }
 
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
-    let (state, _) = state.eat_simple(TokenKind::Keyword("local"))?;
+    let (state, _) = eat_simple(state, TokenKind::Keyword("local"))?;
 
     let (state, name) = parse_identifier(state)?;
 
-    let (state, _) = state.eat_simple(TokenKind::Operator("="))?;
+    let (state, _) = eat_simple(state, TokenKind::Operator("="))?;
 
     let (state, expression) = parse_expression(state)?;
 
@@ -137,11 +137,11 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
 fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
     let (state, name) = parse_identifier(state)?;
 
-    let (state, _) = state.eat_simple(TokenKind::OpenParen)?;
+    let (state, _) = eat_simple(state, TokenKind::OpenParen)?;
 
     let (state, expressions) = parse_expression_list(state);
 
-    let (state, _) = state.eat_simple(TokenKind::CloseParen)?;
+    let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
 
     Ok((state, FunctionCall {
         name,
@@ -186,7 +186,7 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
             },
         }
 
-        match state.eat_simple(TokenKind::Operator(",")) {
+        match eat_simple(state, TokenKind::Operator(",")) {
             Ok((next_state, _)) => {
                 state = next_state;
             },
