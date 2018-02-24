@@ -2,6 +2,7 @@
 extern crate lazy_static;
 extern crate regex;
 
+mod ast;
 mod lexer;
 mod parser;
 

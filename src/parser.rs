@@ -1,4 +1,5 @@
 use lexer::{Token, TokenKind};
+use ast::*;
 
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
 
@@ -39,48 +40,6 @@ impl<'a> ParseState<'a> {
             None => Err(self),
         }
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct NumberLiteral<'a> {
-    value: &'a str,
-}
-
-#[derive(Debug, Clone)]
-pub struct BinaryOperator<'a> {
-    left: Expression<'a>,
-    right: Expression<'a>,
-    operator: &'a str,
-}
-
-#[derive(Debug, Clone)]
-pub struct FunctionCall<'a> {
-    name: &'a str,
-    arguments: Vec<Expression<'a>>,
-}
-
-#[derive(Debug, Clone)]
-pub enum Expression<'a> {
-    NumberLiteral(NumberLiteral<'a>),
-    BinaryOperator(Box<BinaryOperator<'a>>),
-    FunctionCall(FunctionCall<'a>),
-}
-
-#[derive(Debug, Clone)]
-pub struct LocalAssignment<'a> {
-    name: &'a str,
-    value: Expression<'a>,
-}
-
-#[derive(Debug, Clone)]
-pub enum Statement<'a> {
-    LocalAssignment(LocalAssignment<'a>),
-    FunctionCall(FunctionCall<'a>),
-}
-
-#[derive(Debug, Clone)]
-pub struct Chunk<'a> {
-    statements: Vec<Statement<'a>>,
 }
 
 fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLiteral<'a>> {

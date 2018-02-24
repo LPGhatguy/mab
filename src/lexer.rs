@@ -17,6 +17,8 @@ pub struct Token<'a> {
 
     /// Details about the Token itself
     pub kind: TokenKind<'a>,
+
+    // TODO: The line/column that the token is on?
 }
 
 lazy_static! {
