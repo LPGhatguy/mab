@@ -41,7 +41,6 @@ impl<'a> ParseState<'a> {
     }
 }
 
-/*
 #[derive(Debug, Clone)]
 pub struct NumberLiteral<'a> {
     value: &'a str,
@@ -82,6 +81,27 @@ pub struct Chunk<'a> {
     statements: Vec<Statement<'a>>,
 }
 
+fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLiteral<'a>> {
+    let (state, value) = {
+        match state.peek() {
+            Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => (state.advance(1), value),
+            _ => return Err(state),
+        }
+    };
+
+    Ok((state, NumberLiteral {
+        value,
+    }))
+}
+
+fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
+        _ => Err(state),
+    }
+}
+
+/*
 pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
@@ -91,20 +111,6 @@ pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     };
 
     Some(chunk)
-}
-
-fn eat_whitespace<'a>(state: ParseState<'a>) -> ParseState<'a> {
-    match state.peek() {
-        Some(&Token::Whitespace(_)) => state.advance(1),
-        _ => state,
-    }
-}
-
-fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
-    match state.peek() {
-        Some(&Token::Identifier(name)) => (state.advance(1), name),
-        _ => return Err(state),
-    }
 }
 
 fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
@@ -139,13 +145,10 @@ fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> 
 
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
     let (state, _) = state.eat_simple(Token::Keyword("local"))?;
-    let state = eat_whitespace(state);
 
     let (state, name) = parse_identifier(state)?;
-    let state = eat_whitespace(state);
 
     let (state, _) = state.eat_simple(Token::Operator("="))?;
-    let state = eat_whitespace(state);
 
     let (state, expression) = parse_expression(state)?;
 
@@ -155,32 +158,14 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
     }))
 }
 
-fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLiteral<'a>> {
-    let (state, value) = {
-        match state.peek() {
-            Some(&Token::NumberLiteral(value)) => (state.advance(1), value),
-            _ => return Err(state),
-        }
-    };
-    let state = eat_whitespace(state);
-
-    Ok((state, NumberLiteral {
-        value,
-    }))
-}
-
 fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
     let (state, name) = parse_identifier(state)?;
-    let state = eat_whitespace(state);
 
     let (state, _) = state.eat_simple(Token::OpenParen)?;
-    let state = eat_whitespace(state);
 
     let (state, expressions) = parse_expression_list(state);
-    let state = eat_whitespace(state);
 
     let (state, _) = state.eat_simple(Token::CloseParen)?;
-    let state = eat_whitespace(state);
 
     Ok((state, FunctionCall {
         name,
