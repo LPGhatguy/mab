@@ -54,9 +54,16 @@ pub struct BinaryOperator<'a> {
 }
 
 #[derive(Debug, Clone)]
+pub struct FunctionCall<'a> {
+    name: &'a str,
+    arguments: Vec<Expression<'a>>,
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression<'a> {
     NumberLiteral(NumberLiteral<'a>),
     BinaryOperator(Box<BinaryOperator<'a>>),
+    FunctionCall(FunctionCall<'a>),
 }
 
 #[derive(Debug, Clone)]
@@ -66,14 +73,9 @@ pub struct LocalAssignment<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct FunctionCall<'a> {
-    name: &'a str,
-    arguments: Vec<Expression<'a>>,
-}
-
-#[derive(Debug, Clone)]
 pub enum Statement<'a> {
     LocalAssignment(LocalAssignment<'a>),
+    FunctionCall(FunctionCall<'a>),
 }
 
 #[derive(Debug, Clone)]
@@ -136,10 +138,26 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
     Ok((state, chunk))
 }
 
-fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
-    let (state, assignment) = parse_local_assignment(state)?;
+fn parse_statement<'a>(mut state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
+    match parse_local_assignment(state) {
+        Ok((next_state, assignment)) => {
+            return Ok((next_state, Statement::LocalAssignment(assignment)));
+        },
+        Err(next_state) => {
+            state = next_state;
+        },
+    }
 
-    Ok((state, Statement::LocalAssignment(assignment)))
+    match parse_function_call(state) {
+        Ok((next_state, call)) => {
+            return Ok((next_state, Statement::FunctionCall(call)));
+        },
+        Err(next_state) => {
+            state = next_state;
+        },
+    }
+
+    Err(state)
 }
 
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
@@ -172,10 +190,26 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
     }))
 }
 
-fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    let (state, literal) = parse_number_literal(state)?;
+fn parse_expression<'a>(mut state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
+    match parse_number_literal(state) {
+        Ok((next_state, literal)) => {
+            return Ok((next_state, Expression::NumberLiteral(literal)));
+        },
+        Err(next_state) => {
+            state = next_state;
+        },
+    }
 
-    Ok((state, Expression::NumberLiteral(literal)))
+    match parse_function_call(state) {
+        Ok((next_state, call)) => {
+            return Ok((next_state, Expression::FunctionCall(call)));
+        },
+        Err(next_state) => {
+            state = next_state;
+        },
+    }
+
+    Err(state)
 }
 
 fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
