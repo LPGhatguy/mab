@@ -1,4 +1,4 @@
-use lexer::Token;
+use lexer::{Token, TokenKind};
 
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
 
@@ -27,10 +27,10 @@ impl<'a> ParseState<'a> {
         }
     }
 
-    pub fn eat_simple(self, eat_token: Token) -> ParseResult<'a, &'a Token<'a>> {
+    pub fn eat_simple(self, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
         match self.peek() {
             Some(token) => {
-                if *token == eat_token {
+                if token.kind == eat_token {
                     Ok((self.advance(1), token))
                 } else {
                     Err(self)
@@ -41,20 +41,35 @@ impl<'a> ParseState<'a> {
     }
 }
 
+/*
 #[derive(Debug, Clone)]
 pub struct NumberLiteral<'a> {
     value: &'a str,
 }
 
 #[derive(Debug, Clone)]
+pub struct BinaryOperator<'a> {
+    left: Expression<'a>,
+    right: Expression<'a>,
+    operator: &'a str,
+}
+
+#[derive(Debug, Clone)]
 pub enum Expression<'a> {
     NumberLiteral(NumberLiteral<'a>),
+    BinaryOperator(Box<BinaryOperator<'a>>),
 }
 
 #[derive(Debug, Clone)]
 pub struct LocalAssignment<'a> {
     name: &'a str,
     value: Expression<'a>,
+}
+
+#[derive(Debug, Clone)]
+pub struct FunctionCall<'a> {
+    name: &'a str,
+    arguments: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone)]
@@ -65,13 +80,6 @@ pub enum Statement<'a> {
 #[derive(Debug, Clone)]
 pub struct Chunk<'a> {
     statements: Vec<Statement<'a>>,
-}
-
-#[derive(Debug, Clone)]
-pub enum AstNode<'a> {
-    Statement(Statement<'a>),
-    Expression(Expression<'a>),
-    Chunk(Chunk<'a>),
 }
 
 pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
@@ -89,6 +97,13 @@ fn eat_whitespace<'a>(state: ParseState<'a>) -> ParseState<'a> {
     match state.peek() {
         Some(&Token::Whitespace(_)) => state.advance(1),
         _ => state,
+    }
+}
+
+fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
+    match state.peek() {
+        Some(&Token::Identifier(name)) => (state.advance(1), name),
+        _ => return Err(state),
     }
 }
 
@@ -126,12 +141,7 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
     let (state, _) = state.eat_simple(Token::Keyword("local"))?;
     let state = eat_whitespace(state);
 
-    let (state, name) = {
-        match state.peek() {
-            Some(&Token::Identifier(name)) => (state.advance(1), name),
-            _ => return Err(state),
-        }
-    };
+    let (state, name) = parse_identifier(state)?;
     let state = eat_whitespace(state);
 
     let (state, _) = state.eat_simple(Token::Operator("="))?;
@@ -159,8 +169,47 @@ fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLite
     }))
 }
 
+fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
+    let (state, name) = parse_identifier(state)?;
+    let state = eat_whitespace(state);
+
+    let (state, _) = state.eat_simple(Token::OpenParen)?;
+    let state = eat_whitespace(state);
+
+    let (state, expressions) = parse_expression_list(state);
+    let state = eat_whitespace(state);
+
+    let (state, _) = state.eat_simple(Token::CloseParen)?;
+    let state = eat_whitespace(state);
+
+    Ok((state, FunctionCall {
+        name,
+        arguments: expressions,
+    }))
+}
+
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
     let (state, literal) = parse_number_literal(state)?;
 
     Ok((state, Expression::NumberLiteral(literal)))
 }
+
+fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
+    let mut expressions = Vec::new();
+
+    loop {
+        match parse_expression(state) {
+            Ok((next_state, expression)) => {
+                expressions.push(expression);
+                state = next_state;
+            },
+            Err(next_state) => {
+                state = next_state;
+                break;
+            },
+        }
+    }
+
+    (state, expressions)
+}
+*/

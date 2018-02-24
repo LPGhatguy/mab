@@ -3,7 +3,7 @@ extern crate lazy_static;
 extern crate regex;
 
 mod lexer;
-// mod parser;
+mod parser;
 
 static TEST_INPUT: &'static str = include_str!("input.lua");
 

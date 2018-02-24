@@ -12,9 +12,11 @@ pub enum TokenKind<'a> {
 
 #[derive(Debug, Clone)]
 pub struct Token<'a> {
-    // Any whitespace before the token
-    whitespace: Option<&'a str>,
-    kind: TokenKind<'a>,
+    /// Any whitespace before the token
+    pub whitespace: Option<&'a str>,
+
+    /// Details about the Token itself
+    pub kind: TokenKind<'a>,
 }
 
 lazy_static! {
