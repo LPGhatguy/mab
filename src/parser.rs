@@ -101,7 +101,6 @@ fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
     }
 }
 
-/*
 pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
@@ -144,11 +143,11 @@ fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> 
 }
 
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
-    let (state, _) = state.eat_simple(Token::Keyword("local"))?;
+    let (state, _) = state.eat_simple(TokenKind::Keyword("local"))?;
 
     let (state, name) = parse_identifier(state)?;
 
-    let (state, _) = state.eat_simple(Token::Operator("="))?;
+    let (state, _) = state.eat_simple(TokenKind::Operator("="))?;
 
     let (state, expression) = parse_expression(state)?;
 
@@ -161,11 +160,11 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
 fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
     let (state, name) = parse_identifier(state)?;
 
-    let (state, _) = state.eat_simple(Token::OpenParen)?;
+    let (state, _) = state.eat_simple(TokenKind::OpenParen)?;
 
     let (state, expressions) = parse_expression_list(state);
 
-    let (state, _) = state.eat_simple(Token::CloseParen)?;
+    let (state, _) = state.eat_simple(TokenKind::CloseParen)?;
 
     Ok((state, FunctionCall {
         name,
@@ -197,4 +196,3 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
 
     (state, expressions)
 }
-*/
