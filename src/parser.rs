@@ -192,6 +192,16 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
                 break;
             },
         }
+
+        match state.eat_simple(TokenKind::Operator(",")) {
+            Ok((next_state, _)) => {
+                state = next_state;
+            },
+            Err(next_state) => {
+                state = next_state;
+                break;
+            },
+        }
     }
 
     (state, expressions)
