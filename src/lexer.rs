@@ -1,6 +1,9 @@
+use std::collections::HashSet;
+use std::iter::FromIterator;
+
 use regex::Regex;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenKind<'a> {
     Keyword(&'a str),
     Operator(&'a str),
@@ -21,19 +24,24 @@ pub struct Token<'a> {
     // TODO: The line/column that the token is on?
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LexError<'a> {
+    UnknownSequence(&'a str),
+}
+
 lazy_static! {
-    static ref KEYWORDS: Vec<&'static str> = vec![
+    static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
         "false", "true", "nil",
         "local",
-    ];
-    static ref PATTERN_KEYWORD: Regex = Regex::new(&format!("^({})", KEYWORDS.join("|"))).unwrap();
+    ]);
+
+    static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();
+    static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^([0-9]+)").unwrap();
+    static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(=|\+|,)").unwrap();
+    static ref PATTERN_OPEN_PAREN: Regex = Regex::new(r"^(\()").unwrap();
+    static ref PATTERN_CLOSE_PAREN: Regex = Regex::new(r"^(\))").unwrap();
 
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
-    static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^[a-zA-Z]\w*").unwrap();
-    static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^[0-9]+").unwrap();
-    static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(=|\+|,)").unwrap();
-    static ref PATTERN_OPEN_PAREN: Regex = Regex::new(r"^\(").unwrap();
-    static ref PATTERN_CLOSE_PAREN: Regex = Regex::new(r"^\)").unwrap();
 }
 
 /// Tries to matches the given pattern against the string slice.
@@ -42,9 +50,12 @@ fn try_advance<'a, F>(source: &'a str, pattern: &Regex, tokenizer: F) -> Option<
 where
     F: Fn(&'a str) -> TokenKind<'a>,
 {
-    if let Some(range) = pattern.find(source) {
-        let contents = &source[range.start()..range.end()];
-        Some((&source[range.end()..], tokenizer(contents)))
+    if let Some(captures) = pattern.captures(source) {
+        // All patterns should have a capture, since some patterns (keywords)
+        // have noncapturing groups that need to be ignored!
+        let capture = captures.get(1).unwrap();
+        let contents = capture.as_str();
+        Some((&source[capture.end()..], tokenizer(contents)))
     } else {
         None
     }
@@ -60,8 +71,8 @@ fn eat<'a>(source: &'a str, pattern: &Regex) -> (&'a str, Option<&'a str>) {
     }
 }
 
-// TODO: Change to iterator!
-pub fn lex<'a>(source: &'a str) -> Vec<Token<'a>> {
+// TODO: Change to returning iterator?
+pub fn lex<'a>(source: &'a str) -> Result<Vec<Token<'a>>, LexError<'a>> {
     let mut tokens = Vec::new();
     let mut current = source;
 
@@ -69,8 +80,13 @@ pub fn lex<'a>(source: &'a str) -> Vec<Token<'a>> {
         let (next_current, whitespace) = eat(current, &PATTERN_WHITESPACE);
         current = next_current;
 
-        let result = try_advance(current, &PATTERN_KEYWORD, |s| TokenKind::Keyword(s))
-            .or_else(|| try_advance(current, &PATTERN_IDENTIFIER, |s| TokenKind::Identifier(s)))
+        let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
+                if KEYWORDS.contains(s) {
+                    TokenKind::Keyword(s)
+                } else {
+                    TokenKind::Identifier(s)
+                }
+            })
             .or_else(|| try_advance(current, &PATTERN_OPERATOR, |s| TokenKind::Operator(s)))
             .or_else(|| try_advance(current, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s)))
             .or_else(|| try_advance(current, &PATTERN_OPEN_PAREN, |_| TokenKind::OpenParen))
@@ -89,9 +105,29 @@ pub fn lex<'a>(source: &'a str) -> Vec<Token<'a>> {
         }
     }
 
-    if !current.is_empty() {
-        eprintln!("Unknown garbage at {:?}", current);
+    if current.is_empty() {
+        Ok(tokens)
+    } else {
+        Err(LexError::UnknownSequence(current))
     }
+}
 
-    tokens
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn keyword_vs_identifier() {
+        fn test_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
+            let kinds = lex(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
+
+            assert_eq!(kinds, expected);
+        }
+
+        test_eq("local", vec![TokenKind::Keyword("local")]);
+        test_eq("local_", vec![TokenKind::Identifier("local_")]);
+        test_eq("locale", vec![TokenKind::Identifier("locale")]);
+        test_eq("_local", vec![TokenKind::Identifier("_local")]);
+        test_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
+    }
 }

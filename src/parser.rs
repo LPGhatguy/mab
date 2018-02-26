@@ -4,7 +4,7 @@ use ast::*;
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
 
 #[derive(Debug, Clone)]
-pub struct ParseState<'a> {
+struct ParseState<'a> {
     tokens: &'a [Token<'a>],
     position: usize,
 }
@@ -65,10 +65,15 @@ fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
 pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
-    let chunk = match parse_chunk(state) {
-        Ok((_, chunk)) => chunk,
+    let (state, chunk) = match parse_chunk(state) {
+        Ok(result) => result,
         Err(_) => return None,
     };
+
+    match state.peek() {
+        Some(_) => return None,
+        None => {},
+    }
 
     Some(chunk)
 }
@@ -197,8 +202,6 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn expression_keywords_vs_identifiers() {
-        let source = "false_thing";
-    }
+    use super::*;
+    use lexer::lex;
 }
