@@ -148,13 +148,15 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
     let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
 
     Ok((state, FunctionCall {
-        name,
+        name_expression: Box::new(Expression::Name(name)),
         arguments: expressions,
     }))
 }
 
 // exp ::= nil | false | true | Number | String | `...´ | function |
 //     prefixexp | tableconstructor | exp binop exp | unop exp
+// prefixexp ::= var | functioncall | `(´ exp `)´
+// var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
     parse_number_literal(state)
         .and_then(|(state, literal)| Ok((state, Expression::NumberLiteral(literal))))
@@ -191,4 +193,12 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
     }
 
     (state, expressions)
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn expression_keywords_vs_identifiers() {
+        let source = "false_thing";
+    }
 }

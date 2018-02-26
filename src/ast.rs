@@ -4,23 +4,16 @@ pub struct NumberLiteral<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct BinaryOperator<'a> {
-    pub left: Expression<'a>,
-    pub right: Expression<'a>,
-    pub operator: &'a str,
-}
-
-#[derive(Debug, Clone)]
 pub struct FunctionCall<'a> {
-    pub name: &'a str,
+    pub name_expression: Box<Expression<'a>>,
     pub arguments: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
     NumberLiteral(NumberLiteral<'a>),
-    BinaryOperator(Box<BinaryOperator<'a>>),
     FunctionCall(FunctionCall<'a>),
+    Name(&'a str),
 }
 
 #[derive(Debug, Clone)]
