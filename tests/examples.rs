@@ -36,4 +36,31 @@ fn examples() {
             },
         }
     }
+
+    for entry in read_dir("parse_examples/should_not_parse").unwrap() {
+        let entry = entry.unwrap();
+
+        let contents = {
+            let mut file = File::open(entry.path())
+                .expect("Unable to open file!");
+
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)
+                .expect("Unable to read from file!");
+
+            contents
+        };
+
+        let tokens = match tokenize(&contents) {
+            Ok(tokens) => tokens,
+            Err(err) => continue,
+        };
+
+        let ast = match parse_from_tokens(&tokens) {
+            Some(ast) => ast,
+            None => continue,
+        };
+
+        panic!("File parsed but should not have!\n\nTokens: {:?}\n\nAST: {:?}", tokens, ast);
+    }
 }
