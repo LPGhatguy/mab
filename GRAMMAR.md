@@ -1,58 +1,64 @@
 ```ebnf
-	chunk ::= {stat [`;´]} [laststat [`;´]]
+chunk ::= block
 
-	block ::= chunk
+block ::= {stat} [retstat]
 
-	stat ::=  varlist `=´ explist |
-		 functioncall |
-		 do block end |
-		 while exp do block end |
-		 repeat block until exp |
-		 if exp then block {elseif exp then block} [else block] end |
-		 for Name `=´ exp `,´ exp [`,´ exp] do block end |
-		 for namelist in explist do block end |
-		 function funcname funcbody |
-		 local function Name funcbody |
-		 local namelist [`=´ explist]
+stat ::=  ‘;’ |
+	 varlist ‘=’ explist |
+	 functioncall |
+	 label |
+	 break |
+	 goto Name |
+	 do block end |
+	 while exp do block end |
+	 repeat block until exp |
+	 if exp then block {elseif exp then block} [else block] end |
+	 for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end |
+	 for namelist in explist do block end |
+	 function funcname funcbody |
+	 local function Name funcbody |
+	 local namelist [‘=’ explist]
 
-	laststat ::= return [explist] | break
+retstat ::= return [explist] [‘;’]
 
-	funcname ::= Name {`.´ Name} [`:´ Name]
+label ::= ‘::’ Name ‘::’
 
-	varlist ::= var {`,´ var}
+funcname ::= Name {‘.’ Name} [‘:’ Name]
 
-	var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+varlist ::= var {‘,’ var}
 
-	namelist ::= Name {`,´ Name}
+var ::=  Name | prefixexp ‘[’ exp ‘]’ | prefixexp ‘.’ Name
 
-	explist ::= {exp `,´} exp
+namelist ::= Name {‘,’ Name}
 
-	exp ::=  nil | false | true | Number | String | `...´ | function |
-		 prefixexp | tableconstructor | exp binop exp | unop exp
+explist ::= exp {‘,’ exp}
 
-	prefixexp ::= var | functioncall | `(´ exp `)´
+exp ::=  nil | false | true | Number | String | ‘...’ | functiondef |
+	 prefixexp | tableconstructor | exp binop exp | unop exp
 
-	functioncall ::=  prefixexp args | prefixexp `:´ Name args
+prefixexp ::= var | functioncall | ‘(’ exp ‘)’
 
-	args ::=  `(´ [explist] `)´ | tableconstructor | String
+functioncall ::=  prefixexp args | prefixexp ‘:’ Name args
 
-	function ::= function funcbody
+args ::=  ‘(’ [explist] ‘)’ | tableconstructor | String
 
-	funcbody ::= `(´ [parlist] `)´ block end
+functiondef ::= function funcbody
 
-	parlist ::= namelist [`,´ `...´] | `...´
+funcbody ::= ‘(’ [parlist] ‘)’ block end
 
-	tableconstructor ::= `{´ [fieldlist] `}´
+parlist ::= namelist [‘,’ ‘...’] | ‘...’
 
-	fieldlist ::= field {fieldsep field} [fieldsep]
+tableconstructor ::= ‘{’ [fieldlist] ‘}’
 
-	field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
+fieldlist ::= field {fieldsep field} [fieldsep]
 
-	fieldsep ::= `,´ | `;´
+field ::= ‘[’ exp ‘]’ ‘=’ exp | Name ‘=’ exp | exp
 
-	binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
-		 `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
-		 and | or
+fieldsep ::= ‘,’ | ‘;’
 
-	unop ::= `-´ | not | `#´
+binop ::= ‘+’ | ‘-’ | ‘*’ | ‘/’ | ‘^’ | ‘%’ | ‘..’ |
+	 ‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ |
+	 and | or
+
+unop ::= ‘-’ | not | ‘#’
 ```
