@@ -97,26 +97,12 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
     Ok((state, chunk))
 }
 
-fn parse_statement<'a>(mut state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
-    match parse_local_assignment(state) {
-        Ok((next_state, assignment)) => {
-            return Ok((next_state, Statement::LocalAssignment(assignment)));
-        },
-        Err(next_state) => {
-            state = next_state;
-        },
-    }
-
-    match parse_function_call(state) {
-        Ok((next_state, call)) => {
-            return Ok((next_state, Statement::FunctionCall(call)));
-        },
-        Err(next_state) => {
-            state = next_state;
-        },
-    }
-
-    Err(state)
+fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
+    parse_local_assignment(state)
+        .and_then(|(state, assignment)| Ok((state, Statement::LocalAssignment(assignment))))
+        .or_else(|state| parse_function_call(state)
+            .and_then(|(state, call)| Ok((state, Statement::FunctionCall(call))))
+        )
 }
 
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
@@ -149,26 +135,12 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
     }))
 }
 
-fn parse_expression<'a>(mut state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    match parse_number_literal(state) {
-        Ok((next_state, literal)) => {
-            return Ok((next_state, Expression::NumberLiteral(literal)));
-        },
-        Err(next_state) => {
-            state = next_state;
-        },
-    }
-
-    match parse_function_call(state) {
-        Ok((next_state, call)) => {
-            return Ok((next_state, Expression::FunctionCall(call)));
-        },
-        Err(next_state) => {
-            state = next_state;
-        },
-    }
-
-    Err(state)
+fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
+    parse_number_literal(state)
+        .and_then(|(state, literal)| Ok((state, Expression::NumberLiteral(literal))))
+        .or_else(|state| parse_function_call(state)
+            .and_then(|(state, call)| Ok((state, Expression::FunctionCall(call))))
+        )
 }
 
 fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
