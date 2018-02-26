@@ -7,4 +7,5 @@ pub mod emitter;
 pub mod tokenizer;
 pub mod parser;
 
-pub use parser::parse_str;
+pub use tokenizer::*;
+pub use parser::*;
