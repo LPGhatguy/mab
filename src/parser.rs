@@ -1,3 +1,5 @@
+use std::mem;
+
 use tokenizer::{Token, TokenKind};
 use ast::*;
 
@@ -21,53 +23,53 @@ impl<'a> ParseState<'a> {
         self.tokens.get(self.position)
     }
 
-    pub fn advance(&self, amount: usize) -> ParseState<'a> {
-        ParseState {
-            tokens: self.tokens,
-            position: self.position + amount,
-        }
+    pub fn advance(&mut self, amount: usize) {
+        self.position += amount;
     }
 }
 
-fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
+fn eat_simple<'a>(state: &mut ParseState<'a>, eat_token: TokenKind) -> bool {
     match state.peek() {
         Some(token) => {
             if token.kind == eat_token {
-                Ok((state.advance(1), token))
+                state.advance(1);
+                true
             } else {
-                Err(state)
+                false
             }
         },
-        None => Err(state),
+        None => false,
     }
 }
 
-fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLiteral<'a>> {
-    let (state, value) = {
-        match state.peek() {
-            Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => (state.advance(1), value),
-            _ => return Err(state),
-        }
-    };
-
-    Ok((state, NumberLiteral {
-        value,
-    }))
+fn parse_number_literal<'a>(state: &mut ParseState<'a>) -> Option<NumberLiteral<'a>> {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => {
+            state.advance(1);
+            Some(NumberLiteral {
+                value,
+            })
+        },
+        _ => None,
+    }
 }
 
-fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
+fn parse_identifier<'a>(state: &mut ParseState<'a>) -> Option<&'a str> {
     match state.peek() {
-        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
-        _ => Err(state),
+        Some(&Token { kind: TokenKind::Identifier(name), .. }) => {
+            state.advance(1);
+            Some(name)
+        },
+        _ => None,
     }
 }
 
 pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
-    let state = ParseState::new(tokens);
+    let mut state = ParseState::new(tokens);
 
-    let (state, chunk) = match parse_chunk(state) {
-        Ok(result) => result,
-        Err(_) => return None,
+    let chunk = match parse_chunk(&mut state) {
+        Some(chunk) => chunk,
+        None => return None,
     };
 
     match state.peek() {
@@ -79,28 +81,21 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
 }
 
 // chunk ::= {stat [`;´]} [laststat [`;´]]
-fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
+fn parse_chunk<'a>(state: &mut ParseState<'a>) -> Option<Chunk<'a>> {
     let mut statements = Vec::new();
-    let mut state = state;
 
     loop {
-        state = match parse_statement(state) {
-            Ok((next_state, statement)) => {
-                statements.push(statement);
-                next_state
-            },
-            Err(next_state) => {
-                state = next_state;
-                break;
-            },
-        };
+        match parse_statement(state) {
+            Some(statement) => statements.push(statement),
+            None => break,
+        }
     }
 
     let chunk = Chunk {
         statements,
     };
 
-    Ok((state, chunk))
+    Some(chunk)
 }
 
 // stat ::= varlist `=´ explist |
@@ -114,88 +109,123 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
 //     function funcname funcbody |
 //     local function Name funcbody |
 //     local namelist [`=´ explist]
-fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
-    parse_local_assignment(state)
-        .and_then(|(state, assignment)| Ok((state, Statement::LocalAssignment(assignment))))
-        .or_else(|state| parse_function_call(state)
-            .and_then(|(state, call)| Ok((state, Statement::FunctionCall(call))))
-        )
+fn parse_statement<'a>(state: &mut ParseState<'a>) -> Option<Statement<'a>> {
+    {
+        let mut next_state = state.clone();
+
+        match parse_local_assignment(&mut next_state) {
+            Some(assignment) => {
+                mem::replace(state, next_state);
+                return Some(Statement::LocalAssignment(assignment));
+            },
+            None => {},
+        }
+    }
+
+    // TODO: function call
+
+    None
 }
 
 // local namelist [`=´ explist]
 // right now:
 // local Name `=` exp
-fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
-    let (state, _) = eat_simple(state, TokenKind::Keyword("local"))?;
+fn parse_local_assignment<'a>(state: &mut ParseState<'a>) -> Option<LocalAssignment<'a>> {
+    let old_state = state;
+    let mut state = old_state.clone();
 
-    let (state, name) = parse_identifier(state)?;
+    if !eat_simple(&mut state, TokenKind::Keyword("local")) {
+        return None;
+    }
 
-    let (state, _) = eat_simple(state, TokenKind::Operator("="))?;
+    let name = match parse_identifier(&mut state) {
+        Some(name) => name,
+        None => return None,
+    };
 
-    let (state, expression) = parse_expression(state)?;
+    if !eat_simple(&mut state, TokenKind::Operator("=")) {
+        return None;
+    }
 
-    Ok((state, LocalAssignment {
+    let expression = match parse_expression(&mut state) {
+        Some(expression) => expression,
+        None => return None,
+    };
+
+    mem::replace(old_state, state);
+
+    Some(LocalAssignment {
         name,
         value: expression,
-    }))
+    })
 }
 
-// functioncall ::= prefixexp args | prefixexp `:´ Name args
-// right now:
-// functioncall ::= Name `(` explist `)`
-fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
-    let (state, name) = parse_identifier(state)?;
+// // functioncall ::= prefixexp args | prefixexp `:´ Name args
+// // right now:
+// // functioncall ::= Name `(` explist `)`
+// fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
+//     let (state, name) = parse_identifier(state)?;
 
-    let (state, _) = eat_simple(state, TokenKind::OpenParen)?;
+//     let (state, _) = eat_simple(state, TokenKind::OpenParen)?;
 
-    let (state, expressions) = parse_expression_list(state);
+//     let (state, expressions) = parse_expression_list(state);
 
-    let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
+//     let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
 
-    Ok((state, FunctionCall {
-        name_expression: Box::new(Expression::Name(name)),
-        arguments: expressions,
-    }))
-}
+//     Ok((state, FunctionCall {
+//         name_expression: Box::new(Expression::Name(name)),
+//         arguments: expressions,
+//     }))
+// }
 
 // exp ::= nil | false | true | Number | String | `...´ | function |
 //     prefixexp | tableconstructor | exp binop exp | unop exp
 // prefixexp ::= var | functioncall | `(´ exp `)´
 // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
-fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    parse_number_literal(state)
-        .and_then(|(state, literal)| Ok((state, Expression::NumberLiteral(literal))))
-        .or_else(|state| parse_function_call(state)
-            .and_then(|(state, call)| Ok((state, Expression::FunctionCall(call))))
-        )
-}
+fn parse_expression<'a>(state: &mut ParseState<'a>) -> Option<Expression<'a>> {
+    {
+        let mut next_state = state.clone();
 
-// explist ::= {exp `,´} exp
-fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
-    let mut expressions = Vec::new();
-
-    loop {
-        match parse_expression(state) {
-            Ok((next_state, expression)) => {
-                expressions.push(expression);
-                state = next_state;
+        match parse_number_literal(&mut next_state) {
+            Some(literal) => {
+                mem::replace(state, next_state);
+                return Some(Expression::NumberLiteral(literal));
             },
-            Err(next_state) => {
-                state = next_state;
-                break;
-            },
-        }
-
-        match eat_simple(state, TokenKind::Operator(",")) {
-            Ok((next_state, _)) => {
-                state = next_state;
-            },
-            Err(next_state) => {
-                state = next_state;
-                break;
-            },
+            None => {},
         }
     }
 
-    (state, expressions)
+    // TODO: function call
+
+    None
 }
+
+// // explist ::= {exp `,´} exp
+// fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
+//     let mut expressions = Vec::new();
+
+//     loop {
+//         match parse_expression(state) {
+//             Ok((next_state, expression)) => {
+//                 expressions.push(expression);
+//                 state = next_state;
+//             },
+//             Err(next_state) => {
+//                 state = next_state;
+//                 break;
+//             },
+//         }
+
+//         match eat_simple(state, TokenKind::Operator(",")) {
+//             Ok((next_state, _)) => {
+//                 state = next_state;
+//             },
+//             Err(next_state) => {
+//                 state = next_state;
+//                 break;
+//             },
+//         }
+//     }
+
+//     (state, expressions)
+// }
