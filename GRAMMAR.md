@@ -4,20 +4,20 @@ chunk ::= block
 block ::= {stat} [retstat]
 
 stat ::=  ‘;’ |
-	 varlist ‘=’ explist |
-	 functioncall |
-	 label |
-	 break |
-	 goto Name |
-	 do block end |
-	 while exp do block end |
-	 repeat block until exp |
-	 if exp then block {elseif exp then block} [else block] end |
-	 for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end |
-	 for namelist in explist do block end |
-	 function funcname funcbody |
-	 local function Name funcbody |
-	 local namelist [‘=’ explist]
+	varlist ‘=’ explist |
+	functioncall |
+	label |
+	break |
+	goto Name |
+	do block end |
+	while exp do block end |
+	repeat block until exp |
+	if exp then block {elseif exp then block} [else block] end |
+	for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end |
+	for namelist in explist do block end |
+	function funcname funcbody |
+	local function Name funcbody |
+	local namelist [‘=’ explist]
 
 retstat ::= return [explist] [‘;’]
 
@@ -34,7 +34,7 @@ namelist ::= Name {‘,’ Name}
 explist ::= exp {‘,’ exp}
 
 exp ::=  nil | false | true | Number | String | ‘...’ | functiondef |
-	 prefixexp | tableconstructor | exp binop exp | unop exp
+	prefixexp | tableconstructor | exp binop exp | unop exp
 
 prefixexp ::= var | functioncall | ‘(’ exp ‘)’
 
@@ -57,8 +57,8 @@ field ::= ‘[’ exp ‘]’ ‘=’ exp | Name ‘=’ exp | exp
 fieldsep ::= ‘,’ | ‘;’
 
 binop ::= ‘+’ | ‘-’ | ‘*’ | ‘/’ | ‘^’ | ‘%’ | ‘..’ |
-	 ‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ |
-	 and | or
+	‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ |
+	and | or
 
 unop ::= ‘-’ | not | ‘#’
 ```

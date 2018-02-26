@@ -61,6 +61,6 @@ fn examples() {
             None => continue,
         };
 
-        panic!("File parsed but should not have!\n\nTokens: {:?}\n\nAST: {:?}", tokens, ast);
+        panic!("File should not parse:\n{}\n\nTokens: {:?}\n\nAST: {:?}", entry.path().display(), tokens, ast);
     }
 }
