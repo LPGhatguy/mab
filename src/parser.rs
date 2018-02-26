@@ -62,7 +62,7 @@ fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
     }
 }
 
-pub fn parse_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
+pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
     let (state, chunk) = match parse_chunk(state) {
