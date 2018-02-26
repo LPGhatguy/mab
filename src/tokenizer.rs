@@ -22,6 +22,7 @@ pub struct Token<'a> {
     pub kind: TokenKind<'a>,
 
     // TODO: The line/column that the token is on?
+    // TODO: A slice from the source indicating what the token came from
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
