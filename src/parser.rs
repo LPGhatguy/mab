@@ -73,6 +73,7 @@ pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     Some(chunk)
 }
 
+// chunk ::= {stat [`;´]} [laststat [`;´]]
 fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
     let mut statements = Vec::new();
     let mut state = state;
@@ -97,6 +98,17 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
     Ok((state, chunk))
 }
 
+// stat ::= varlist `=´ explist |
+//     functioncall |
+//     do chunk end |
+//     while exp do chunk end |
+//     repeat chunk until exp |
+//     if exp then chunk {elseif exp then chunk} [else chunk] end |
+//     for Name `=´ exp `,´ exp [`,´ exp] do chunk end |
+//     for namelist in explist do chunk end |
+//     function funcname funcbody |
+//     local function Name funcbody |
+//     local namelist [`=´ explist]
 fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
     parse_local_assignment(state)
         .and_then(|(state, assignment)| Ok((state, Statement::LocalAssignment(assignment))))
@@ -105,6 +117,9 @@ fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> 
         )
 }
 
+// local namelist [`=´ explist]
+// right now:
+// local Name `=` exp
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
     let (state, _) = eat_simple(state, TokenKind::Keyword("local"))?;
 
@@ -120,6 +135,9 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
     }))
 }
 
+// functioncall ::= prefixexp args | prefixexp `:´ Name args
+// right now:
+// functioncall ::= Name `(` explist `)`
 fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
     let (state, name) = parse_identifier(state)?;
 
@@ -135,6 +153,8 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
     }))
 }
 
+// exp ::= nil | false | true | Number | String | `...´ | function |
+//     prefixexp | tableconstructor | exp binop exp | unop exp
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
     parse_number_literal(state)
         .and_then(|(state, literal)| Ok((state, Expression::NumberLiteral(literal))))
@@ -143,6 +163,7 @@ fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>
         )
 }
 
+// explist ::= {exp `,´} exp
 fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
     let mut expressions = Vec::new();
 
