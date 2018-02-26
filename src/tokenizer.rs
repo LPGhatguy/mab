@@ -25,7 +25,7 @@ pub struct Token<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum LexError<'a> {
+pub enum TokenizeError<'a> {
     UnknownSequence(&'a str),
 }
 
@@ -72,7 +72,7 @@ fn eat<'a>(source: &'a str, pattern: &Regex) -> (&'a str, Option<&'a str>) {
 }
 
 // TODO: Change to returning iterator?
-pub fn lex<'a>(source: &'a str) -> Result<Vec<Token<'a>>, LexError<'a>> {
+pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>> {
     let mut tokens = Vec::new();
     let mut current = source;
 
@@ -108,7 +108,7 @@ pub fn lex<'a>(source: &'a str) -> Result<Vec<Token<'a>>, LexError<'a>> {
     if current.is_empty() {
         Ok(tokens)
     } else {
-        Err(LexError::UnknownSequence(current))
+        Err(TokenizeError::UnknownSequence(current))
     }
 }
 
@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn keyword_vs_identifier() {
         fn test_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
-            let kinds = lex(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
+            let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
 
             assert_eq!(kinds, expected);
         }

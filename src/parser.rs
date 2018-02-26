@@ -1,4 +1,4 @@
-use lexer::{Token, TokenKind};
+use tokenizer::{Token, TokenKind};
 use ast::*;
 
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
@@ -198,10 +198,4 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
     }
 
     (state, expressions)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use lexer::lex;
 }
