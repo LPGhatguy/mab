@@ -1,5 +1,5 @@
 [package]
-name = "lua-parser"
+name = "lua_parser"
 version = "0.1.0"
 authors = ["lgreathouse <me@lpghatguy.com>"]
 
