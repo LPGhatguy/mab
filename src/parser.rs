@@ -1,4 +1,4 @@
-use tokenizer::{tokenize, Token, TokenKind};
+use tokenizer::{Token, TokenKind};
 use ast::*;
 
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
