@@ -3,10 +3,8 @@ extern crate lazy_static;
 extern crate regex;
 
 pub mod ast;
-mod emitter;
-mod tokenizer;
-mod parser;
+pub mod emitter;
+pub mod tokenizer;
+pub mod parser;
 
-pub use tokenizer::*;
-pub use parser::*;
-pub use emitter::*;
+pub use parser::parse_str;

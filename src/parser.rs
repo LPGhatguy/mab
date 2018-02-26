@@ -1,4 +1,4 @@
-use tokenizer::{Token, TokenKind};
+use tokenizer::{tokenize, Token, TokenKind};
 use ast::*;
 
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
@@ -62,7 +62,11 @@ fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
     }
 }
 
-pub fn parse<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
+pub fn parse_str<'a>(source: &'a str) -> Option<Chunk<'a>> {
+    parse_tokens(tokenize(source).ok()?)?;
+}
+
+pub fn parse_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
     let (state, chunk) = match parse_chunk(state) {
