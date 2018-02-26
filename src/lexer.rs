@@ -22,9 +22,13 @@ pub struct Token<'a> {
 }
 
 lazy_static! {
-    static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
+    static ref KEYWORDS: Vec<&'static str> = vec![
+        "false", "true", "nil",
+        "local",
+    ];
+    static ref PATTERN_KEYWORD: Regex = Regex::new(&format!("^({})", KEYWORDS.join("|"))).unwrap();
 
-    static ref PATTERN_KEYWORD: Regex = Regex::new(r"^(local)").unwrap();
+    static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^[a-zA-Z]\w*").unwrap();
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^[0-9]+").unwrap();
     static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(=|\+|,)").unwrap();
