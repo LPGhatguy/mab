@@ -1,9 +1,4 @@
 #[derive(Debug, Clone)]
-pub struct NumberLiteral<'a> {
-    pub value: &'a str,
-}
-
-#[derive(Debug, Clone)]
 pub struct FunctionCall<'a> {
     pub name_expression: Box<Expression<'a>>,
     pub arguments: Vec<Expression<'a>>,
@@ -11,9 +6,16 @@ pub struct FunctionCall<'a> {
 
 #[derive(Debug, Clone)]
 pub enum Expression<'a> {
-    NumberLiteral(NumberLiteral<'a>),
+    Nil,
+    Bool(bool),
+    Number(&'a str),
+    String(&'a str),
+    VarArg, // `...`
+    Function,
+    Table,
     FunctionCall(FunctionCall<'a>),
     Name(&'a str),
+    ParenExpression(Box<Expression<'a>>),
 }
 
 #[derive(Debug, Clone)]

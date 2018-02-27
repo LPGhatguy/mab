@@ -1,64 +1,64 @@
-```ebnf
-chunk ::= block
+```
+chunk ::= {stat [`;´]} [laststat [`;´]]
 
-block ::= {stat} [retstat]
+block ::= chunk
 
-stat ::=  ‘;’ |
-	varlist ‘=’ explist |
+stat ::=  varlist `=´ explist |
 	functioncall |
-	label |
-	break |
-	goto Name |
 	do block end |
 	while exp do block end |
 	repeat block until exp |
 	if exp then block {elseif exp then block} [else block] end |
-	for Name ‘=’ exp ‘,’ exp [‘,’ exp] do block end |
+	for Name `=´ exp `,´ exp [`,´ exp] do block end |
 	for namelist in explist do block end |
 	function funcname funcbody |
 	local function Name funcbody |
-	local namelist [‘=’ explist]
+	local namelist [`=´ explist]
 
-retstat ::= return [explist] [‘;’]
+laststat ::= return [explist] | break
 
-label ::= ‘::’ Name ‘::’
+funcname ::= Name {`.´ Name} [`:´ Name]
 
-funcname ::= Name {‘.’ Name} [‘:’ Name]
+varlist ::= var {`,´ var}
 
-varlist ::= var {‘,’ var}
+namelist ::= Name {`,´ Name}
 
-var ::=  Name | prefixexp ‘[’ exp ‘]’ | prefixexp ‘.’ Name
+explist ::= {exp `,´} exp
 
-namelist ::= Name {‘,’ Name}
+prefixexp ::= var | functioncall | `(´ exp `)´
 
-explist ::= exp {‘,’ exp}
+args ::=  `(´ [explist] `)´ | tableconstructor | String
 
-exp ::=  nil | false | true | Number | String | ‘...’ | functiondef |
-	prefixexp | tableconstructor | exp binop exp | unop exp
+function ::= function funcbody
 
-prefixexp ::= var | functioncall | ‘(’ exp ‘)’
+funcbody ::= `(´ [parlist] `)´ block end
 
-functioncall ::=  prefixexp args | prefixexp ‘:’ Name args
+parlist ::= namelist [`,´ `...´] | `...´
 
-args ::=  ‘(’ [explist] ‘)’ | tableconstructor | String
-
-functiondef ::= function funcbody
-
-funcbody ::= ‘(’ [parlist] ‘)’ block end
-
-parlist ::= namelist [‘,’ ‘...’] | ‘...’
-
-tableconstructor ::= ‘{’ [fieldlist] ‘}’
+tableconstructor ::= `{´ [fieldlist] `}´
 
 fieldlist ::= field {fieldsep field} [fieldsep]
 
-field ::= ‘[’ exp ‘]’ ‘=’ exp | Name ‘=’ exp | exp
+field ::= `[´ exp `]´ `=´ exp | Name `=´ exp | exp
 
-fieldsep ::= ‘,’ | ‘;’
+fieldsep ::= `,´ | `;´
 
-binop ::= ‘+’ | ‘-’ | ‘*’ | ‘/’ | ‘^’ | ‘%’ | ‘..’ |
-	‘<’ | ‘<=’ | ‘>’ | ‘>=’ | ‘==’ | ‘~=’ |
-	and | or
+binop ::= `+´ | `-´ | `*´ | `/´ | `^´ | `%´ | `..´ |
+	 `<´ | `<=´ | `>´ | `>=´ | `==´ | `~=´ |
+	 and | or
 
-unop ::= ‘-’ | not | ‘#’
+unop ::= `-´ | not | `#´
+```
+
+Modified rules from http://lua-users.org/lists/lua-l/2010-12/msg00699.html
+```
+value ::= nil | false | true | Number | String | '...' | function |
+	tableconstructor | functioncall | var | '(' exp ')'
+exp ::= unop exp | value [binop exp]
+prefix ::= '(' exp ')' | Name
+index ::= '[' exp ']' | '.' Name
+call ::= args | ':' Name args
+suffix ::= call | index
+var ::= prefix {suffix} index | Name
+functioncall ::= prefix {suffix} call
 ```

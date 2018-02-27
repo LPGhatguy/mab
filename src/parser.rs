@@ -42,17 +42,11 @@ fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a
     }
 }
 
-fn parse_number_literal<'a>(state: ParseState<'a>) -> ParseResult<'a, NumberLiteral<'a>> {
-    let (state, value) = {
-        match state.peek() {
-            Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => (state.advance(1), value),
-            _ => return None,
-        }
-    };
-
-    Some((state, NumberLiteral {
-        value,
-    }))
+fn parse_number<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Some((state.advance(1), value)),
+        _ => None,
+    }
 }
 
 fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
@@ -155,13 +149,10 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
     }))
 }
 
-// exp ::= nil | false | true | Number | String | `...´ | function |
-//     prefixexp | tableconstructor | exp binop exp | unop exp
-// prefixexp ::= var | functioncall | `(´ exp `)´
-// var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
+// exp ::= unop exp | value [binop exp]
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    match parse_number_literal(state) {
-        Some((state, literal)) => return Some((state, Expression::NumberLiteral(literal))),
+    match parse_number(state) {
+        Some((state, value)) => return Some((state, Expression::Number(value))),
         None => {},
     }
 
