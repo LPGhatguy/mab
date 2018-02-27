@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 
 use regex::Regex;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenKind<'a> {
     Keyword(&'a str),
     Operator(&'a str),
@@ -13,7 +13,7 @@ pub enum TokenKind<'a> {
     CloseParen,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Token<'a> {
     /// Any whitespace before the token
     pub whitespace: Option<&'a str>,

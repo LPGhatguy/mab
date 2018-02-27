@@ -3,7 +3,7 @@ use ast::*;
 
 type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseState<'a>>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 struct ParseState<'a> {
     tokens: &'a [Token<'a>],
     position: usize,
@@ -126,13 +126,19 @@ fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> 
 // right now:
 // local Name `=` exp
 fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
-    let (state, _) = eat_simple(state, TokenKind::Keyword("local"))?;
+    let old_state = state;
 
-    let (state, name) = parse_identifier(state)?;
+    let (state, _) = eat_simple(state, TokenKind::Keyword("local"))
+        .map_err(|_| old_state)?;
 
-    let (state, _) = eat_simple(state, TokenKind::Operator("="))?;
+    let (state, name) = parse_identifier(state)
+        .map_err(|_| old_state)?;
 
-    let (state, expression) = parse_expression(state)?;
+    let (state, _) = eat_simple(state, TokenKind::Operator("="))
+        .map_err(|_| old_state)?;
+
+    let (state, expression) = parse_expression(state)
+        .map_err(|_| old_state)?;
 
     Ok((state, LocalAssignment {
         name,
@@ -144,13 +150,18 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
 // right now:
 // functioncall ::= Name `(` explist `)`
 fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
-    let (state, name) = parse_identifier(state)?;
+    let old_state = state;
 
-    let (state, _) = eat_simple(state, TokenKind::OpenParen)?;
+    let (state, name) = parse_identifier(state)
+        .map_err(|_| old_state)?;
+
+    let (state, _) = eat_simple(state, TokenKind::OpenParen)
+        .map_err(|_| old_state)?;
 
     let (state, expressions) = parse_expression_list(state);
 
-    let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
+    let (state, _) = eat_simple(state, TokenKind::CloseParen)
+        .map_err(|_| old_state)?;
 
     Ok((state, FunctionCall {
         name_expression: Box::new(Expression::Name(name)),
