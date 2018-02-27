@@ -112,11 +112,17 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
 //     local function Name funcbody |
 //     local namelist [`=´ explist]
 fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
-    parse_local_assignment(state)
-        .and_then(|(state, assignment)| Some((state, Statement::LocalAssignment(assignment))))
-        .or_else(|| parse_function_call(state)
-            .and_then(|(state, call)| Some((state, Statement::FunctionCall(call))))
-        )
+    match parse_local_assignment(state) {
+        Some((state, assignment)) => return Some((state, Statement::LocalAssignment(assignment))),
+        None => {},
+    }
+
+    match parse_function_call(state) {
+        Some((state, call)) => return Some((state, Statement::FunctionCall(call))),
+        None => {},
+    }
+
+    None
 }
 
 // local namelist [`=´ explist]
@@ -154,11 +160,17 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
 // prefixexp ::= var | functioncall | `(´ exp `)´
 // var ::=  Name | prefixexp `[´ exp `]´ | prefixexp `.´ Name
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    parse_number_literal(state)
-        .and_then(|(state, literal)| Some((state, Expression::NumberLiteral(literal))))
-        .or_else(|| parse_function_call(state)
-            .and_then(|(state, call)| Some((state, Expression::FunctionCall(call))))
-        )
+    match parse_number_literal(state) {
+        Some((state, literal)) => return Some((state, Expression::NumberLiteral(literal))),
+        None => {},
+    }
+
+    match parse_function_call(state) {
+        Some((state, call)) => return Some((state, Expression::FunctionCall(call))),
+        None => {},
+    }
+
+    None
 }
 
 // explist ::= {exp `,´} exp

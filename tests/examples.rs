@@ -2,7 +2,6 @@ extern crate lua_parser;
 
 use std::fs::{File, read_dir};
 use std::io::Read;
-use std::path::Path;
 
 use lua_parser::{tokenize, parse_from_tokens};
 
@@ -53,7 +52,7 @@ fn examples() {
 
         let tokens = match tokenize(&contents) {
             Ok(tokens) => tokens,
-            Err(err) => continue,
+            Err(_) => continue,
         };
 
         let ast = match parse_from_tokens(&tokens) {
