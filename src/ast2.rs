@@ -5,29 +5,24 @@ pub struct FunctionCall<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub enum Expression<'a> {
-    Nil,
-    Bool(bool),
-    Number(&'a str),
-    String(&'a str),
-    VarArg, // `...`
-    Function,
-    Table,
-    FunctionCall(FunctionCall<'a>),
-    Name(&'a str),
-    ParenExpression(Box<Expression<'a>>),
+pub struct LocalAssignment<'a> {
+    pub names: Vec<&'a str>,
+    pub values: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct LocalAssignment<'a> {
-    pub name: &'a str,
-    pub value: Expression<'a>,
+pub enum Expression<'a> {
+    FunctionCall(FunctionCall<'a>),
+    Identifier(&'a str),
+    Nil,
+    BoolLiteral(bool),
+    NumberLiteral(&'a str),
 }
 
 #[derive(Debug, Clone)]
 pub enum Statement<'a> {
-    LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
+    LocalAssignment(LocalAssignment<'a>),
 }
 
 #[derive(Debug, Clone)]
