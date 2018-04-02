@@ -13,3 +13,6 @@ I want to build a Lua parser that can be the foundation for a number of future p
 
 ## Notes
 [This trick](https://news.ycombinator.com/item?id=13915458) for implementing precedence -- simple explanation of precedence climbing/Pratt parsing.
+
+## License
+This project is available under the terms of The Mozilla Public License, version 2.0. Details are available in [LICENSE](LICENSE).
