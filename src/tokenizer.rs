@@ -16,7 +16,7 @@ pub enum TokenKind<'a> {
 #[derive(Debug, Clone, Copy)]
 pub struct Token<'a> {
     /// Any whitespace before the token
-    pub whitespace: Option<&'a str>,
+    pub whitespace: &'a str,
 
     /// Details about the Token itself
     pub kind: TokenKind<'a>,
@@ -78,7 +78,9 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
     let mut current = source;
 
     loop {
-        let (next_current, whitespace) = eat(current, &PATTERN_WHITESPACE);
+        let (next_current, matched_whitespace) = eat(current, &PATTERN_WHITESPACE);
+        let whitespace = matched_whitespace.unwrap_or("");
+
         current = next_current;
 
         let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
@@ -130,5 +132,24 @@ mod tests {
         test_eq("locale", vec![TokenKind::Identifier("locale")]);
         test_eq("_local", vec![TokenKind::Identifier("_local")]);
         test_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
+    }
+
+    #[test]
+    fn whitespace() {
+        let input = "  local";
+        // This should always tokenize successfully
+        let tokenized = tokenize(input).unwrap();
+        let first_token = tokenized[0];
+
+        assert_eq!(first_token.whitespace, "  ");
+    }
+
+    #[test]
+    fn whitespace_when_none_present() {
+        let input = "local";
+        let tokenized = tokenize(input).unwrap();
+        let first_token = tokenized[0];
+
+        assert_eq!(first_token.whitespace, "");
     }
 }
