@@ -1,7 +1,15 @@
+use std::borrow::Cow;
+
 use tokenizer::{Token, TokenKind};
 use ast::*;
 
-type ParseResult<'a, T> = Option<(ParseState<'a>, T)>;
+type ParseResult<'a, T> = Result<(ParseState<'a>, T), ParseError<'a>>;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum ParseError<'a> {
+    NoMatch,
+    Err(Cow<'a, str>),
+}
 
 #[derive(Debug, Clone, Copy)]
 struct ParseState<'a> {
@@ -33,26 +41,26 @@ fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a
     match state.peek() {
         Some(token) => {
             if token.kind == eat_token {
-                Some((state.advance(1), token))
+                Ok((state.advance(1), token))
             } else {
-                None
+                Err(ParseError::NoMatch)
             }
         },
-        None => None,
+        None => Err(ParseError::NoMatch),
     }
 }
 
 fn parse_number<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
     match state.peek() {
-        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Some((state.advance(1), value)),
-        _ => None,
+        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Ok((state.advance(1), value)),
+        _ => Err(ParseError::NoMatch),
     }
 }
 
 fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
     match state.peek() {
-        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Some((state.advance(1), name)),
-        _ => None,
+        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
+        _ => Err(ParseError::NoMatch),
     }
 }
 
@@ -60,8 +68,8 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     let state = ParseState::new(tokens);
 
     let (state, chunk) = match parse_chunk(state) {
-        Some(result) => result,
-        None => return None,
+        Ok(result) => result,
+        Err(_) => return None,
     };
 
     match state.peek() {
@@ -79,11 +87,11 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
 
     loop {
         state = match parse_statement(state) {
-            Some((next_state, statement)) => {
+            Ok((next_state, statement)) => {
                 statements.push(statement);
                 next_state
             },
-            None => break,
+            Err(_) => break,
         };
     }
 
@@ -91,7 +99,7 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
         statements,
     };
 
-    Some((state, chunk))
+    Ok((state, chunk))
 }
 
 // stat ::= varlist `=´ explist |
@@ -107,16 +115,16 @@ fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
 //     local namelist [`=´ explist]
 fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
     match parse_local_assignment(state) {
-        Some((state, assignment)) => return Some((state, Statement::LocalAssignment(assignment))),
-        None => {},
+        Ok((state, assignment)) => return Ok((state, Statement::LocalAssignment(assignment))),
+        _ => {},
     }
 
     match parse_function_call(state) {
-        Some((state, call)) => return Some((state, Statement::FunctionCall(call))),
-        None => {},
+        Ok((state, call)) => return Ok((state, Statement::FunctionCall(call))),
+        _ => {},
     }
 
-    None
+    Err(ParseError::NoMatch)
 }
 
 // local namelist [`=´ explist]
@@ -128,7 +136,7 @@ fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAss
     let (state, _) = eat_simple(state, TokenKind::Operator("="))?;
     let (state, expression) = parse_expression(state)?;
 
-    Some((state, LocalAssignment {
+    Ok((state, LocalAssignment {
         name,
         value: expression,
     }))
@@ -143,7 +151,7 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
     let (state, expressions) = parse_expression_list(state);
     let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
 
-    Some((state, FunctionCall {
+    Ok((state, FunctionCall {
         name_expression: Box::new(Expression::Name(name)),
         arguments: expressions,
     }))
@@ -152,16 +160,16 @@ fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCal
 // exp ::= unop exp | value [binop exp]
 fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
     match parse_number(state) {
-        Some((state, value)) => return Some((state, Expression::Number(value))),
-        None => {},
+        Ok((state, value)) => return Ok((state, Expression::Number(value))),
+        Err(_) => {},
     }
 
     match parse_function_call(state) {
-        Some((state, call)) => return Some((state, Expression::FunctionCall(call))),
-        None => {},
+        Ok((state, call)) => return Ok((state, Expression::FunctionCall(call))),
+        Err(_) => {},
     }
 
-    None
+    Err(ParseError::NoMatch)
 }
 
 // explist ::= {exp `,´} exp
@@ -170,18 +178,18 @@ fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<
 
     loop {
         match parse_expression(state) {
-            Some((next_state, expression)) => {
+            Ok((next_state, expression)) => {
                 expressions.push(expression);
                 state = next_state;
             },
-            None => break,
+            Err(_) => break,
         }
 
         match eat_simple(state, TokenKind::Operator(",")) {
-            Some((next_state, _)) => {
+            Ok((next_state, _)) => {
                 state = next_state;
             },
-            None => break,
+            Err(_) => break,
         }
     }
 
