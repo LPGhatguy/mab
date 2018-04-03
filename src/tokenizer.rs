@@ -124,6 +124,9 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
                     column: current_column,
                 });
 
+                // This will cause problems if tokens match more than one line,
+                // but that seems really really unlikely - that would mean
+                // allowing whitespace in the tokens!
                 current_column += eaten_str.len();
             }
             None => break,
