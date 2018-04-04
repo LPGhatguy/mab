@@ -3,6 +3,22 @@ use std::borrow::Cow;
 use tokenizer::{Token, TokenKind};
 use ast::*;
 
+pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
+    let state = ParseState::new(tokens);
+
+    let (state, chunk) = match ParseChunk.parse(state) {
+        Some(result) => result,
+        None => return None,
+    };
+
+    match state.peek() {
+        Some(_) => return None,
+        None => {},
+    }
+
+    Some(chunk)
+}
+
 enum ParseAbort<'a> {
     /// Indicates that the parser was unable to match the input, but that it was
     /// not necessarily an error.
@@ -41,12 +57,16 @@ impl<'a> ParseState<'a> {
     }
 }
 
-struct EatToken<'z> {
-    pub kind: TokenKind<'z>,
+trait Parser<'a, T: 'a> {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, T)>;
 }
 
-impl<'z> EatToken<'z> {
-    fn parse<'b>(&self, state: ParseState<'b>) -> ParseResult<'b, &'b Token<'b>> {
+struct EatToken<'a> {
+    pub kind: TokenKind<'a>,
+}
+
+impl<'a> Parser<'a, &'a Token<'a>> for EatToken<'a> {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, &'a Token<'a>)> {
         match state.peek() {
             Some(token) => {
                 if token.kind == self.kind {
@@ -60,28 +80,81 @@ impl<'z> EatToken<'z> {
     }
 }
 
-#[test]
-fn test_eat_token() {
-    let tokens = vec![
-        Token {
-            whitespace: "",
-            kind: TokenKind::OpenParen,
-        },
-    ];
-    let state = ParseState {
-        tokens: &tokens,
-        position: 0,
-    };
+struct ParseNumber;
 
-    let result = {
-        let eater = EatToken {
-            kind: TokenKind::OpenParen,
+impl<'a> Parser<'a, &'a str> for ParseNumber {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, &'a str)> {
+        match state.peek() {
+            Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Some((state.advance(1), value)),
+            _ => None,
+        }
+    }
+}
+
+struct ParseIdentifier;
+
+impl<'a> Parser<'a, &'a str> for ParseIdentifier {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, &'a str)> {
+        match state.peek() {
+            Some(&Token { kind: TokenKind::Identifier(name), .. }) => Some((state.advance(1), name)),
+            _ => None,
+        }
+    }
+}
+
+// chunk ::= {stat [`;´]} [laststat [`;´]]
+struct ParseChunk;
+
+impl<'a> Parser<'a, Chunk<'a>> for ParseChunk {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Chunk<'a>)> {
+        let mut statements = Vec::new();
+        let mut state = state;
+
+        loop {
+            state = match ParseStatement.parse(state) {
+                Some((next_state, statement)) => {
+                    statements.push(statement);
+                    next_state
+                },
+                None => break,
+            };
+        }
+
+        let chunk = Chunk {
+            statements,
         };
 
-        eater.parse(state)
-    };
+        Some((state, chunk))
+    }
+}
 
-    println!("{:?}", result);
+// stat ::= varlist `=´ explist |
+//     functioncall |
+//     do chunk end |
+//     while exp do chunk end |
+//     repeat chunk until exp |
+//     if exp then chunk {elseif exp then chunk} [else chunk] end |
+//     for Name `=´ exp `,´ exp [`,´ exp] do chunk end |
+//     for namelist in explist do chunk end |
+//     function funcname funcbody |
+//     local function Name funcbody |
+//     local namelist [`=´ explist]
+struct ParseStatement;
+
+impl<'a> Parser<'a, Statement<'a>> for ParseStatement {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Statement<'a>)> {
+        match parse_local_assignment(state) {
+            Some((state, assignment)) => return Some((state, Statement::LocalAssignment(assignment))),
+            None => {},
+        }
+
+        match parse_function_call(state) {
+            Some((state, call)) => return Some((state, Statement::FunctionCall(call))),
+            None => {},
+        }
+
+        None
+    }
 }
 
 fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
@@ -109,69 +182,6 @@ fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
         Some(&Token { kind: TokenKind::Identifier(name), .. }) => Some((state.advance(1), name)),
         _ => None,
     }
-}
-
-pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
-    let state = ParseState::new(tokens);
-
-    let (state, chunk) = match parse_chunk(state) {
-        Some(result) => result,
-        None => return None,
-    };
-
-    match state.peek() {
-        Some(_) => return None,
-        None => {},
-    }
-
-    Some(chunk)
-}
-
-// chunk ::= {stat [`;´]} [laststat [`;´]]
-fn parse_chunk<'a>(state: ParseState<'a>) -> ParseResult<'a, Chunk<'a>> {
-    let mut statements = Vec::new();
-    let mut state = state;
-
-    loop {
-        state = match parse_statement(state) {
-            Some((next_state, statement)) => {
-                statements.push(statement);
-                next_state
-            },
-            None => break,
-        };
-    }
-
-    let chunk = Chunk {
-        statements,
-    };
-
-    Some((state, chunk))
-}
-
-// stat ::= varlist `=´ explist |
-//     functioncall |
-//     do chunk end |
-//     while exp do chunk end |
-//     repeat chunk until exp |
-//     if exp then chunk {elseif exp then chunk} [else chunk] end |
-//     for Name `=´ exp `,´ exp [`,´ exp] do chunk end |
-//     for namelist in explist do chunk end |
-//     function funcname funcbody |
-//     local function Name funcbody |
-//     local namelist [`=´ explist]
-fn parse_statement<'a>(state: ParseState<'a>) -> ParseResult<'a, Statement<'a>> {
-    match parse_local_assignment(state) {
-        Some((state, assignment)) => return Some((state, Statement::LocalAssignment(assignment))),
-        None => {},
-    }
-
-    match parse_function_call(state) {
-        Some((state, call)) => return Some((state, Statement::FunctionCall(call))),
-        None => {},
-    }
-
-    None
 }
 
 // local namelist [`=´ explist]
