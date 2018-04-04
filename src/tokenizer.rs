@@ -44,7 +44,7 @@ lazy_static! {
     static ref PATTERN_CLOSE_PAREN: Regex = Regex::new(r"^(\))").unwrap();
 
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
-    static ref PATTERN_WHITESPACE_AFTER_NEWLINE: Regex = Regex::new(r"\n([^\n]+)$").unwrap();
+    static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n([^\n]+)$").unwrap();
 }
 
 /// Tries to matches the given pattern against the string slice.
@@ -74,6 +74,30 @@ fn eat<'a>(source: &'a str, pattern: &Regex) -> (&'a str, Option<&'a str>) {
     }
 }
 
+fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column: usize) -> (usize, usize) {
+    let lines_eaten = eaten_str.matches("\n").count();
+
+    // If there was a newline we're on a totally different column
+    let column = if lines_eaten > 0 {
+        // If there's some characters after the newline, count them!
+        if let Some(captures) = PATTERN_CHARS_AFTER_NEWLINE.captures(eaten_str) {
+            // Add 1 so we start at a column of 1
+            captures.get(1).unwrap().as_str().len() + 1
+        }
+        // Otherwise, just restart at 1.
+        else {
+            1
+        }
+    }
+    // Otherwise we can just increment the current column by the length of the eaten chars
+    else {
+        current_column + eaten_str.len()
+    };
+
+    // We return the new line count, not the delta line count
+    (current_line + lines_eaten, column)
+}
+
 // TODO: Change to returning iterator?
 pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>> {
     let mut tokens = Vec::new();
@@ -87,19 +111,9 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
 
         current = next_current;
 
-        let lines_eaten = whitespace.matches("\n").count();
-        current_line += lines_eaten;
-
-        if lines_eaten > 0 {
-            current_column = 1;
-            
-            if let Some(captures) = PATTERN_WHITESPACE_AFTER_NEWLINE.captures(whitespace) {
-                current_column += captures.get(1).unwrap().as_str().len();
-            }
-        }
-        else {
-            current_column += whitespace.len();
-        }
+        let (new_line, new_column) = get_new_position(whitespace, current_line, current_column);
+        current_line = new_line;
+        current_column = new_column;
 
         let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
                 if KEYWORDS.contains(s) {
@@ -124,10 +138,9 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
                     column: current_column,
                 });
 
-                // This will cause problems if tokens match more than one line,
-                // but that seems really really unlikely - that would mean
-                // allowing whitespace in the tokens!
-                current_column += eaten_str.len();
+                let (new_line, new_column) = get_new_position(eaten_str, current_line, current_column);
+                current_line = new_line;
+                current_column = new_column;
             }
             None => break,
         }
@@ -176,6 +189,17 @@ mod tests {
         let first_token = tokenized[0];
 
         assert_eq!(first_token.whitespace, "");
+    }
+
+    #[test]
+    fn get_new_line_info() {
+        let (new_line, new_column) = get_new_position("test", 1, 1);
+        assert_eq!(new_line, 1);
+        assert_eq!(new_column, 5);
+
+        let (new_line, new_column) = get_new_position("testy\ntest", 1, 1);
+        assert_eq!(new_line, 2);
+        assert_eq!(new_column, 5);
     }
 
     #[test]
