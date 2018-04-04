@@ -31,6 +31,12 @@ pub enum TokenizeError<'a> {
     UnknownSequence(&'a str),
 }
 
+struct TryAdvanceResult<'a> {
+    new_source: &'a str,
+    eaten_str: &'a str,
+    matched_kind: TokenKind<'a>,
+}
+
 lazy_static! {
     static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
         "false", "true", "nil",
@@ -49,7 +55,7 @@ lazy_static! {
 
 /// Tries to matches the given pattern against the string slice.
 /// If it does, the 'tokenizer' fn is invokved to turn the result into a token.
-fn try_advance<'a, F>(source: &'a str, pattern: &Regex, tokenizer: F) -> Option<(&'a str, &'a str, TokenKind<'a>)>
+fn try_advance<'a, F>(source: &'a str, pattern: &Regex, tokenizer: F) -> Option<TryAdvanceResult<'a>>
 where
     F: Fn(&'a str) -> TokenKind<'a>,
 {
@@ -58,7 +64,12 @@ where
         // have noncapturing groups that need to be ignored!
         let capture = captures.get(1).unwrap();
         let contents = capture.as_str();
-        Some((&source[capture.end()..], contents, tokenizer(contents)))
+
+        Some(TryAdvanceResult {
+            new_source: &source[capture.end()..],
+            eaten_str: contents,
+            matched_kind: tokenizer(contents),
+        })
     } else {
         None
     }
@@ -128,17 +139,17 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
             .or_else(|| try_advance(current, &PATTERN_CLOSE_PAREN, |_| TokenKind::CloseParen));
 
         match result {
-            Some((next_current, eaten_str, token_kind)) => {
-                current = next_current;
+            Some(result) => {
+                current = result.new_source;
 
                 tokens.push(Token {
                     whitespace,
-                    kind: token_kind,
+                    kind: result.matched_kind,
                     line: current_line,
                     column: current_column,
                 });
 
-                let (new_line, new_column) = get_new_position(eaten_str, current_line, current_column);
+                let (new_line, new_column) = get_new_position(result.eaten_str, current_line, current_column);
                 current_line = new_line;
                 current_column = new_column;
             }
