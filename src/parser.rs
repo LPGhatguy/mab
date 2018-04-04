@@ -46,7 +46,7 @@ struct EatToken<'z> {
 }
 
 impl<'z> EatToken<'z> {
-    fn parse<'b>(&'z self, state: ParseState<'b>) -> ParseResult<&'b Token<'b>> {
+    fn parse<'b>(&self, state: ParseState<'b>) -> ParseResult<'b, &'b Token<'b>> {
         match state.peek() {
             Some(token) => {
                 if token.kind == self.kind {
