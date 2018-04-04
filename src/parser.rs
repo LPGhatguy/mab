@@ -59,6 +59,40 @@ trait Parser<'a, T: 'a> {
     fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, T)>;
 }
 
+macro_rules! generate_field {
+    ( ($state: ident, $field_name: pat => $parser: expr) ) => (
+        $field_name
+    );
+
+    ( ($state: ident, $parser: expr) ) => ();
+}
+
+macro_rules! ugh {
+    ( [$state: ident, $field_name: pat => $parser: expr] ) => (
+        let ($state, $field_name) = $parser.parse(state)?;
+    );
+
+    ( [$state: ident, $parser: expr] ) => (
+        let ($state, _) = $parser.parse(state)?;
+    );
+}
+
+macro_rules! parse_sequence {
+    ( $state: ident, $result_name: path { $( $t: tt ),* } ) => (
+        {
+            $(
+                ugh!($t)
+            )*
+
+            // Some(($state, $result_name {
+            //     $(
+            //         generate_field!($t)
+            //     ),*
+            // }))
+        }
+    );
+}
+
 struct EatToken<'a> {
     pub kind: TokenKind<'a>,
 }
@@ -162,15 +196,24 @@ struct ParseLocalAssignment;
 
 impl<'a> Parser<'a, LocalAssignment<'a>> for ParseLocalAssignment {
     fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, LocalAssignment<'a>)> {
-        let (state, _) = EatToken { kind: TokenKind::Keyword("local") }.parse(state)?;
-        let (state, name) = ParseIdentifier.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
-        let (state, expression) = ParseExpression.parse(state)?;
+        parse_sequence!(state, LocalAssignment {
+            [EatToken { kind: TokenKind::Keyword("local") }],
+            [name => ParseIdentifier],
+            [EatToken { kind: TokenKind::Operator("=") }],
+            [value => ParseExpression]
+        });
 
-        Some((state, LocalAssignment {
-            name,
-            value: expression,
-        }))
+        None
+
+        // let (state, _) = EatToken { kind: TokenKind::Keyword("local") }.parse(state)?;
+        // let (state, name) = ParseIdentifier.parse(state)?;
+        // let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
+        // let (state, expression) = ParseExpression.parse(state)?;
+
+        // Some((state, LocalAssignment {
+        //     name,
+        //     value: expression,
+        // }))
     }
 }
 
