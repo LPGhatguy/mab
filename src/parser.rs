@@ -21,18 +21,6 @@ struct ParseState<'a> {
     position: usize,
 }
 
-trait LifetimeFinagle<'a> {
-    type Output;
-}
-
-impl<'a, 'b> LifetimeFinagle<'a> for &'b Token<'b> {
-    type Output = &'a Token<'a>;
-}
-
-trait Parser<T> where for<'a> T: LifetimeFinagle<'a> {
-    fn parse<'a>(&self, state: ParseState<'a>) -> ParseResult<'a, <T as LifetimeFinagle<'a>>::Output>;
-}
-
 impl<'a> ParseState<'a> {
     pub fn new(tokens: &'a [Token]) -> ParseState<'a> {
         ParseState {
@@ -57,10 +45,43 @@ struct EatToken<'z> {
     pub kind: TokenKind<'z>,
 }
 
-impl<'x, 'y> Parser<&'x Token<'x>> for EatToken<'y> {
-    fn parse<'a>(&self, state: ParseState<'a>) -> ParseResult<'a, &'a Token<'a>> {
-        None
+impl<'z> EatToken<'z> {
+    fn parse<'b>(&'z self, state: ParseState<'b>) -> ParseResult<&'b Token<'b>> {
+        match state.peek() {
+            Some(token) => {
+                if token.kind == self.kind {
+                    Some((state.advance(1), token))
+                } else {
+                    None
+                }
+            },
+            None => None,
+        }
     }
+}
+
+#[test]
+fn test_eat_token() {
+    let tokens = vec![
+        Token {
+            whitespace: "",
+            kind: TokenKind::OpenParen,
+        },
+    ];
+    let state = ParseState {
+        tokens: &tokens,
+        position: 0,
+    };
+
+    let result = {
+        let eater = EatToken {
+            kind: TokenKind::OpenParen,
+        };
+
+        eater.parse(state)
+    };
+
+    println!("{:?}", result);
 }
 
 fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
