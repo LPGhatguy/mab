@@ -113,8 +113,8 @@ fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column:
 pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>> {
     let mut tokens = Vec::new();
     let mut current = source;
-    let mut current_line: usize = 1;
-    let mut current_column: usize = 1;
+    let mut current_line = 1;
+    let mut current_column = 1;
 
     loop {
         let (next_current, matched_whitespace) = eat(current, &PATTERN_WHITESPACE);
