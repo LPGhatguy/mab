@@ -1,5 +1,17 @@
+use std::borrow::Cow;
+
 use tokenizer::{Token, TokenKind};
 use ast::*;
+
+enum ParseAbort<'a> {
+    /// Indicates that the parser was unable to match the input, but that it was
+    /// not necessarily an error.
+    NoMatch,
+
+    /// Indicates that the parser was unable to match the input and hit the
+    /// error described by the returned string.
+    Error(Cow<'a, str>)
+}
 
 type ParseResult<'a, T> = Option<(ParseState<'a>, T)>;
 
@@ -7,6 +19,18 @@ type ParseResult<'a, T> = Option<(ParseState<'a>, T)>;
 struct ParseState<'a> {
     tokens: &'a [Token<'a>],
     position: usize,
+}
+
+trait LifetimeFinagle<'a> {
+    type Output;
+}
+
+impl<'a, 'b> LifetimeFinagle<'a> for &'b Token<'b> {
+    type Output = &'a Token<'a>;
+}
+
+trait Parser<T> where for<'a> T: LifetimeFinagle<'a> {
+    fn parse<'a>(&self, state: ParseState<'a>) -> ParseResult<'a, <T as LifetimeFinagle<'a>>::Output>;
 }
 
 impl<'a> ParseState<'a> {
@@ -26,6 +50,16 @@ impl<'a> ParseState<'a> {
             tokens: self.tokens,
             position: self.position + amount,
         }
+    }
+}
+
+struct EatToken<'z> {
+    pub kind: TokenKind<'z>,
+}
+
+impl<'x, 'y> Parser<&'x Token<'x>> for EatToken<'y> {
+    fn parse<'a>(&self, state: ParseState<'a>) -> ParseResult<'a, &'a Token<'a>> {
+        None
     }
 }
 
