@@ -29,8 +29,6 @@ enum ParseAbort<'a> {
     Error(Cow<'a, str>)
 }
 
-type ParseResult<'a, T> = Option<(ParseState<'a>, T)>;
-
 #[derive(Debug, Clone, Copy)]
 struct ParseState<'a> {
     tokens: &'a [Token<'a>],
@@ -143,12 +141,12 @@ struct ParseStatement;
 
 impl<'a> Parser<'a, Statement<'a>> for ParseStatement {
     fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Statement<'a>)> {
-        match parse_local_assignment(state) {
+        match ParseLocalAssignment.parse(state) {
             Some((state, assignment)) => return Some((state, Statement::LocalAssignment(assignment))),
             None => {},
         }
 
-        match parse_function_call(state) {
+        match ParseFunctionCall.parse(state) {
             Some((state, call)) => return Some((state, Statement::FunctionCall(call))),
             None => {},
         }
@@ -157,98 +155,88 @@ impl<'a> Parser<'a, Statement<'a>> for ParseStatement {
     }
 }
 
-fn eat_simple<'a>(state: ParseState<'a>, eat_token: TokenKind) -> ParseResult<'a, &'a Token<'a>> {
-    match state.peek() {
-        Some(token) => {
-            if token.kind == eat_token {
-                Some((state.advance(1), token))
-            } else {
-                None
-            }
-        },
-        None => None,
-    }
-}
-
-fn parse_number<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
-    match state.peek() {
-        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Some((state.advance(1), value)),
-        _ => None,
-    }
-}
-
-fn parse_identifier<'a>(state: ParseState<'a>) -> ParseResult<'a, &'a str> {
-    match state.peek() {
-        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Some((state.advance(1), name)),
-        _ => None,
-    }
-}
-
 // local namelist [`=´ explist]
 // right now:
 // local Name `=` exp
-fn parse_local_assignment<'a>(state: ParseState<'a>) -> ParseResult<'a, LocalAssignment<'a>> {
-    let (state, _) = eat_simple(state, TokenKind::Keyword("local"))?;
-    let (state, name) = parse_identifier(state)?;
-    let (state, _) = eat_simple(state, TokenKind::Operator("="))?;
-    let (state, expression) = parse_expression(state)?;
+struct ParseLocalAssignment;
 
-    Some((state, LocalAssignment {
-        name,
-        value: expression,
-    }))
+impl<'a> Parser<'a, LocalAssignment<'a>> for ParseLocalAssignment {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, LocalAssignment<'a>)> {
+        let (state, _) = EatToken { kind: TokenKind::Keyword("local") }.parse(state)?;
+        let (state, name) = ParseIdentifier.parse(state)?;
+        let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
+        let (state, expression) = ParseExpression.parse(state)?;
+
+        Some((state, LocalAssignment {
+            name,
+            value: expression,
+        }))
+    }
 }
 
 // functioncall ::= prefixexp args | prefixexp `:´ Name args
 // right now:
 // functioncall ::= Name `(` explist `)`
-fn parse_function_call<'a>(state: ParseState<'a>) -> ParseResult<'a, FunctionCall<'a>> {
-    let (state, name) = parse_identifier(state)?;
-    let (state, _) = eat_simple(state, TokenKind::OpenParen)?;
-    let (state, expressions) = parse_expression_list(state);
-    let (state, _) = eat_simple(state, TokenKind::CloseParen)?;
+struct ParseFunctionCall;
 
-    Some((state, FunctionCall {
-        name_expression: Box::new(Expression::Name(name)),
-        arguments: expressions,
-    }))
+impl<'a> Parser<'a, FunctionCall<'a>> for ParseFunctionCall {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, FunctionCall<'a>)> {
+        let (state, name) = ParseIdentifier.parse(state)?;
+        let (state, _) = EatToken { kind: TokenKind::OpenParen }.parse(state)?;
+        let (state, expressions) = ParseExpressionList.parse(state)?;
+        let (state, _) = EatToken { kind: TokenKind::CloseParen }.parse(state)?;
+
+        Some((state, FunctionCall {
+            name_expression: Box::new(Expression::Name(name)),
+            arguments: expressions,
+        }))
+    }
 }
 
 // exp ::= unop exp | value [binop exp]
-fn parse_expression<'a>(state: ParseState<'a>) -> ParseResult<'a, Expression<'a>> {
-    match parse_number(state) {
-        Some((state, value)) => return Some((state, Expression::Number(value))),
-        None => {},
-    }
+struct ParseExpression;
 
-    match parse_function_call(state) {
-        Some((state, call)) => return Some((state, Expression::FunctionCall(call))),
-        None => {},
-    }
+impl<'a> Parser<'a, Expression<'a>> for ParseExpression {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Expression<'a>)> {
+        match ParseNumber.parse(state) {
+            Some((state, value)) => return Some((state, Expression::Number(value))),
+            None => {},
+        }
 
-    None
+        match ParseFunctionCall.parse(state) {
+            Some((state, call)) => return Some((state, Expression::FunctionCall(call))),
+            None => {},
+        }
+
+        None
+    }
 }
 
 // explist ::= {exp `,´} exp
-fn parse_expression_list<'a>(mut state: ParseState<'a>) -> (ParseState<'a>, Vec<Expression<'a>>) {
-    let mut expressions = Vec::new();
+struct ParseExpressionList;
 
-    loop {
-        match parse_expression(state) {
-            Some((next_state, expression)) => {
-                expressions.push(expression);
-                state = next_state;
-            },
-            None => break,
+impl<'a> Parser<'a, Vec<Expression<'a>>> for ParseExpressionList {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Vec<Expression<'a>>)> {
+        let mut state = state;
+        let mut expressions = Vec::new();
+
+        loop {
+            match ParseExpression.parse(state) {
+                Some((next_state, expression)) => {
+                    expressions.push(expression);
+                    state = next_state;
+                },
+                None => break,
+            }
+
+            match (EatToken { kind: TokenKind::Operator(",") }.parse(state)) {
+                Some((next_state, _)) => {
+                    state = next_state;
+                },
+                None => break,
+            }
         }
 
-        match eat_simple(state, TokenKind::Operator(",")) {
-            Some((next_state, _)) => {
-                state = next_state;
-            },
-            None => break,
-        }
+        Some((state, expressions))
     }
-
-    (state, expressions)
 }
