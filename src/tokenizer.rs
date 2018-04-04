@@ -88,20 +88,21 @@ fn eat<'a>(source: &'a str, pattern: &Regex) -> (&'a str, Option<&'a str>) {
 fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column: usize) -> (usize, usize) {
     let lines_eaten = eaten_str.matches("\n").count();
 
-    // If there was a newline we're on a totally different column
     let column = if lines_eaten > 0 {
-        // If there's some characters after the newline, count them!
+        // If there was a newline we're on a totally different column
+
         if let Some(captures) = PATTERN_CHARS_AFTER_NEWLINE.captures(eaten_str) {
+            // If there's some characters after the newline, count them!
             // Add 1 so we start at a column of 1
             captures.get(1).unwrap().as_str().len() + 1
         }
-        // Otherwise, just restart at 1.
         else {
+            // Otherwise, just restart at 1.
             1
         }
     }
-    // Otherwise we can just increment the current column by the length of the eaten chars
     else {
+        // Otherwise we can just increment the current column by the length of the eaten chars
         current_column + eaten_str.len()
     };
 
