@@ -24,6 +24,14 @@ pub struct LocalAssignment<'a> {
     pub value: Expression<'a>,
 }
 
+#[derive(Debug, Clone)]
+pub struct NumericFor<'a> {
+    pub var: &'a str,
+    pub start: f64,
+    pub end: f64,
+    pub step: f64,
+}
+
 // stat ::=  ‘;’ |
 //     varlist ‘=’ explist |
 //     functioncall |
@@ -43,6 +51,7 @@ pub struct LocalAssignment<'a> {
 pub enum Statement<'a> {
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
+    NumericFor(NumericFor<'a>),
 }
 
 // chunk ::= block
