@@ -169,19 +169,18 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
 mod tests {
     use super::*;
 
+    fn test_kinds_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
+        let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
+        assert_eq!(kinds, expected);
+    }
+
     #[test]
     fn keyword_vs_identifier() {
-        fn test_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
-            let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
-
-            assert_eq!(kinds, expected);
-        }
-
-        test_eq("local", vec![TokenKind::Keyword("local")]);
-        test_eq("local_", vec![TokenKind::Identifier("local_")]);
-        test_eq("locale", vec![TokenKind::Identifier("locale")]);
-        test_eq("_local", vec![TokenKind::Identifier("_local")]);
-        test_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
+        test_kinds_eq("local", vec![TokenKind::Keyword("local")]);
+        test_kinds_eq("local_", vec![TokenKind::Identifier("local_")]);
+        test_kinds_eq("locale", vec![TokenKind::Identifier("locale")]);
+        test_kinds_eq("_local", vec![TokenKind::Identifier("_local")]);
+        test_kinds_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
     }
 
     #[test]
