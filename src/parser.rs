@@ -151,6 +151,11 @@ impl<'a> Parser<'a, Statement<'a>> for ParseStatement {
             None => {},
         }
 
+        match ParseNumericFor.parse(state) {
+            Some((state, numeric_for)) => return Some((state, Statement::NumericFor(numeric_for))),
+            None => {},
+        }
+
         None
     }
 }
@@ -243,5 +248,176 @@ impl<'a> Parser<'a, Vec<Expression<'a>>> for ParseExpressionList {
         }
 
         Some((state, expressions))
+    }
+}
+
+struct ParseNumericFor;
+
+impl<'a> Parser<'a, NumericFor<'a>> for ParseNumericFor {
+    fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, NumericFor<'a>)> {
+        let (state, _) = EatToken { kind: TokenKind::Keyword("for") }.parse(state)?;
+        let (state, var) = ParseIdentifier.parse(state)?;
+        let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
+        let (state, start) = ParseNumber.parse(state)?;
+        let (state, _) = EatToken { kind: TokenKind::Operator(",") }.parse(state)?;
+        let (state, end) = ParseNumber.parse(state)?;
+        // todo: parse step if present
+        let step = 1.0;
+        let (state, _) = EatToken { kind: TokenKind::Keyword("do") }.parse(state)?;
+        let (state, body) = ParseChunk.parse(state)?;
+        let (state, _) = EatToken { kind: TokenKind::Keyword("end") }.parse(state)?;
+
+        Some((state, NumericFor {
+            var, step, body,
+            start: start.parse().unwrap(),
+            end: end.parse().unwrap(),
+        }))
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn parse_function_call() {
+        let tokens = [
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Identifier("print"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::OpenParen,
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Identifier("i"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::CloseParen,
+                whitespace: "",
+            },
+        ];
+
+        let state = ParseState::new(&tokens);
+        let (state, function_call) = ParseFunctionCall.parse(state).unwrap();
+        assert_eq!(function_call, FunctionCall {
+            name_expression: Box::new(Expression::Name("print")),
+            arguments: vec![
+                Expression::Name("i"),
+            ]
+        })
+    }
+
+    #[test]
+    fn parse_for_loop() {
+        let data = [
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Keyword("for"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Identifier("i"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Operator("="),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::NumberLiteral("1"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Operator(","),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::NumberLiteral("10"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Keyword("do"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Identifier("print"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::OpenParen,
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Identifier("i"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::CloseParen,
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::Keyword("end"),
+                whitespace: "",
+            },
+        ];
+
+        let parsed_chunk = parse_from_tokens(&data).unwrap();
+        let statement = &parsed_chunk.statements[0];
+        
+        match statement {
+            Statement::NumericFor(numeric_for) => {
+                assert_eq!(numeric_for.var, "i");
+                assert_eq!(numeric_for.start, 1.0);
+                assert_eq!(numeric_for.end, 10.0);
+                assert_eq!(numeric_for.step, 1.0);
+                assert_eq!(numeric_for.body, Chunk {
+                    statements: vec![
+                        Statement::FunctionCall(
+                            FunctionCall {
+                                name_expression: Box::new(Expression::Name("print")),
+                                arguments: vec![
+                                    Expression::Name("i")
+                                ]
+                            }
+                        )
+                    ]
+                })
+            },
+            _ => panic!("Incorrect statement kind {:?}, statement")
+        };
     }
 }
