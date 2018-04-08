@@ -208,6 +208,11 @@ impl<'a> Parser<'a, Expression<'a>> for ParseExpression {
             None => {},
         }
 
+        match ParseIdentifier.parse(state) {
+            Some((state, name)) => return Some((state, Expression::Name(name))),
+            None => {},
+        }
+
         None
     }
 }
