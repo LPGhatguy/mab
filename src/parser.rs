@@ -261,14 +261,14 @@ impl<'a> Parser<'a, NumericFor<'a>> for ParseNumericFor {
         let (state, start) = ParseExpression.parse(state)?;
         let (state, _) = EatToken { kind: TokenKind::Operator(",") }.parse(state)?;
         let (state, end) = ParseExpression.parse(state)?;
-        let mut step = Expression::Number("1");
+        let mut step = None;
         let mut state = state;
 
         match state.peek() {
             Some(&Token { kind: TokenKind::Operator(","), .. }) => {
                 let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
                 state = new_state;
-                step = parsed_step;
+                step = Some(parsed_step);
             }
             Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
             _ => return None,
@@ -424,7 +424,7 @@ mod test {
                 assert_eq!(numeric_for.var, "i");
                 assert_eq!(numeric_for.start, Expression::Number("1"));
                 assert_eq!(numeric_for.end, Expression::Number("10"));
-                assert_eq!(numeric_for.step, Expression::Number("2"));
+                assert_eq!(numeric_for.step, Some(Expression::Number("2")));
                 assert_eq!(numeric_for.body, Chunk {
                     statements: vec![
                         Statement::FunctionCall(

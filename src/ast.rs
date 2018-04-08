@@ -29,7 +29,7 @@ pub struct NumericFor<'a> {
     pub var: &'a str,
     pub start: Expression<'a>,
     pub end: Expression<'a>,
-    pub step: Expression<'a>,
+    pub step: Option<Expression<'a>>,
     pub body: Chunk<'a>,
 }
 
