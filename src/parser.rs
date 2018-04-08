@@ -420,7 +420,7 @@ mod test {
         let statement = &parsed_chunk.statements[0];
         
         match statement {
-            Statement::NumericFor(numeric_for) => {
+            &Statement::NumericFor(ref numeric_for) => {
                 assert_eq!(numeric_for.var, "i");
                 assert_eq!(numeric_for.start, Expression::Number("1"));
                 assert_eq!(numeric_for.end, Expression::Number("10"));
