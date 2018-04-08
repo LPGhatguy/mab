@@ -258,17 +258,17 @@ impl<'a> Parser<'a, NumericFor<'a>> for ParseNumericFor {
         let (state, _) = EatToken { kind: TokenKind::Keyword("for") }.parse(state)?;
         let (state, var) = ParseIdentifier.parse(state)?;
         let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
-        let (state, start) = ParseNumber.parse(state)?;
+        let (state, start) = ParseExpression.parse(state)?;
         let (state, _) = EatToken { kind: TokenKind::Operator(",") }.parse(state)?;
-        let (state, end) = ParseNumber.parse(state)?;
-        let mut step = 1.0;
+        let (state, end) = ParseExpression.parse(state)?;
+        let mut step = Expression::Number("1");
         let mut state = state;
 
         match state.peek() {
             Some(&Token { kind: TokenKind::Operator(","), .. }) => {
-                let (new_state, raw_step) = ParseNumber.parse(state.advance(1))?;
+                let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
                 state = new_state;
-                step = raw_step.parse().unwrap();
+                step = parsed_step;
             }
             Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
             _ => return None,
@@ -279,9 +279,7 @@ impl<'a> Parser<'a, NumericFor<'a>> for ParseNumericFor {
         let (state, _) = EatToken { kind: TokenKind::Keyword("end") }.parse(state)?;
 
         Some((state, NumericFor {
-            var, step, body,
-            start: start.parse().unwrap(),
-            end: end.parse().unwrap(),
+            var, start, end, step, body,
         }))
     }
 }
@@ -424,9 +422,9 @@ mod test {
         match statement {
             Statement::NumericFor(numeric_for) => {
                 assert_eq!(numeric_for.var, "i");
-                assert_eq!(numeric_for.start, 1.0);
-                assert_eq!(numeric_for.end, 10.0);
-                assert_eq!(numeric_for.step, 2.0);
+                assert_eq!(numeric_for.start, Expression::Number("1"));
+                assert_eq!(numeric_for.end, Expression::Number("10"));
+                assert_eq!(numeric_for.step, Expression::Number("2"));
                 assert_eq!(numeric_for.body, Chunk {
                     statements: vec![
                         Statement::FunctionCall(

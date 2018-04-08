@@ -27,9 +27,9 @@ pub struct LocalAssignment<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NumericFor<'a> {
     pub var: &'a str,
-    pub start: f64,
-    pub end: f64,
-    pub step: f64,
+    pub start: Expression<'a>,
+    pub end: Expression<'a>,
+    pub step: Expression<'a>,
     pub body: Chunk<'a>,
 }
 
