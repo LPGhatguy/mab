@@ -184,6 +184,16 @@ mod tests {
     }
 
     #[test]
+    fn number_literals() {
+        test_kinds_eq("6", vec![TokenKind::NumberLiteral("6")]);
+        test_kinds_eq("0.231e-6", vec![TokenKind::NumberLiteral("0.231e-6")]);
+        test_kinds_eq("-123.7", vec![TokenKind::NumberLiteral("-123.7")]);
+        test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE")]);
+        test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe")]);
+        test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126")]);
+    }
+
+    #[test]
     fn whitespace() {
         let input = "  local";
         // This should always tokenize successfully
