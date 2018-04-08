@@ -28,7 +28,7 @@ pub struct Token<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenizeError<'a> {
-    UnknownSequence(&'a str),
+    UnknownSequence { remainder: &'a str, line: usize, column: usize },
 }
 
 struct TryAdvanceResult<'a> {
@@ -161,7 +161,11 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
     if current.is_empty() {
         Ok(tokens)
     } else {
-        Err(TokenizeError::UnknownSequence(current))
+        Err(TokenizeError::UnknownSequence {
+            remainder: current,
+            line: current_line,
+            column: current_column,
+        })
     }
 }
 
