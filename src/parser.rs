@@ -261,8 +261,19 @@ impl<'a> Parser<'a, NumericFor<'a>> for ParseNumericFor {
         let (state, start) = ParseNumber.parse(state)?;
         let (state, _) = EatToken { kind: TokenKind::Operator(",") }.parse(state)?;
         let (state, end) = ParseNumber.parse(state)?;
-        // todo: parse step if present
-        let step = 1.0;
+        let mut step = 1.0;
+        let mut state = state;
+
+        match state.peek() {
+            Some(&Token { kind: TokenKind::Operator(","), .. }) => {
+                let (new_state, raw_step) = ParseNumber.parse(state.advance(1))?;
+                state = new_state;
+                step = raw_step.parse().unwrap();
+            }
+            Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
+            _ => return None,
+        }
+
         let (state, _) = EatToken { kind: TokenKind::Keyword("do") }.parse(state)?;
         let (state, body) = ParseChunk.parse(state)?;
         let (state, _) = EatToken { kind: TokenKind::Keyword("end") }.parse(state)?;
@@ -360,6 +371,18 @@ mod test {
             Token {
                 line: 1,
                 column: 1,
+                kind: TokenKind::Operator(","),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
+                kind: TokenKind::NumberLiteral("2"),
+                whitespace: "",
+            },
+            Token {
+                line: 1,
+                column: 1,
                 kind: TokenKind::Keyword("do"),
                 whitespace: "",
             },
@@ -403,7 +426,7 @@ mod test {
                 assert_eq!(numeric_for.var, "i");
                 assert_eq!(numeric_for.start, 1.0);
                 assert_eq!(numeric_for.end, 10.0);
-                assert_eq!(numeric_for.step, 1.0);
+                assert_eq!(numeric_for.step, 2.0);
                 assert_eq!(numeric_for.body, Chunk {
                     statements: vec![
                         Statement::FunctionCall(
