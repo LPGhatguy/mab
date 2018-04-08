@@ -30,6 +30,7 @@ pub struct NumericFor<'a> {
     pub start: f64,
     pub end: f64,
     pub step: f64,
+    pub body: Chunk<'a>,
 }
 
 // stat ::=  ‘;’ |
