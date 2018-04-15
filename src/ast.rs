@@ -5,23 +5,15 @@ pub struct FunctionCall<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Expression<'a> {
-    Nil,
-    Bool(bool),
-    Number(&'a str),
-    String(&'a str),
-    VarArg, // `...`
-    Function,
-    Table,
-    FunctionCall(FunctionCall<'a>),
-    Name(&'a str),
-    ParenExpression(Box<Expression<'a>>),
+pub struct Assignment<'a> {
+    pub names: Vec<&'a str>,
+    pub values: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LocalAssignment<'a> {
-    pub name: &'a str,
-    pub value: Expression<'a>,
+    pub names: Vec<&'a str>,
+    pub values: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -31,6 +23,20 @@ pub struct NumericFor<'a> {
     pub end: Expression<'a>,
     pub step: Option<Expression<'a>>,
     pub body: Chunk<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum Expression<'a> {
+    Nil,
+    Bool(bool),
+    Number(&'a str),
+    String(&'a str),
+    VarArg,
+    Function,
+    Table,
+    FunctionCall(FunctionCall<'a>),
+    Name(&'a str),
+    ParenExpression(Box<Expression<'a>>),
 }
 
 // stat ::=  ‘;’ |
@@ -50,6 +56,7 @@ pub struct NumericFor<'a> {
 //     local namelist [‘=’ explist]
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement<'a> {
+    Assignment(Assignment<'a>),
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
     NumericFor(NumericFor<'a>),

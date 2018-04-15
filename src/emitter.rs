@@ -3,6 +3,7 @@ use std::fmt::{self, Write};
 use ast::{
     Chunk,
     Statement,
+    Assignment,
     LocalAssignment,
     FunctionCall,
     NumericFor,
@@ -18,11 +19,16 @@ pub fn emit_chunk<'a>(w: &mut Write, chunk: &Chunk<'a>) -> fmt::Result {
 
 fn emit_statement<'a>(w: &mut Write, statement: &Statement<'a>) -> fmt::Result {
     match statement {
+        &Statement::Assignment(ref value) => emit_assignment(w, value)?,
         &Statement::LocalAssignment(ref value) => emit_local_assignment(w, value)?,
         &Statement::FunctionCall(ref value) => emit_function_call(w, value)?,
         &Statement::NumericFor(ref value) => emit_numeric_for(w, value)?,
     }
 
+    Ok(())
+}
+
+fn emit_assignment<'a>(w: &mut Write, assignment: &Assignment<'a>) -> fmt::Result {
     Ok(())
 }
 

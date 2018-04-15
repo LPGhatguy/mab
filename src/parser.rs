@@ -177,8 +177,8 @@ impl<'a> Parser<'a, LocalAssignment<'a>> for ParseLocalAssignment {
         let (state, expression) = ParseExpression.parse(state)?;
 
         Some((state, LocalAssignment {
-            name,
-            value: expression,
+            names: vec![name],
+            values: vec![expression],
         }))
     }
 }
@@ -411,7 +411,7 @@ mod test {
 
         let parsed_chunk = parse_from_tokens(&data).unwrap();
         let statement = &parsed_chunk.statements[0];
-        
+
         match statement {
             &Statement::NumericFor(ref numeric_for) => {
                 assert_eq!(numeric_for.var, "i");
