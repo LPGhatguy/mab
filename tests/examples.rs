@@ -29,9 +29,9 @@ fn examples() {
         };
 
         match parse_from_tokens(&tokens) {
-            Some(_) => {},
-            None => {
-                panic!("Failed to parse file {}: None", entry.path().display());
+            Ok(_) => {},
+            Err(message) => {
+                panic!("Failed to parse file {}: {}", entry.path().display(), message);
             },
         }
     }
@@ -56,8 +56,8 @@ fn examples() {
         };
 
         let ast = match parse_from_tokens(&tokens) {
-            Some(ast) => ast,
-            None => continue,
+            Ok(ast) => ast,
+            Err(_) => continue,
         };
 
         panic!("File should not parse:\n{}\n\nTokens: {:?}\n\nAST: {:?}", entry.path().display(), tokens, ast);
