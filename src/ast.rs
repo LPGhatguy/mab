@@ -1,10 +1,10 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FunctionCall<'a> {
     pub name_expression: Box<Expression<'a>>,
     pub arguments: Vec<Expression<'a>>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression<'a> {
     Nil,
     Bool(bool),
@@ -18,10 +18,19 @@ pub enum Expression<'a> {
     ParenExpression(Box<Expression<'a>>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct LocalAssignment<'a> {
     pub name: &'a str,
     pub value: Expression<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct NumericFor<'a> {
+    pub var: &'a str,
+    pub start: Expression<'a>,
+    pub end: Expression<'a>,
+    pub step: Option<Expression<'a>>,
+    pub body: Chunk<'a>,
 }
 
 // stat ::=  ‘;’ |
@@ -39,15 +48,16 @@ pub struct LocalAssignment<'a> {
 //     function funcname funcbody |
 //     local function Name funcbody |
 //     local namelist [‘=’ explist]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Statement<'a> {
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
+    NumericFor(NumericFor<'a>),
 }
 
 // chunk ::= block
 // block ::= {stat} [retstat]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Chunk<'a> {
     pub statements: Vec<Statement<'a>>,
 }
