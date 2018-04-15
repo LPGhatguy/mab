@@ -17,7 +17,7 @@ This is the foundations for an extensible Lua parser written in Rust. I want to 
 * A more robust version of [Facebook's codemod](https://github.com/facebook/codemod)
 
 ## TODO
-* Rewrite parser units to return `Result` to allow reporting of actual errors
+* Compress parser using macros
 * Flesh out grammar
 * Implement LKG system like TypeScript
 
