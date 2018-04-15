@@ -19,6 +19,21 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Option<Chunk<'a>> {
     Some(chunk)
 }
 
+macro_rules! parse_first_of {
+    ($state: ident, { $( $parser: path => $constructor: path ),* $(,)* }) => (
+        {
+            $(
+                match $parser.parse($state) {
+                    Some((state, value)) => return Some((state, $constructor(value))),
+                    None => {},
+                }
+            )*
+
+            None
+        }
+    );
+}
+
 enum ParseAbort<'a> {
     /// Indicates that the parser was unable to match the input, but that it was
     /// not necessarily an error.
@@ -141,17 +156,10 @@ struct ParseStatement;
 
 impl<'a> Parser<'a, Statement<'a>> for ParseStatement {
     fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Statement<'a>)> {
-        match ParseLocalAssignment.parse(state) {
-            Some((state, assignment)) => return Some((state, Statement::LocalAssignment(assignment))),
-            None => {},
-        }
-
-        match ParseFunctionCall.parse(state) {
-            Some((state, call)) => return Some((state, Statement::FunctionCall(call))),
-            None => {},
-        }
-
-        None
+        parse_first_of!(state, {
+            ParseLocalAssignment => Statement::LocalAssignment,
+            ParseFunctionCall => Statement::FunctionCall,
+        })
     }
 }
 
@@ -198,17 +206,10 @@ struct ParseExpression;
 
 impl<'a> Parser<'a, Expression<'a>> for ParseExpression {
     fn parse(&self, state: ParseState<'a>) -> Option<(ParseState<'a>, Expression<'a>)> {
-        match ParseNumber.parse(state) {
-            Some((state, value)) => return Some((state, Expression::Number(value))),
-            None => {},
-        }
-
-        match ParseFunctionCall.parse(state) {
-            Some((state, call)) => return Some((state, Expression::FunctionCall(call))),
-            None => {},
-        }
-
-        None
+        parse_first_of!(state, {
+            ParseNumber => Expression::Number,
+            ParseFunctionCall => Expression::FunctionCall,
+        })
     }
 }
 
