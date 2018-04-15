@@ -301,12 +301,14 @@ impl<'a> Parser<'a, Vec<Expression<'a>>> for ParseExpressionList {
     fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Vec<Expression<'a>>), ParseAbort> {
         let mut state = state;
         let mut expressions = Vec::new();
+        let mut on_comma = false;
 
         loop {
             match ParseExpression.parse(state) {
                 Ok((next_state, expression)) => {
                     expressions.push(expression);
                     state = next_state;
+                    on_comma = false;
                 },
                 Err(_) => break,
             }
@@ -314,12 +316,18 @@ impl<'a> Parser<'a, Vec<Expression<'a>>> for ParseExpressionList {
             match (EatToken { kind: TokenKind::Operator(",") }.parse(state)) {
                 Ok((next_state, _)) => {
                     state = next_state;
+                    on_comma = true;
                 },
                 Err(_) => break,
             }
         }
 
-        Ok((state, expressions))
+        if on_comma {
+            Err(ParseAbort::NoMatch)
+        }
+        else {
+            Ok((state, expressions))
+        }
     }
 }
 
@@ -442,7 +450,6 @@ mod test {
             token!(Identifier("i")),
             token!(Operator(",")),
             token!(NumberLiteral("123")),
-            token!(Operator(",")),
         ];
 
         let state = ParseState::new(&tokens);
@@ -452,5 +459,16 @@ mod test {
             Expression::Name("i"),
             Expression::Number("123"),
         ]);
+
+        let tokens = vec![
+            token!(Identifier("i")),
+            token!(Operator(",")),
+        ];
+
+        let state = ParseState::new(&tokens);
+        let result = ParseExpressionList.parse(state);
+        let err = result.unwrap_err();
+
+        assert_eq!(err, ParseAbort::NoMatch);
     }
 }
