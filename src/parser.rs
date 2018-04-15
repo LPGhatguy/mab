@@ -435,4 +435,22 @@ mod test {
             _ => panic!("Incorrect statement kind {:?}, statement")
         };
     }
+
+    #[test]
+    fn parse_expr_list() {
+        let tokens = vec![
+            token!(Identifier("i")),
+            token!(Operator(",")),
+            token!(NumberLiteral("123")),
+            token!(Operator(",")),
+        ];
+
+        let state = ParseState::new(&tokens);
+        let (state, expr_list) = ParseExpressionList.parse(state).unwrap();
+
+        assert_eq!(expr_list, vec![
+            Expression::Name("i"),
+            Expression::Number("123"),
+        ]);
+    }
 }
