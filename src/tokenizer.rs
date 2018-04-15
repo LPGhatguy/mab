@@ -28,7 +28,7 @@ pub struct Token<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenizeError<'a> {
-    UnknownSequence(&'a str),
+    UnknownSequence { remainder: &'a str, line: usize, column: usize },
 }
 
 struct TryAdvanceResult<'a> {
@@ -45,7 +45,7 @@ lazy_static! {
     ]);
 
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();
-    static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^([0-9]+)").unwrap();
+    static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?(?:(?:\d*\.\d+)|(\d+))(?:[eE]-?\d+)?))").unwrap();
     static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(=|\+|,)").unwrap();
     static ref PATTERN_OPEN_PAREN: Regex = Regex::new(r"^(\()").unwrap();
     static ref PATTERN_CLOSE_PAREN: Regex = Regex::new(r"^(\))").unwrap();
@@ -162,7 +162,11 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
     if current.is_empty() {
         Ok(tokens)
     } else {
-        Err(TokenizeError::UnknownSequence(current))
+        Err(TokenizeError::UnknownSequence {
+            remainder: current,
+            line: current_line,
+            column: current_column,
+        })
     }
 }
 
@@ -170,19 +174,28 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
 mod tests {
     use super::*;
 
+    fn test_kinds_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
+        let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
+        assert_eq!(kinds, expected);
+    }
+
     #[test]
     fn keyword_vs_identifier() {
-        fn test_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
-            let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
+        test_kinds_eq("local", vec![TokenKind::Keyword("local")]);
+        test_kinds_eq("local_", vec![TokenKind::Identifier("local_")]);
+        test_kinds_eq("locale", vec![TokenKind::Identifier("locale")]);
+        test_kinds_eq("_local", vec![TokenKind::Identifier("_local")]);
+        test_kinds_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
+    }
 
-            assert_eq!(kinds, expected);
-        }
-
-        test_eq("local", vec![TokenKind::Keyword("local")]);
-        test_eq("local_", vec![TokenKind::Identifier("local_")]);
-        test_eq("locale", vec![TokenKind::Identifier("locale")]);
-        test_eq("_local", vec![TokenKind::Identifier("_local")]);
-        test_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
+    #[test]
+    fn number_literals() {
+        test_kinds_eq("6", vec![TokenKind::NumberLiteral("6")]);
+        test_kinds_eq("0.231e-6", vec![TokenKind::NumberLiteral("0.231e-6")]);
+        test_kinds_eq("-123.7", vec![TokenKind::NumberLiteral("-123.7")]);
+        test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE")]);
+        test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe")]);
+        test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126")]);
     }
 
     #[test]
