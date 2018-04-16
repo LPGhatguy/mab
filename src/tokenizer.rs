@@ -15,11 +15,11 @@ pub enum TokenKind<'a> {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Token<'a> {
-    /// Any whitespace before the token
-    pub whitespace: &'a str,
-
     /// Details about the Token itself
     pub kind: TokenKind<'a>,
+
+    /// Any whitespace before the token
+    pub whitespace: &'a str,
 
     pub line: usize,
     pub column: usize,
