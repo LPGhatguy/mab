@@ -41,7 +41,8 @@ lazy_static! {
     static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
         "false", "true", "nil",
         "local",
-        "while", "for", "do", "end",
+        "while", "repeat", "until", "for",
+        "do", "end",
     ]);
 
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();

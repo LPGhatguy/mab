@@ -97,6 +97,17 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
         ParseWhileLoop => Statement::WhileLoop,
+        ParseRepeatLoop => Statement::RepeatLoop,
+    })
+});
+
+// exp ::= unop exp | value [binop exp]
+struct ParseExpression;
+define_parser!(ParseExpression, Expression<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseNumber => Expression::Number,
+        ParseFunctionCall => Expression::FunctionCall,
+        ParseIdentifier => Expression::Name,
     })
 });
 
@@ -132,16 +143,6 @@ define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
         name_expression: Box::new(Expression::Name(name)),
         arguments: expressions,
     }))
-});
-
-// exp ::= unop exp | value [binop exp]
-struct ParseExpression;
-define_parser!(ParseExpression, Expression<'state>, |_, state| {
-    parse_first_of!(state, {
-        ParseNumber => Expression::Number,
-        ParseFunctionCall => Expression::FunctionCall,
-        ParseIdentifier => Expression::Name,
-    })
 });
 
 struct ParseNumericFor;
@@ -185,6 +186,19 @@ define_parser!(ParseWhileLoop, WhileLoop<'state>, |_, state| {
     let (state, _) = ParseKeyword("end").parse(state)?;
 
     Ok((state, WhileLoop {
+        condition,
+        body,
+    }))
+});
+
+struct ParseRepeatLoop;
+define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
+    let (state, _) = ParseKeyword("repeat").parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("until").parse(state)?;
+    let (state, condition) = ParseExpression.parse(state)?;
+
+    Ok((state, RepeatLoop {
         condition,
         body,
     }))
