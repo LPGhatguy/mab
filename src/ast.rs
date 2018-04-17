@@ -26,6 +26,12 @@ pub struct NumericFor<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct WhileLoop<'a> {
+    pub condition: Expression<'a>,
+    pub body: Chunk<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression<'a> {
     Nil,
     Bool(bool),
@@ -60,6 +66,7 @@ pub enum Statement<'a> {
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
     NumericFor(NumericFor<'a>),
+    WhileLoop(WhileLoop<'a>),
 }
 
 // chunk ::= block

@@ -55,6 +55,13 @@ define_parser!(ParseIdentifier, &'state str, |_, state: ParseState<'state>| {
     }
 });
 
+struct ParseKeyword(pub &'static str);
+define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>| {
+    let (state, _) = ParseToken { kind: TokenKind::Keyword(this.0) }.parse(state)?;
+
+    Ok((state, ()))
+});
+
 // chunk ::= {stat [`;´]} [laststat [`;´]]
 struct ParseChunk;
 define_parser!(ParseChunk, Chunk<'state>, |_, state| {
@@ -82,6 +89,7 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseLocalAssignment => Statement::LocalAssignment,
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
+        ParseWhileLoop => Statement::WhileLoop,
     })
 });
 
@@ -167,6 +175,20 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
 
     Ok((state, NumericFor {
         var, start, end, step, body,
+    }))
+});
+
+struct ParseWhileLoop;
+define_parser!(ParseWhileLoop, WhileLoop<'state>, |_, state| {
+    let (state, _) = ParseKeyword("while").parse(state)?;
+    let (state, condition) = ParseExpression.parse(state)?;
+    let (state, _) = ParseKeyword("do").parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("end").parse(state)?;
+
+    Ok((state, WhileLoop {
+        condition,
+        body,
     }))
 });
 
