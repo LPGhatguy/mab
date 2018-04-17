@@ -207,34 +207,26 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
 #[cfg(test)]
 mod test {
     use super::*;
+    use tokenizer::TokenKind::*;
+
+    macro_rules! token {
+        ($kind:expr) => (
+            Token {
+                line: 1,
+                column: 1,
+                whitespace: "",
+                kind: $kind,
+            }
+        )
+    }
 
     #[test]
     fn parse_function_call() {
         let tokens = [
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Identifier("print"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::OpenParen,
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Identifier("i"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::CloseParen,
-                whitespace: "",
-            },
+            token!(Identifier("print")),
+            token!(OpenParen),
+            token!(Identifier("i")),
+            token!(CloseParen),
         ];
 
         let state = ParseState::new(&tokens);
@@ -250,90 +242,20 @@ mod test {
     #[test]
     fn parse_for_loop() {
         let data = [
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Keyword("for"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Identifier("i"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Operator("="),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::NumberLiteral("1"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Operator(","),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::NumberLiteral("10"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Operator(","),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::NumberLiteral("2"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Keyword("do"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Identifier("print"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::OpenParen,
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Identifier("i"),
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::CloseParen,
-                whitespace: "",
-            },
-            Token {
-                line: 1,
-                column: 1,
-                kind: TokenKind::Keyword("end"),
-                whitespace: "",
-            },
+            token!(Keyword("for")),
+            token!(Identifier("i")),
+            token!(Operator("=")),
+            token!(NumberLiteral("1")),
+            token!(Operator(",")),
+            token!(NumberLiteral("10")),
+            token!(Operator(",")),
+            token!(NumberLiteral("2")),
+            token!(Keyword("do")),
+            token!(Identifier("print")),
+            token!(OpenParen),
+            token!(Identifier("i")),
+            token!(CloseParen),
+            token!(Keyword("end")),
         ];
 
         let parsed_chunk = parse_from_tokens(&data).unwrap();
