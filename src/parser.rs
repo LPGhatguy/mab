@@ -105,18 +105,10 @@ struct ParseLocalAssignment;
 define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
     let (state, _) = ParseKeyword("local").parse(state)?;
 
-    let (state, names) = DelimitedOneOrMore {
-        item_parser: ParseIdentifier,
-        delimiter_parser: ParseOperator(","),
-    }.parse(state)?;
+    let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseOperator(",")).parse(state)?;
 
     let (state, expressions) = match (ParseOperator("=").parse(state)) {
-        Ok((state, _)) => {
-            DelimitedOneOrMore {
-                item_parser: ParseExpression,
-                delimiter_parser: ParseOperator(","),
-            }.parse(state)?
-        },
+        Ok((state, _)) => DelimitedOneOrMore(ParseExpression, ParseOperator(",")).parse(state)?,
         Err(_) => (state, Vec::new()),
     };
 
@@ -133,10 +125,7 @@ struct ParseFunctionCall;
 define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
     let (state, name) = ParseIdentifier.parse(state)?;
     let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
-    let (state, expressions) = DelimitedZeroOrMore {
-        item_parser: ParseExpression,
-        delimiter_parser: ParseOperator(","),
-    }.parse(state)?;
+    let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseOperator(",")).parse(state)?;
     let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
 
     Ok((state, FunctionCall {

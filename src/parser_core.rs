@@ -105,33 +105,30 @@ impl<'a, ItemParser: Parser<'a>> Parser<'a> for ZeroOrMore<ItemParser> {
     }
 }
 
-pub struct DelimitedOneOrMore<ItemParser, DelimiterParser> {
-    pub item_parser: ItemParser,
-    pub delimiter_parser: DelimiterParser,
-}
+pub struct DelimitedOneOrMore<ItemParser, DelimiterParser>(pub ItemParser, pub DelimiterParser);
 
 impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for DelimitedOneOrMore<ItemParser, DelimiterParser> {
     type Item = Vec<ItemParser::Item>;
 
     fn item_name(&self) -> String {
-        format!("one or more {} separated by {}", self.item_parser.item_name(), self.delimiter_parser.item_name())
+        format!("one or more {} separated by {}", self.0.item_name(), self.1.item_name())
     }
 
     fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
         let mut values = Vec::new();
 
-        let (mut state, value) = self.item_parser.parse(state)?;
+        let (mut state, value) = self.0.parse(state)?;
         values.push(value);
 
         loop {
-            match self.delimiter_parser.parse(state) {
+            match self.1.parse(state) {
                 Ok((next_state, _)) => {
                     state = next_state;
                 },
                 Err(_) => break,
             }
 
-            let (next_state, value) = self.item_parser.parse(state)?;
+            let (next_state, value) = self.0.parse(state)?;
 
             state = next_state;
             values.push(value);
@@ -141,22 +138,19 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
     }
 }
 
-pub struct DelimitedZeroOrMore<ItemParser, DelimiterParser> {
-    pub item_parser: ItemParser,
-    pub delimiter_parser: DelimiterParser,
-}
+pub struct DelimitedZeroOrMore<ItemParser, DelimiterParser>(pub ItemParser, pub DelimiterParser);
 
 impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for DelimitedZeroOrMore<ItemParser, DelimiterParser> {
     type Item = Vec<ItemParser::Item>;
 
     fn item_name(&self) -> String {
-        format!("zero or more {} separated by {}", self.item_parser.item_name(), self.delimiter_parser.item_name())
+        format!("zero or more {} separated by {}", self.0.item_name(), self.1.item_name())
     }
 
     fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
         let mut values = Vec::new();
 
-        let mut state = match self.item_parser.parse(state) {
+        let mut state = match self.0.parse(state) {
             Ok((next_state, value)) => {
                 values.push(value);
                 next_state
@@ -165,14 +159,14 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
         };
 
         loop {
-            match self.delimiter_parser.parse(state) {
+            match self.1.parse(state) {
                 Ok((next_state, _)) => {
                     state = next_state;
                 },
                 Err(_) => break,
             }
 
-            let (next_state, value) = self.item_parser.parse(state)?;
+            let (next_state, value) = self.0.parse(state)?;
 
             state = next_state;
             values.push(value);
