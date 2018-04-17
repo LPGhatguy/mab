@@ -22,14 +22,12 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Result<Chunk<'a>, Strin
     Ok(chunk)
 }
 
-struct ParseToken<'a> {
-    pub kind: TokenKind<'a>,
-}
+struct ParseToken<'a>(pub TokenKind<'a>);
 
 define_parser!(ParseToken<'state>, &'state Token<'state>, |this: &ParseToken<'state>, state: ParseState<'state>| {
     match state.peek() {
         Some(token) => {
-            if token.kind == this.kind {
+            if token.kind == this.0 {
                 Ok((state.advance(1), token))
             } else {
                 Err(ParseAbort::NoMatch)
@@ -57,14 +55,14 @@ define_parser!(ParseIdentifier, &'state str, |_, state: ParseState<'state>| {
 
 struct ParseKeyword(pub &'static str);
 define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>| {
-    let (state, _) = ParseToken { kind: TokenKind::Keyword(this.0) }.parse(state)?;
+    let (state, _) = ParseToken(TokenKind::Keyword(this.0)).parse(state)?;
 
     Ok((state, ()))
 });
 
 struct ParseOperator(pub &'static str);
 define_parser!(ParseOperator, (), |this: &ParseOperator, state: ParseState<'state>| {
-    let (state, _) = ParseToken { kind: TokenKind::Operator(this.0) }.parse(state)?;
+    let (state, _) = ParseToken(TokenKind::Operator(this.0)).parse(state)?;
 
     Ok((state, ()))
 });
@@ -135,9 +133,9 @@ define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
 struct ParseFunctionCall;
 define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
     let (state, name) = ParseIdentifier.parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
+    let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
     let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseOperator(",")).parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
+    let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
 
     Ok((state, FunctionCall {
         name_expression: Box::new(Expression::Name(name)),
@@ -213,9 +211,9 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
 
     let (state, _) = ParseKeyword("function").parse(state)?;
     let (state, name) = ParseIdentifier.parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
+    let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
     let (state, parameters) = ZeroOrMore(ParseIdentifier).parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
+    let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
     let (state, _) = ParseKeyword("end").parse(state)?;
 
