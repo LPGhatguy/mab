@@ -62,6 +62,13 @@ define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>
     Ok((state, ()))
 });
 
+struct ParseOperator(pub &'static str);
+define_parser!(ParseOperator, (), |this: &ParseOperator, state: ParseState<'state>| {
+    let (state, _) = ParseToken { kind: TokenKind::Operator(this.0) }.parse(state)?;
+
+    Ok((state, ()))
+});
+
 // chunk ::= {stat [`;´]} [laststat [`;´]]
 struct ParseChunk;
 define_parser!(ParseChunk, Chunk<'state>, |_, state| {
@@ -96,18 +103,18 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
 // local namelist [`=´ explist]
 struct ParseLocalAssignment;
 define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
-    let (state, _) = ParseToken { kind: TokenKind::Keyword("local") }.parse(state)?;
+    let (state, _) = ParseKeyword("local").parse(state)?;
 
     let (state, names) = DelimitedOneOrMore {
         item_parser: ParseIdentifier,
-        delimiter_parser: ParseToken { kind: TokenKind::Operator(",") },
+        delimiter_parser: ParseOperator(","),
     }.parse(state)?;
 
-    let (state, expressions) = match (ParseToken { kind: TokenKind::Operator("=") }.parse(state)) {
+    let (state, expressions) = match (ParseOperator("=").parse(state)) {
         Ok((state, _)) => {
             DelimitedOneOrMore {
                 item_parser: ParseExpression,
-                delimiter_parser: ParseToken { kind: TokenKind::Operator(",") },
+                delimiter_parser: ParseOperator(","),
             }.parse(state)?
         },
         Err(_) => (state, Vec::new()),
@@ -128,7 +135,7 @@ define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
     let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
     let (state, expressions) = DelimitedZeroOrMore {
         item_parser: ParseExpression,
-        delimiter_parser: ParseToken { kind: TokenKind::Operator(",") },
+        delimiter_parser: ParseOperator(","),
     }.parse(state)?;
     let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
 
@@ -150,11 +157,11 @@ define_parser!(ParseExpression, Expression<'state>, |_, state| {
 
 struct ParseNumericFor;
 define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
-    let (state, _) = ParseToken { kind: TokenKind::Keyword("for") }.parse(state)?;
+    let (state, _) = ParseKeyword("for").parse(state)?;
     let (state, var) = ParseIdentifier.parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::Operator("=") }.parse(state)?;
+    let (state, _) = ParseOperator("=").parse(state)?;
     let (state, start) = ParseExpression.parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::Operator(",") }.parse(state)?;
+    let (state, _) = ParseOperator(",").parse(state)?;
     let (state, end) = ParseExpression.parse(state)?;
     let mut step = None;
     let mut state = state;
@@ -169,9 +176,9 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
         _ => return Err(ParseAbort::NoMatch),
     }
 
-    let (state, _) = ParseToken { kind: TokenKind::Keyword("do") }.parse(state)?;
+    let (state, _) = ParseKeyword("do").parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
-    let (state, _) = ParseToken { kind: TokenKind::Keyword("end") }.parse(state)?;
+    let (state, _) = ParseKeyword("end").parse(state)?;
 
     Ok((state, NumericFor {
         var, start, end, step, body,
