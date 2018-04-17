@@ -3,15 +3,26 @@ use std::iter::FromIterator;
 
 use regex::Regex;
 
+/// Represents a token kind.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenKind<'a> {
+    /// A reserved word of some form.
     Keyword(&'a str),
+    /// An operator, like `+`, `-`, or `,`.
     Operator(&'a str),
+    /// An identifier that is not a keyword.
     Identifier(&'a str),
+    /// A number literal.
+    /// The original value of the number, as it appeared in the source, is
+    /// contained in the &str value.
     NumberLiteral(&'a str),
+    /// A boolean literal.
     BoolLiteral(bool),
+    /// The `nil` literal.
     NilLiteral,
+    /// An open parentheses character, `(`.
     OpenParen,
+    /// A close parentheses character, `)`.
     CloseParen,
 }
 
