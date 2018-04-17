@@ -301,7 +301,7 @@ mod test {
                     ]
                 })
             },
-            _ => panic!("Incorrect statement kind {:?}, statement")
+            _ => panic!("Incorrect statement kind {:?}", statement)
         };
     }
 }
