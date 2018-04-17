@@ -22,121 +22,48 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Result<Chunk<'a>, Strin
     Ok(chunk)
 }
 
-macro_rules! parse_first_of {
-    ($state: ident, { $( $parser: path => $constructor: path ),* $(,)* }) => (
-        {
-            $(
-                match $parser.parse($state) {
-                    Ok((state, value)) => return Ok((state, $constructor(value))),
-                    Err(ParseAbort::NoMatch) => {},
-                    Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
-                }
-            )*
-
-            Err(ParseAbort::NoMatch)
-        }
-    );
-}
-
-struct EatToken<'a> {
+struct ParseToken<'a> {
     pub kind: TokenKind<'a>,
 }
 
-impl<'a> Parser<'a> for EatToken<'a> {
-    type Item = &'a Token<'a>;
-
-    fn item_name(&self) -> String {
-        format!("token {:?}", self.kind)
+define_parser!(ParseToken<'state>, &'state Token<'state>, |this: &ParseToken<'state>, state: ParseState<'state>| {
+    match state.peek() {
+        Some(token) => {
+            if token.kind == this.kind {
+                Ok((state.advance(1), token))
+            } else {
+                Err(ParseAbort::NoMatch)
+            }
+        },
+        None => Err(ParseAbort::NoMatch),
     }
-
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        match state.peek() {
-            Some(token) => {
-                if token.kind == self.kind {
-                    Ok((state.advance(1), token))
-                } else {
-                    Err(ParseAbort::NoMatch)
-                }
-            },
-            None => Err(ParseAbort::NoMatch),
-        }
-    }
-}
+});
 
 struct ParseNumber;
-
-impl<'a> Parser<'a> for ParseNumber {
-    type Item = &'a str;
-
-    fn item_name(&self) -> String {
-        "number".to_string()
+define_parser!(ParseNumber, &'state str, |_, state: ParseState<'state>| {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Ok((state.advance(1), value)),
+        _ => Err(ParseAbort::NoMatch),
     }
-
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        match state.peek() {
-            Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Ok((state.advance(1), value)),
-            _ => Err(ParseAbort::NoMatch),
-        }
-    }
-}
+});
 
 struct ParseIdentifier;
-
-impl<'a> Parser<'a> for ParseIdentifier {
-    type Item = &'a str;
-
-    fn item_name(&self) -> String {
-        "identifier".to_string()
+define_parser!(ParseIdentifier, &'state str, |_, state: ParseState<'state>| {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
+        _ => Err(ParseAbort::NoMatch),
     }
+});
 
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        match state.peek() {
-            Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
-            _ => Err(ParseAbort::NoMatch),
-        }
-    }
-}
-
-macro_rules! simple_parser {
-    ($name: ident, $result_type: path, $body: expr) => {
-        struct $name;
-
-        impl<'a> Parser<'a> for ParseChunk {
-            type Item = $result_type;
-
-            fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-                $body(state)
-            }
-        }
-    }
-}
-
-simple_parser!(ParseChunk, Chunk<'a>, |state| {
+// chunk ::= {stat [`;´]} [laststat [`;´]]
+struct ParseChunk;
+define_parser!(ParseChunk, Chunk<'state>, |_, state| {
     let (state, statements) = ZeroOrMore(ParseStatement).parse(state)?;
 
     Ok((state, Chunk {
         statements,
     }))
 });
-
-// chunk ::= {stat [`;´]} [laststat [`;´]]
-// struct ParseChunk;
-
-// impl<'a> Parser<'a> for ParseChunk {
-//     type Item = Chunk<'a>;
-
-//     fn item_name(&self) -> String {
-//         "chunk".to_string()
-//     }
-
-//     fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-//         let (state, statements) = ZeroOrMore(ParseStatement).parse(state)?;
-
-//         Ok((state, Chunk {
-//             statements,
-//         }))
-//     }
-// }
 
 // stat ::= varlist `=´ explist |
 //     functioncall |
@@ -150,143 +77,98 @@ simple_parser!(ParseChunk, Chunk<'a>, |state| {
 //     local function Name funcbody |
 //     local namelist [`=´ explist]
 struct ParseStatement;
-
-impl<'a> Parser<'a> for ParseStatement {
-    type Item = Statement<'a>;
-
-    fn item_name(&self) -> String {
-        "statement".to_string()
-    }
-
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        parse_first_of!(state, {
-            ParseLocalAssignment => Statement::LocalAssignment,
-            ParseFunctionCall => Statement::FunctionCall,
-            ParseNumericFor => Statement::NumericFor,
-        })
-    }
-}
+define_parser!(ParseStatement, Statement<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseLocalAssignment => Statement::LocalAssignment,
+        ParseFunctionCall => Statement::FunctionCall,
+        ParseNumericFor => Statement::NumericFor,
+    })
+});
 
 // local namelist [`=´ explist]
 struct ParseLocalAssignment;
+define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
+    let (state, _) = ParseToken { kind: TokenKind::Keyword("local") }.parse(state)?;
 
-impl<'a> Parser<'a> for ParseLocalAssignment {
-    type Item = LocalAssignment<'a>;
+    let (state, names) = DelimitedOneOrMore {
+        item_parser: ParseIdentifier,
+        delimiter_parser: ParseToken { kind: TokenKind::Operator(",") },
+    }.parse(state)?;
 
-    fn item_name(&self) -> String {
-        "local assignment".to_string()
-    }
+    let (state, expressions) = match (ParseToken { kind: TokenKind::Operator("=") }.parse(state)) {
+        Ok((state, _)) => {
+            DelimitedOneOrMore {
+                item_parser: ParseExpression,
+                delimiter_parser: ParseToken { kind: TokenKind::Operator(",") },
+            }.parse(state)?
+        },
+        Err(_) => (state, Vec::new()),
+    };
 
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        let (state, _) = EatToken { kind: TokenKind::Keyword("local") }.parse(state)?;
-
-        let (state, names) = DelimitedOneOrMore {
-            item_parser: ParseIdentifier,
-            delimiter_parser: EatToken { kind: TokenKind::Operator(",") },
-        }.parse(state)?;
-
-        let (state, expressions) = match (EatToken { kind: TokenKind::Operator("=") }.parse(state)) {
-            Ok((state, _)) => {
-                DelimitedOneOrMore {
-                    item_parser: ParseExpression,
-                    delimiter_parser: EatToken { kind: TokenKind::Operator(",") },
-                }.parse(state)?
-            },
-            Err(_) => (state, Vec::new()),
-        };
-
-        Ok((state, LocalAssignment {
-            names: names,
-            values: expressions,
-        }))
-    }
-}
+    Ok((state, LocalAssignment {
+        names: names,
+        values: expressions,
+    }))
+});
 
 // functioncall ::= prefixexp args | prefixexp `:´ Name args
 // right now:
 // functioncall ::= Name `(` explist `)`
 struct ParseFunctionCall;
+define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
+    let (state, name) = ParseIdentifier.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
+    let (state, expressions) = DelimitedZeroOrMore {
+        item_parser: ParseExpression,
+        delimiter_parser: ParseToken { kind: TokenKind::Operator(",") },
+    }.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
 
-impl<'a> Parser<'a> for ParseFunctionCall {
-    type Item = FunctionCall<'a>;
-
-    fn item_name(&self) -> String {
-        "function call".to_string()
-    }
-
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        let (state, name) = ParseIdentifier.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::OpenParen }.parse(state)?;
-        let (state, expressions) = DelimitedZeroOrMore {
-            item_parser: ParseExpression,
-            delimiter_parser: EatToken { kind: TokenKind::Operator(",") },
-        }.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::CloseParen }.parse(state)?;
-
-        Ok((state, FunctionCall {
-            name_expression: Box::new(Expression::Name(name)),
-            arguments: expressions,
-        }))
-    }
-}
+    Ok((state, FunctionCall {
+        name_expression: Box::new(Expression::Name(name)),
+        arguments: expressions,
+    }))
+});
 
 // exp ::= unop exp | value [binop exp]
 struct ParseExpression;
-
-impl<'a> Parser<'a> for ParseExpression {
-    type Item = Expression<'a>;
-
-    fn item_name(&self) -> String {
-        "expression".to_string()
-    }
-
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        parse_first_of!(state, {
-            ParseNumber => Expression::Number,
-            ParseFunctionCall => Expression::FunctionCall,
-            ParseIdentifier => Expression::Name,
-        })
-    }
-}
+define_parser!(ParseExpression, Expression<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseNumber => Expression::Number,
+        ParseFunctionCall => Expression::FunctionCall,
+        ParseIdentifier => Expression::Name,
+    })
+});
 
 struct ParseNumericFor;
+define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
+    let (state, _) = ParseToken { kind: TokenKind::Keyword("for") }.parse(state)?;
+    let (state, var) = ParseIdentifier.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::Operator("=") }.parse(state)?;
+    let (state, start) = ParseExpression.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::Operator(",") }.parse(state)?;
+    let (state, end) = ParseExpression.parse(state)?;
+    let mut step = None;
+    let mut state = state;
 
-impl<'a> Parser<'a> for ParseNumericFor {
-    type Item = NumericFor<'a>;
-
-    fn item_name(&self) -> String {
-        "numeric for".to_string()
+    match state.peek() {
+        Some(&Token { kind: TokenKind::Operator(","), .. }) => {
+            let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
+            state = new_state;
+            step = Some(parsed_step);
+        },
+        Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
+        _ => return Err(ParseAbort::NoMatch),
     }
 
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        let (state, _) = EatToken { kind: TokenKind::Keyword("for") }.parse(state)?;
-        let (state, var) = ParseIdentifier.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
-        let (state, start) = ParseExpression.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Operator(",") }.parse(state)?;
-        let (state, end) = ParseExpression.parse(state)?;
-        let mut step = None;
-        let mut state = state;
+    let (state, _) = ParseToken { kind: TokenKind::Keyword("do") }.parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::Keyword("end") }.parse(state)?;
 
-        match state.peek() {
-            Some(&Token { kind: TokenKind::Operator(","), .. }) => {
-                let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
-                state = new_state;
-                step = Some(parsed_step);
-            },
-            Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
-            _ => return Err(ParseAbort::NoMatch),
-        }
-
-        let (state, _) = EatToken { kind: TokenKind::Keyword("do") }.parse(state)?;
-        let (state, body) = ParseChunk.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Keyword("end") }.parse(state)?;
-
-        Ok((state, NumericFor {
-            var, start, end, step, body,
-        }))
-    }
-}
+    Ok((state, NumericFor {
+        var, start, end, step, body,
+    }))
+});
 
 #[cfg(test)]
 mod test {

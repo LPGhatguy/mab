@@ -47,6 +47,36 @@ pub trait Parser<'a> {
     fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort>;
 }
 
+#[macro_export]
+macro_rules! parse_first_of {
+    ($state: ident, { $( $parser: path => $constructor: path ),* $(,)* }) => (
+        {
+            $(
+                match $parser.parse($state) {
+                    Ok((state, value)) => return Ok((state, $constructor(value))),
+                    Err(ParseAbort::NoMatch) => {},
+                    Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
+                }
+            )*
+
+            Err(ParseAbort::NoMatch)
+        }
+    );
+}
+
+#[macro_export]
+macro_rules! define_parser {
+    ($name: ty, $result_type: ty, $body: expr) => {
+        impl<'state> Parser<'state> for $name {
+            type Item = $result_type;
+
+            fn parse(&self, state: ParseState<'state>) -> Result<(ParseState<'state>, Self::Item), ParseAbort> {
+                $body(self, state)
+            }
+        }
+    }
+}
+
 pub struct ZeroOrMore<ItemParser>(pub ItemParser);
 
 impl<'a, ItemParser: Parser<'a>> Parser<'a> for ZeroOrMore<ItemParser> {
