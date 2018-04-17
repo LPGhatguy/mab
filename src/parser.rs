@@ -1,7 +1,9 @@
 use std::borrow::Cow;
+use std::fmt;
 
 use tokenizer::{Token, TokenKind};
 use ast::*;
+use parser_core::*;
 
 pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Result<Chunk<'a>, String> {
     let state = ParseState::new(tokens);
@@ -20,141 +22,62 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Result<Chunk<'a>, Strin
     Ok(chunk)
 }
 
-macro_rules! parse_first_of {
-    ($state: ident, { $( $parser: path => $constructor: path ),* $(,)* }) => (
-        {
-            $(
-                match $parser.parse($state) {
-                    Ok((state, value)) => return Ok((state, $constructor(value))),
-                    Err(_) => {},
-                }
-            )*
-
-            Err(ParseAbort::NoMatch)
-        }
-    );
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum ParseAbort {
-    /// Indicates that the parser was unable to match the input, but that it was
-    /// not necessarily an error.
-    NoMatch,
-
-    /// Indicates that the parser was unable to match the input and hit the
-    /// error described by the returned string.
-    Error(String)
-}
-
-trait EscalateError {
-    fn escalate<MessageFn: FnOnce() -> String>(self, message_fn: MessageFn) -> Self;
-}
-
-impl<T> EscalateError for Result<T, ParseAbort> {
-    fn escalate<MessageFn: FnOnce() -> String>(self, message_fn: MessageFn) -> Result<T, ParseAbort> {
-        match self {
-            Err(ParseAbort::NoMatch) => Err(ParseAbort::Error(message_fn())),
-            Ok(_) | Err(_) => self,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct ParseState<'a> {
-    tokens: &'a [Token<'a>],
-    position: usize,
-}
-
-impl<'a> ParseState<'a> {
-    pub fn new(tokens: &'a [Token]) -> ParseState<'a> {
-        ParseState {
-            tokens,
-            position: 0,
-        }
-    }
-
-    pub fn peek(&self) -> Option<&'a Token<'a>> {
-        self.tokens.get(self.position)
-    }
-
-    pub fn advance(&self, amount: usize) -> ParseState<'a> {
-        ParseState {
-            tokens: self.tokens,
-            position: self.position + amount,
-        }
-    }
-}
-
-trait Parser<'a, T: 'a> {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, T), ParseAbort>;
-}
-
-struct EatToken<'a> {
+struct ParseToken<'a> {
     pub kind: TokenKind<'a>,
 }
 
-impl<'a> Parser<'a, &'a Token<'a>> for EatToken<'a> {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, &'a Token<'a>), ParseAbort> {
-        match state.peek() {
-            Some(token) => {
-                if token.kind == self.kind {
-                    Ok((state.advance(1), token))
-                } else {
-                    Err(ParseAbort::NoMatch)
-                }
-            },
-            None => Err(ParseAbort::NoMatch),
-        }
+define_parser!(ParseToken<'state>, &'state Token<'state>, |this: &ParseToken<'state>, state: ParseState<'state>| {
+    match state.peek() {
+        Some(token) => {
+            if token.kind == this.kind {
+                Ok((state.advance(1), token))
+            } else {
+                Err(ParseAbort::NoMatch)
+            }
+        },
+        None => Err(ParseAbort::NoMatch),
     }
-}
+});
 
 struct ParseNumber;
-
-impl<'a> Parser<'a, &'a str> for ParseNumber {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, &'a str), ParseAbort> {
-        match state.peek() {
-            Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Ok((state.advance(1), value)),
-            _ => Err(ParseAbort::NoMatch),
-        }
+define_parser!(ParseNumber, &'state str, |_, state: ParseState<'state>| {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Ok((state.advance(1), value)),
+        _ => Err(ParseAbort::NoMatch),
     }
-}
+});
 
 struct ParseIdentifier;
-
-impl<'a> Parser<'a, &'a str> for ParseIdentifier {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, &'a str), ParseAbort> {
-        match state.peek() {
-            Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
-            _ => Err(ParseAbort::NoMatch),
-        }
+define_parser!(ParseIdentifier, &'state str, |_, state: ParseState<'state>| {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
+        _ => Err(ParseAbort::NoMatch),
     }
-}
+});
+
+struct ParseKeyword(pub &'static str);
+define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>| {
+    let (state, _) = ParseToken { kind: TokenKind::Keyword(this.0) }.parse(state)?;
+
+    Ok((state, ()))
+});
+
+struct ParseOperator(pub &'static str);
+define_parser!(ParseOperator, (), |this: &ParseOperator, state: ParseState<'state>| {
+    let (state, _) = ParseToken { kind: TokenKind::Operator(this.0) }.parse(state)?;
+
+    Ok((state, ()))
+});
 
 // chunk ::= {stat [`;´]} [laststat [`;´]]
 struct ParseChunk;
+define_parser!(ParseChunk, Chunk<'state>, |_, state| {
+    let (state, statements) = ZeroOrMore(ParseStatement).parse(state)?;
 
-impl<'a> Parser<'a, Chunk<'a>> for ParseChunk {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Chunk<'a>), ParseAbort> {
-        let mut statements = Vec::new();
-        let mut state = state;
-
-        loop {
-            state = match ParseStatement.parse(state) {
-                Ok((next_state, statement)) => {
-                    statements.push(statement);
-                    next_state
-                },
-                Err(_) => break,
-            };
-        }
-
-        let chunk = Chunk {
-            statements,
-        };
-
-        Ok((state, chunk))
-    }
-}
+    Ok((state, Chunk {
+        statements,
+    }))
+});
 
 // stat ::= varlist `=´ explist |
 //     functioncall |
@@ -168,201 +91,118 @@ impl<'a> Parser<'a, Chunk<'a>> for ParseChunk {
 //     local function Name funcbody |
 //     local namelist [`=´ explist]
 struct ParseStatement;
+define_parser!(ParseStatement, Statement<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseLocalAssignment => Statement::LocalAssignment,
+        ParseFunctionCall => Statement::FunctionCall,
+        ParseNumericFor => Statement::NumericFor,
+        ParseWhileLoop => Statement::WhileLoop,
+        ParseRepeatLoop => Statement::RepeatLoop,
+    })
+});
 
-impl<'a> Parser<'a, Statement<'a>> for ParseStatement {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Statement<'a>), ParseAbort> {
-        parse_first_of!(state, {
-            ParseLocalAssignment => Statement::LocalAssignment,
-            ParseFunctionCall => Statement::FunctionCall,
-            ParseNumericFor => Statement::NumericFor,
-        })
-    }
-}
-
-/// Parse a list of one or more identifiers separated by commas.
-struct ParseNameListOneOrMore;
-
-impl<'a> Parser<'a, Vec<&'a str>> for ParseNameListOneOrMore {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Vec<&'a str>), ParseAbort> {
-        let mut names = Vec::new();
-
-        let (mut state, name) = ParseIdentifier.parse(state)?;
-        names.push(name);
-
-        loop {
-            match (EatToken { kind: TokenKind::Operator(",") }.parse(state)) {
-                Ok((next_state, _)) => {
-                    state = next_state;
-                },
-                Err(_) => break,
-            }
-
-            let (next_state, name) = ParseIdentifier.parse(state)?;
-
-            state = next_state;
-            names.push(name);
-        }
-
-        Ok((state, names))
-    }
-}
-
-/// Parse a list of one or more expressions separated by commas.
-struct ParseExpressionListOneOrMore;
-
-impl<'a> Parser<'a, Vec<Expression<'a>>> for ParseExpressionListOneOrMore {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Vec<Expression<'a>>), ParseAbort> {
-        let mut expressions = Vec::new();
-
-        let (mut state, expression) = ParseExpression.parse(state)?;
-        expressions.push(expression);
-
-        loop {
-            match (EatToken { kind: TokenKind::Operator(",") }.parse(state)) {
-                Ok((next_state, _)) => {
-                    state = next_state;
-                },
-                Err(_) => break,
-            }
-
-            let (next_state, expression) = ParseExpression.parse(state)?;
-
-            state = next_state;
-            expressions.push(expression);
-        }
-
-        Ok((state, expressions))
-    }
-}
+// exp ::= unop exp | value [binop exp]
+struct ParseExpression;
+define_parser!(ParseExpression, Expression<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseNumber => Expression::Number,
+        ParseFunctionCall => Expression::FunctionCall,
+        ParseIdentifier => Expression::Name,
+    })
+});
 
 // local namelist [`=´ explist]
 struct ParseLocalAssignment;
+define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
+    let (state, _) = ParseKeyword("local").parse(state)?;
 
-impl<'a> Parser<'a, LocalAssignment<'a>> for ParseLocalAssignment {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, LocalAssignment<'a>), ParseAbort> {
-        let (state, _) = EatToken { kind: TokenKind::Keyword("local") }.parse(state)?;
+    let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseOperator(",")).parse(state)?;
 
-        println!("Parsing local!");
+    let (state, expressions) = match (ParseOperator("=").parse(state)) {
+        Ok((state, _)) => DelimitedOneOrMore(ParseExpression, ParseOperator(",")).parse(state)?,
+        Err(_) => (state, Vec::new()),
+    };
 
-        let (state, names) = ParseNameListOneOrMore.parse(state)?;
-
-        println!("Found names: {:?}", names);
-
-        let (state, expressions) = match (EatToken { kind: TokenKind::Operator("=") }.parse(state)) {
-            Ok((state, _)) => ParseExpressionListOneOrMore.parse(state)?,
-            Err(_) => (state, Vec::new()),
-        };
-
-        println!("Found expressions: {:?}", expressions);
-
-        Ok((state, LocalAssignment {
-            names: names,
-            values: expressions,
-        }))
-    }
-}
+    Ok((state, LocalAssignment {
+        names: names,
+        values: expressions,
+    }))
+});
 
 // functioncall ::= prefixexp args | prefixexp `:´ Name args
 // right now:
 // functioncall ::= Name `(` explist `)`
 struct ParseFunctionCall;
+define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
+    let (state, name) = ParseIdentifier.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
+    let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseOperator(",")).parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
 
-impl<'a> Parser<'a, FunctionCall<'a>> for ParseFunctionCall {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, FunctionCall<'a>), ParseAbort> {
-        let (state, name) = ParseIdentifier.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::OpenParen }.parse(state)?;
-        let (state, expressions) = ParseExpressionList.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::CloseParen }.parse(state)?;
-
-        Ok((state, FunctionCall {
-            name_expression: Box::new(Expression::Name(name)),
-            arguments: expressions,
-        }))
-    }
-}
-
-// exp ::= unop exp | value [binop exp]
-struct ParseExpression;
-
-impl<'a> Parser<'a, Expression<'a>> for ParseExpression {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Expression<'a>), ParseAbort> {
-        parse_first_of!(state, {
-            ParseNumber => Expression::Number,
-            ParseFunctionCall => Expression::FunctionCall,
-            ParseIdentifier => Expression::Name,
-        })
-    }
-}
-
-// explist ::= {exp `,´} exp
-struct ParseExpressionList;
-
-impl<'a> Parser<'a, Vec<Expression<'a>>> for ParseExpressionList {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Vec<Expression<'a>>), ParseAbort> {
-        let mut state = state;
-        let mut expressions = Vec::new();
-        let mut on_comma = false;
-
-        loop {
-            match ParseExpression.parse(state) {
-                Ok((next_state, expression)) => {
-                    expressions.push(expression);
-                    state = next_state;
-                    on_comma = false;
-                },
-                Err(_) => break,
-            }
-
-            match (EatToken { kind: TokenKind::Operator(",") }.parse(state)) {
-                Ok((next_state, _)) => {
-                    state = next_state;
-                    on_comma = true;
-                },
-                Err(_) => break,
-            }
-        }
-
-        if on_comma {
-            Err(ParseAbort::NoMatch)
-        }
-        else {
-            Ok((state, expressions))
-        }
-    }
-}
+    Ok((state, FunctionCall {
+        name_expression: Box::new(Expression::Name(name)),
+        arguments: expressions,
+    }))
+});
 
 struct ParseNumericFor;
+define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
+    let (state, _) = ParseKeyword("for").parse(state)?;
+    let (state, var) = ParseIdentifier.parse(state)?;
+    let (state, _) = ParseOperator("=").parse(state)?;
+    let (state, start) = ParseExpression.parse(state)?;
+    let (state, _) = ParseOperator(",").parse(state)?;
+    let (state, end) = ParseExpression.parse(state)?;
 
-impl<'a> Parser<'a, NumericFor<'a>> for ParseNumericFor {
-    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, NumericFor<'a>), ParseAbort> {
-        let (state, _) = EatToken { kind: TokenKind::Keyword("for") }.parse(state)?;
-        let (state, var) = ParseIdentifier.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Operator("=") }.parse(state)?;
-        let (state, start) = ParseExpression.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Operator(",") }.parse(state)?;
-        let (state, end) = ParseExpression.parse(state)?;
-        let mut step = None;
-        let mut state = state;
+    let (state, step) = match state.peek() {
+        Some(&Token { kind: TokenKind::Operator(","), .. }) => {
+            let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
 
-        match state.peek() {
-            Some(&Token { kind: TokenKind::Operator(","), .. }) => {
-                let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
-                state = new_state;
-                step = Some(parsed_step);
-            },
-            Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
-            _ => return Err(ParseAbort::NoMatch),
-        }
+            (new_state, Some(parsed_step))
+        },
+        Some(&Token { kind: TokenKind::Keyword("do"), .. }) => (state, None),
+        _ => return Err(ParseAbort::NoMatch),
+    };
 
-        let (state, _) = EatToken { kind: TokenKind::Keyword("do") }.parse(state)?;
-        let (state, body) = ParseChunk.parse(state)?;
-        let (state, _) = EatToken { kind: TokenKind::Keyword("end") }.parse(state)?;
+    let (state, _) = ParseKeyword("do").parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("end").parse(state)?;
 
-        Ok((state, NumericFor {
-            var, start, end, step, body,
-        }))
-    }
-}
+    Ok((state, NumericFor {
+        var,
+        start,
+        end,
+        step,
+        body,
+    }))
+});
+
+struct ParseWhileLoop;
+define_parser!(ParseWhileLoop, WhileLoop<'state>, |_, state| {
+    let (state, _) = ParseKeyword("while").parse(state)?;
+    let (state, condition) = ParseExpression.parse(state)?;
+    let (state, _) = ParseKeyword("do").parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("end").parse(state)?;
+
+    Ok((state, WhileLoop {
+        condition,
+        body,
+    }))
+});
+
+struct ParseRepeatLoop;
+define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
+    let (state, _) = ParseKeyword("repeat").parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("until").parse(state)?;
+    let (state, condition) = ParseExpression.parse(state)?;
+
+    Ok((state, RepeatLoop {
+        condition,
+        body,
+    }))
+});
 
 #[cfg(test)]
 mod test {
@@ -442,33 +282,5 @@ mod test {
             },
             _ => panic!("Incorrect statement kind {:?}, statement")
         };
-    }
-
-    #[test]
-    fn parse_expr_list() {
-        let tokens = vec![
-            token!(Identifier("i")),
-            token!(Operator(",")),
-            token!(NumberLiteral("123")),
-        ];
-
-        let state = ParseState::new(&tokens);
-        let (state, expr_list) = ParseExpressionList.parse(state).unwrap();
-
-        assert_eq!(expr_list, vec![
-            Expression::Name("i"),
-            Expression::Number("123"),
-        ]);
-
-        let tokens = vec![
-            token!(Identifier("i")),
-            token!(Operator(",")),
-        ];
-
-        let state = ParseState::new(&tokens);
-        let result = ParseExpressionList.parse(state);
-        let err = result.unwrap_err();
-
-        assert_eq!(err, ParseAbort::NoMatch);
     }
 }

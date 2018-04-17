@@ -9,17 +9,19 @@ pub enum TokenKind<'a> {
     Operator(&'a str),
     Identifier(&'a str),
     NumberLiteral(&'a str),
+    BoolLiteral(bool),
+    NilLiteral,
     OpenParen,
     CloseParen,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Token<'a> {
-    /// Any whitespace before the token
-    pub whitespace: &'a str,
-
     /// Details about the Token itself
     pub kind: TokenKind<'a>,
+
+    /// Any whitespace before the token
+    pub whitespace: &'a str,
 
     pub line: usize,
     pub column: usize,
@@ -39,9 +41,9 @@ struct TryAdvanceResult<'a> {
 
 lazy_static! {
     static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
-        "false", "true", "nil",
         "local",
-        "for", "do", "end",
+        "while", "repeat", "until", "for",
+        "do", "end",
     ]);
 
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();
@@ -131,6 +133,12 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
         let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
                 if KEYWORDS.contains(s) {
                     TokenKind::Keyword(s)
+                } else if s == "true" {
+                    TokenKind::BoolLiteral(true)
+                } else if s == "false" {
+                    TokenKind::BoolLiteral(false)
+                } else if s == "nil" {
+                    TokenKind::NilLiteral
                 } else {
                     TokenKind::Identifier(s)
                 }
@@ -177,6 +185,13 @@ mod tests {
     fn test_kinds_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
         let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
         assert_eq!(kinds, expected);
+    }
+
+    #[test]
+    fn literals() {
+        test_kinds_eq("true", vec![TokenKind::BoolLiteral(true)]);
+        test_kinds_eq("false", vec![TokenKind::BoolLiteral(false)]);
+        test_kinds_eq("nil", vec![TokenKind::NilLiteral]);
     }
 
     #[test]
