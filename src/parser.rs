@@ -204,6 +204,29 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
     }))
 });
 
+struct ParseFunctionDeclaration;
+define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state| {
+    let local = match ParseKeyword("local").parse(state) {
+        Ok(_) => true,
+        _ => false,
+    };
+
+    let (state, _) = ParseKeyword("function").parse(state)?;
+    let (state, name) = ParseIdentifier.parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::OpenParen }.parse(state)?;
+    let (state, parameters) = ZeroOrMore(ParseIdentifier).parse(state)?;
+    let (state, _) = ParseToken { kind: TokenKind::CloseParen }.parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("end").parse(state)?;
+
+    Ok((state, FunctionDeclaration {
+        local,
+        name,
+        parameters,
+        body,
+    }))
+});
+
 #[cfg(test)]
 mod test {
     use super::*;
