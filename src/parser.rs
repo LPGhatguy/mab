@@ -163,25 +163,27 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
     let (state, start) = ParseExpression.parse(state)?;
     let (state, _) = ParseOperator(",").parse(state)?;
     let (state, end) = ParseExpression.parse(state)?;
-    let mut step = None;
-    let mut state = state;
 
-    match state.peek() {
+    let (state, step) = match state.peek() {
         Some(&Token { kind: TokenKind::Operator(","), .. }) => {
             let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
-            state = new_state;
-            step = Some(parsed_step);
+
+            (new_state, Some(parsed_step))
         },
-        Some(&Token { kind: TokenKind::Keyword("do"), .. }) => {},
+        Some(&Token { kind: TokenKind::Keyword("do"), .. }) => (state, None),
         _ => return Err(ParseAbort::NoMatch),
-    }
+    };
 
     let (state, _) = ParseKeyword("do").parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
     let (state, _) = ParseKeyword("end").parse(state)?;
 
     Ok((state, NumericFor {
-        var, start, end, step, body,
+        var,
+        start,
+        end,
+        step,
+        body,
     }))
 });
 
