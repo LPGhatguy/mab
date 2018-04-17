@@ -1,3 +1,7 @@
+//! The tokenizer is the first stage of the parsing process. It converts raw
+//! character input into a list of tokens, which are then used by the parser
+//! to construct an AST.
+
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
@@ -14,7 +18,7 @@ pub enum TokenKind<'a> {
     Identifier(&'a str),
     /// A number literal.
     /// The original value of the number, as it appeared in the source, is
-    /// contained in the &str value.
+    /// contained in the `&str` value.
     NumberLiteral(&'a str),
     /// A boolean literal.
     BoolLiteral(bool),
@@ -26,22 +30,37 @@ pub enum TokenKind<'a> {
     CloseParen,
 }
 
+/// A token in the source.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Token<'a> {
-    /// Details about the Token itself
+    /// The kind of token this token is.
     pub kind: TokenKind<'a>,
 
-    /// Any whitespace before the token
+    /// Any whitespace before the token.
     pub whitespace: &'a str,
 
+    /// The line in the source that the token came from.
+    /// This starts at 1, not 0.
     pub line: usize,
+    /// The column in the source that the token came from.
+    /// This starts at 1, not 0.
     pub column: usize,
     // TODO: A slice from the source indicating what the token came from
 }
 
+/// An error with information about why tokenization failed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TokenizeError<'a> {
-    UnknownSequence { remainder: &'a str, line: usize, column: usize },
+    /// The tokenizer encountered an unknown sequence in the source that it
+    /// could not parse.
+    UnknownSequence {
+        /// The remaining source, starting at the unknown sequence.
+        remainder: &'a str,
+        /// The line in the source that the unknown sequence started at.
+        line: usize,
+        /// The column in the source that the unknown sequence started at.
+        column: usize
+    },
 }
 
 struct TryAdvanceResult<'a> {
@@ -124,6 +143,11 @@ fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column:
     (current_line + lines_eaten, column)
 }
 
+/// Tokenizes a source string completely and returns a [Vec][Vec] of [Tokens][Token].
+/// 
+/// # Errors
+/// Will return an [UnknownSequence][TokenizeError::UnknownSequence] if it
+/// encounters a sequence of characters that it cannot parse.
 // TODO: Change to returning iterator?
 pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>> {
     let mut tokens = Vec::new();
