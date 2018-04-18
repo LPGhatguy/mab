@@ -196,14 +196,19 @@ impl<'a, ItemParser: Parser<'a>> Parser<'a> for Optional<ItemParser> {
 }
 
 pub struct Or<InnerParser>(pub Vec<InnerParser>);
-define_parser!(Or, InnerParser::Item, |self, state| {
-    for parser in &self.0 {
-        match parser.parse(state) {
-            Ok((new_state, matched_value)) => return Ok((new_state, matched_value)),
-            Err(ParseAbort::NoMatch) => (),
-            Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
-        }
-    }
 
-    Err(ParseAbort::NoMatch)
-});
+impl<'a, InnerParser: Parser<'a>> Parser<'a> for Or<InnerParser> {
+    type Item = InnerParser::Item;
+
+    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
+        for parser in &self.0 {
+            match parser.parse(state) {
+                Ok((new_state, matched_value)) => return Ok((new_state, matched_value)),
+                Err(ParseAbort::NoMatch) => (),
+                Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
+            }
+        }
+
+        Err(ParseAbort::NoMatch)
+    }
+}
