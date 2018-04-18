@@ -78,7 +78,7 @@ lazy_static! {
 
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?(?:(?:\d*\.\d+)|(\d+))(?:[eE]-?\d+)?))").unwrap();
-    static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(=|\+|,)").unwrap();
+    static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(=|\+|,|\{|\}|\[|\])").unwrap();
     static ref PATTERN_OPEN_PAREN: Regex = Regex::new(r"^(\()").unwrap();
     static ref PATTERN_CLOSE_PAREN: Regex = Regex::new(r"^(\))").unwrap();
 
