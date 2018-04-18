@@ -71,7 +71,7 @@ mod tests {
         };
 
         let mut output = String::new();
-        emit_chunk(&mut output, &chunk);
+        emit_chunk(&mut output, &chunk).unwrap();
 
         assert_eq!(&output, "");
     }
