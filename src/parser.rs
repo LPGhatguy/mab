@@ -204,15 +204,13 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
 
 struct ParseFunctionDeclaration;
 define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state| {
-    let local = match ParseKeyword("local").parse(state) {
-        Ok(_) => true,
-        _ => false,
-    };
+    let (state, local) = ParseKeyword("local").parse(state)
+        .map(|(new_state, _)| (new_state, true))?;
 
     let (state, _) = ParseKeyword("function").parse(state)?;
     let (state, name) = ParseIdentifier.parse(state)?;
     let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
-    let (state, parameters) = ZeroOrMore(ParseIdentifier).parse(state)?;
+    let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseOperator(",")).parse(state)?;
     let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
     let (state, _) = ParseKeyword("end").parse(state)?;
@@ -257,6 +255,32 @@ mod test {
             arguments: vec![
                 Expression::Name("i"),
             ]
+        })
+    }
+
+    #[test]
+    fn parse_function_decl() {
+        let tokens = [
+            token!(Keyword("local")),
+            token!(Keyword("function")),
+            token!(Identifier("test")),
+            token!(OpenParen),
+            token!(Identifier("a")),
+            token!(Operator(",")),
+            token!(Identifier("b")),
+            token!(CloseParen),
+            token!(Keyword("end")),
+        ];
+
+        let parse_state = ParseState::new(&tokens);
+        let (_, parsed_decl) = ParseFunctionDeclaration.parse(parse_state).unwrap();
+        assert_eq!(parsed_decl, FunctionDeclaration {
+            local: true,
+            name: "test",
+            parameters: vec![ "a", "b" ],
+            body: Chunk {
+                statements: vec![],
+            },
         })
     }
 
