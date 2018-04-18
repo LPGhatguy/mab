@@ -104,6 +104,7 @@ define_parser!(ParseExpression, Expression<'state>, |_, state| {
         ParseNumber => Expression::Number,
         ParseFunctionCall => Expression::FunctionCall,
         ParseIdentifier => Expression::Name,
+        ParseTableLiteral => Expression::Table,
     })
 });
 
