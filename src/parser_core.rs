@@ -1,4 +1,4 @@
-use tokenizer::{Token, TokenKind};
+use tokenizer::Token;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParseAbort {
