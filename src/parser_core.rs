@@ -8,6 +8,7 @@ pub enum ParseAbort {
 
     /// Indicates that the parser was unable to match the input and hit the
     /// error described by the returned string.
+    #[allow(dead_code)]
     Error(String)
 }
 
