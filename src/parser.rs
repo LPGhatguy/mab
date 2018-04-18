@@ -204,9 +204,8 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
 
 struct ParseFunctionDeclaration;
 define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state| {
-    let (state, local) = ParseKeyword("local").parse(state)
-        .map(|(new_state, _)| (new_state, true))
-        .unwrap_or((state, false));
+    let (state, local) = Optional(ParseKeyword("local")).parse(state)
+        .map(|(state, value)| (state, value.is_some()))?;
 
     let (state, _) = ParseKeyword("function").parse(state)?;
     let (state, name) = ParseIdentifier.parse(state)?;
