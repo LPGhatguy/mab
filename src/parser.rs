@@ -224,22 +224,30 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
 
 struct ParseTableValue;
 define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
-    let (state, begin_key) = Optional(ParseOperator("[")).parse(state)
-        .map(|(state, value)| (state, value.is_some()))?;
-    
-    // Expose mutably here so it can be updated within key parsing.
-    let mut state = state;
-    
-    let key = if begin_key {
-        let (new_state, key_expr) = ParseExpression.parse(state)?;
-        let (new_state, _) = ParseOperator("]").parse(new_state)?;
-        state = new_state;
-        Some(key_expr)
-    }
-    else {
-        None
-    };
+    // First, try parsing an identifier (Lua allows bare literals as table keys)
+    let (state, key) = Optional(ParseIdentifier).parse(state)
+        .map(|(state, maybe_key_str)| (state, maybe_key_str.map(|value| Expression::Name(value))))
+        .or_else(|_| {
+            let original_state = state;
 
+            let (state, begin_key) = Optional(ParseOperator("[")).parse(state)
+                .map(|(state, value)| (state, value.is_some()))?;
+            
+            // Expose mutably here so it can be updated within key parsing.
+            let mut state = state;
+            
+            if begin_key {
+                let (new_state, key_expr) = ParseExpression.parse(state)?;
+                let (new_state, _) = ParseOperator("]").parse(new_state)?;
+                state = new_state;
+                Ok((state, Some(key_expr)))
+            }
+            else {
+                Ok((original_state, None))
+            }
+        })?;
+
+    
     let (state, _) = ParseOperator("=").parse(state)?;
     let (state, value) = ParseExpression.parse(state)?;
     Ok((state, (key, value)))
