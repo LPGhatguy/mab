@@ -8,7 +8,7 @@ use std::iter::FromIterator;
 use regex::Regex;
 
 /// Represents a token kind.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
     /// A reserved word of some form.
     Keyword(&'a str),
@@ -31,7 +31,7 @@ pub enum TokenKind<'a> {
 }
 
 /// A token in the source.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Token<'a> {
     /// The kind of token this token is.
     pub kind: TokenKind<'a>,
