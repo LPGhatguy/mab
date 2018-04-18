@@ -71,7 +71,7 @@ struct TryAdvanceResult<'a> {
 
 lazy_static! {
     static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
-        "local",
+        "local", "function",
         "while", "repeat", "until", "for",
         "do", "end",
     ]);

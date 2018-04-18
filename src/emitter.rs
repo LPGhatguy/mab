@@ -18,6 +18,7 @@ fn emit_statement<'a>(w: &mut Write, statement: &Statement<'a>) -> fmt::Result {
         &Statement::NumericFor(ref value) => emit_numeric_for(w, value)?,
         &Statement::WhileLoop(ref value) => emit_while_loop(w, value)?,
         &Statement::RepeatLoop(ref value) => emit_repeat_loop(w, value)?,
+        unknown => panic!("Unknown statement: {:?}", unknown),
     }
 
     Ok(())

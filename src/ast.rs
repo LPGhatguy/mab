@@ -38,6 +38,14 @@ pub struct RepeatLoop<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct FunctionDeclaration<'a> {
+    pub name: &'a str,
+    pub body: Chunk<'a>,
+    pub parameters: Vec<&'a str>,
+    pub local: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum Expression<'a> {
     Nil,
     Bool(bool),
@@ -74,6 +82,7 @@ pub enum Statement<'a> {
     NumericFor(NumericFor<'a>),
     WhileLoop(WhileLoop<'a>),
     RepeatLoop(RepeatLoop<'a>),
+    FunctionDeclaration(FunctionDeclaration<'a>),
 }
 
 // chunk ::= block

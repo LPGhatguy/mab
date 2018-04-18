@@ -1,4 +1,4 @@
-use tokenizer::{Token, TokenKind};
+use tokenizer::Token;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParseAbort {
@@ -8,6 +8,7 @@ pub enum ParseAbort {
 
     /// Indicates that the parser was unable to match the input and hit the
     /// error described by the returned string.
+    #[allow(dead_code)]
     Error(String)
 }
 
@@ -173,5 +174,23 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
         }
 
         Ok((state, values))
+    }
+}
+
+pub struct Optional<InnerParser>(pub InnerParser);
+
+impl<'a, ItemParser: Parser<'a>> Parser<'a> for Optional<ItemParser> {
+    type Item = Option<ItemParser::Item>;
+
+    fn item_name(&self) -> String {
+        format!("optional {}", self.0.item_name())
+    }
+
+    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
+        match self.0.parse(state) {
+            Ok((new_state, matched_value)) => Ok((new_state, Some(matched_value))),
+            Err(ParseAbort::NoMatch) => Ok((state, None)),
+            Err(ParseAbort::Error(message)) => Err(ParseAbort::Error(message)),
+        }
     }
 }
