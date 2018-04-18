@@ -144,7 +144,7 @@ fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column:
 }
 
 /// Tokenizes a source string completely and returns a [Vec][Vec] of [Tokens][Token].
-/// 
+///
 /// # Errors
 /// Will return an [UnknownSequence][TokenizeError::UnknownSequence] if it
 /// encounters a sequence of characters that it cannot parse.
