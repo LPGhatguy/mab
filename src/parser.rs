@@ -221,6 +221,39 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
     }))
 });
 
+struct ParseTableValue;
+define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
+    let (state, begin_key) = Optional(ParseOperator("[")).parse(state)
+        .map(|(state, value)| (state, value.is_some()))?;
+    
+    // Expose mutably here so it can be updated within key parsing.
+    let mut state = state;
+    
+    let key = if begin_key {
+        let (new_state, key_expr) = ParseExpression.parse(state)?;
+        let (new_state, _) = ParseOperator("]").parse(new_state)?;
+        state = new_state;
+        Some(key_expr)
+    }
+    else {
+        None
+    };
+
+    let (state, _) = ParseOperator("=").parse(state)?;
+    let (state, value) = ParseExpression.parse(state)?;
+    Ok((state, (key, value)))
+});
+
+struct ParseTableLiteral;
+define_parser!(ParseTableLiteral, TableLiteral<'state>, |_, state| {
+    let (state, _) = ParseOperator("{").parse(state)?;
+    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseOperator(","), ParseOperator(";") ])).parse(state)?;
+    let (state, _) = ParseOperator("}").parse(state)?;
+    Ok((state, TableLiteral {
+        items
+    }))
+});
+
 #[cfg(test)]
 mod test {
     use super::*;
