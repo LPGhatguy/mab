@@ -1,22 +1,25 @@
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionCall<'a> {
+    #[serde(borrow)]
     pub name_expression: Box<Expression<'a>>,
     pub arguments: Vec<Expression<'a>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Assignment<'a> {
+    #[serde(borrow)]
     pub names: Vec<&'a str>,
     pub values: Vec<Expression<'a>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LocalAssignment<'a> {
+    #[serde(borrow)]
     pub names: Vec<&'a str>,
     pub values: Vec<Expression<'a>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NumericFor<'a> {
     pub var: &'a str,
     pub start: Expression<'a>,
@@ -25,19 +28,21 @@ pub struct NumericFor<'a> {
     pub body: Chunk<'a>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WhileLoop<'a> {
+    #[serde(borrow)]
     pub condition: Expression<'a>,
     pub body: Chunk<'a>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RepeatLoop<'a> {
+    #[serde(borrow)]
     pub condition: Expression<'a>,
     pub body: Chunk<'a>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDeclaration<'a> {
     pub name: &'a str,
     pub body: Chunk<'a>,
@@ -45,7 +50,7 @@ pub struct FunctionDeclaration<'a> {
     pub local: bool,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expression<'a> {
     Nil,
     Bool(bool),
@@ -54,6 +59,7 @@ pub enum Expression<'a> {
     VarArg,
     Function,
     Table,
+    #[serde(borrow)]
     FunctionCall(FunctionCall<'a>),
     Name(&'a str),
     ParenExpression(Box<Expression<'a>>),
@@ -74,8 +80,9 @@ pub enum Expression<'a> {
 //     function funcname funcbody |
 //     local function Name funcbody |
 //     local namelist [‘=’ explist]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Statement<'a> {
+    #[serde(borrow)]
     Assignment(Assignment<'a>),
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
@@ -87,7 +94,8 @@ pub enum Statement<'a> {
 
 // chunk ::= block
 // block ::= {stat} [retstat]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Chunk<'a> {
+    #[serde(borrow)]
     pub statements: Vec<Statement<'a>>,
 }
