@@ -133,7 +133,7 @@ struct ParseFunctionCall;
 define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
     let (state, name) = ParseIdentifier.parse(state)?;
     let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
-    let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseOperator(",")).parse(state)?;
+    let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseOperator(","), false).parse(state)?;
     let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
 
     Ok((state, FunctionCall {
@@ -209,7 +209,7 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
     let (state, _) = ParseKeyword("function").parse(state)?;
     let (state, name) = ParseIdentifier.parse(state)?;
     let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
-    let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseOperator(",")).parse(state)?;
+    let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseOperator(","), false).parse(state)?;
     let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
     let (state, _) = ParseKeyword("end").parse(state)?;
@@ -222,41 +222,48 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
     }))
 });
 
-struct ParseTableValue;
-define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
+struct ParseTableKey;
+define_parser!(ParseTableKey, Expression<'state>, |_, state| {
     // First, try parsing an identifier (Lua allows bare literals as table keys)
     let (state, key) = Optional(ParseIdentifier).parse(state)
-        .map(|(state, maybe_key_str)| (state, maybe_key_str.map(|value| Expression::Name(value))))
-        .or_else(|_| {
-            let original_state = state;
+        .map(|(state, maybe_key_str)| (state, maybe_key_str.map(|value| Expression::Name(value))))?;
 
-            let (state, begin_key) = Optional(ParseOperator("[")).parse(state)
-                .map(|(state, value)| (state, value.is_some()))?;
-            
-            // Expose mutably here so it can be updated within key parsing.
-            let mut state = state;
-            
-            if begin_key {
-                let (new_state, key_expr) = ParseExpression.parse(state)?;
-                let (new_state, _) = ParseOperator("]").parse(new_state)?;
-                state = new_state;
-                Ok((state, Some(key_expr)))
-            }
-            else {
-                Ok((original_state, None))
-            }
-        })?;
+    let mut state = state;
+    let key = match key {
+        Some(key) => key,
+        None => {
+            println!("fallback to key expr parse; next token: {:?}", state.peek());
+            let (new_state, _) = ParseOperator("[").parse(state)?;
+            println!("ate [");
+            let (new_state, key_expr) = ParseExpression.parse(new_state)?;
+            println!("key expr: {:?}", key_expr);
+            let (new_state, _) = ParseOperator("]").parse(new_state)?;
+            println!("ate ]");
+            state = new_state;
+            key_expr
+        }
+    };
 
+    println!("final key: {:?}", key);
     
     let (state, _) = ParseOperator("=").parse(state)?;
+    println!("ate =");
+    Ok((state, key))
+});
+
+struct ParseTableValue;
+define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
+    let (state, key) = Optional(ParseTableKey).parse(state)?;
+    println!("eating value");
     let (state, value) = ParseExpression.parse(state)?;
+    println!("value: {:?}", value);
     Ok((state, (key, value)))
 });
 
 struct ParseTableLiteral;
 define_parser!(ParseTableLiteral, TableLiteral<'state>, |_, state| {
     let (state, _) = ParseOperator("{").parse(state)?;
-    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseOperator(","), ParseOperator(";") ])).parse(state)?;
+    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseOperator(","), ParseOperator(";") ]), true).parse(state)?;
     let (state, _) = ParseOperator("}").parse(state)?;
     Ok((state, TableLiteral {
         items
@@ -353,6 +360,39 @@ mod test {
                     ),
                 ],
             },
+        });
+    }
+
+    #[test]
+    fn parse_table_literal() {
+        let tokens = [
+            token!(Operator("{")),
+            token!(Identifier("a")),
+            token!(Operator("=")),
+            token!(Identifier("b")),
+            token!(Operator(",")),
+            token!(Operator("[")),
+            token!(Identifier("f")),
+            token!(OpenParen),
+            token!(CloseParen),
+            token!(Operator("]")),
+            token!(Operator("=")),
+            token!(NumberLiteral("1")),
+            token!(Operator(";")),
+            token!(Operator("}"))
+        ];
+
+        let state = ParseState::new(&tokens);
+        let (_, parsed_literal) = ParseTableLiteral.parse(state).unwrap();
+
+        assert_eq!(parsed_literal, TableLiteral {
+            items: vec![
+                (Some(Expression::Name("a")), Expression::Name("b")),
+                (Some(Expression::FunctionCall(FunctionCall {
+                    name_expression: Box::new(Expression::Name("f")),
+                    arguments: vec![],
+                })), Expression::Number("1"))
+            ]
         });
     }
 

@@ -139,7 +139,7 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
     }
 }
 
-pub struct DelimitedZeroOrMore<ItemParser, DelimiterParser>(pub ItemParser, pub DelimiterParser);
+pub struct DelimitedZeroOrMore<ItemParser, DelimiterParser>(pub ItemParser, pub DelimiterParser, pub bool);
 
 impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for DelimitedZeroOrMore<ItemParser, DelimiterParser> {
     type Item = Vec<ItemParser::Item>;
@@ -167,7 +167,19 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
                 Err(_) => break,
             }
 
-            let (next_state, value) = self.0.parse(state)?;
+            let (next_state, value) = match self.0.parse(state) {
+                Ok((next_state, value)) => (next_state, value),
+                Err(ParseAbort::NoMatch) => {
+                    // 2: allow trailing delimiter
+                    if self.2 {
+                        break
+                    }
+                    else {
+                        return Err(ParseAbort::NoMatch)
+                    }
+                },
+                Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message))
+            };
 
             state = next_state;
             values.push(value);
