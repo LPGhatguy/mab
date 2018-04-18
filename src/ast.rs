@@ -58,11 +58,17 @@ pub enum Expression<'a> {
     String(&'a str),
     VarArg,
     Function,
-    Table,
+    Table(TableLiteral<'a>),
     #[serde(borrow)]
     FunctionCall(FunctionCall<'a>),
     Name(&'a str),
     ParenExpression(Box<Expression<'a>>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TableLiteral<'a> {
+    #[serde(borrow)]
+    pub items: Vec<(Expression<'a>, Expression<'a>)>,
 }
 
 // stat ::=  ‘;’ |
