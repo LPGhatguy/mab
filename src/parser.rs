@@ -247,7 +247,7 @@ mod test {
         ];
 
         let state = ParseState::new(&tokens);
-        let (state, function_call) = ParseFunctionCall.parse(state).unwrap();
+        let (_, function_call) = ParseFunctionCall.parse(state).unwrap();
         assert_eq!(function_call, FunctionCall {
             name_expression: Box::new(Expression::Name("print")),
             arguments: vec![
