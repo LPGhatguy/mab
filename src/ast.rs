@@ -68,7 +68,7 @@ pub enum Expression<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TableLiteral<'a> {
     #[serde(borrow)]
-    pub items: Vec<(Expression<'a>, Expression<'a>)>,
+    pub items: Vec<(Option<Expression<'a>>, Expression<'a>)>,
 }
 
 // stat ::=  ‘;’ |
