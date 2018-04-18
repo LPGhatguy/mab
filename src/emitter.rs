@@ -23,27 +23,39 @@ fn emit_statement<'a>(w: &mut Write, statement: &Statement<'a>) -> fmt::Result {
     Ok(())
 }
 
-fn emit_assignment<'a>(w: &mut Write, assignment: &Assignment<'a>) -> fmt::Result {
+fn emit_assignment<'a>(w: &mut Write, _assignment: &Assignment<'a>) -> fmt::Result {
+    write!(w, "assignment")?;
+
     Ok(())
 }
 
-fn emit_local_assignment<'a>(w: &mut Write, assignment: &LocalAssignment<'a>) -> fmt::Result {
+fn emit_local_assignment<'a>(w: &mut Write, _assignment: &LocalAssignment<'a>) -> fmt::Result {
+    write!(w, "local assignment")?;
+
     Ok(())
 }
 
-fn emit_function_call<'a>(w: &mut Write, function_call: &FunctionCall<'a>) -> fmt::Result {
+fn emit_function_call<'a>(w: &mut Write, _function_call: &FunctionCall<'a>) -> fmt::Result {
+    write!(w, "function call")?;
+
     Ok(())
 }
 
-fn emit_numeric_for<'a>(w: &mut Write, numeric_for: &NumericFor<'a>) -> fmt::Result {
+fn emit_numeric_for<'a>(w: &mut Write, _numeric_for: &NumericFor<'a>) -> fmt::Result {
+    write!(w, "numeric for")?;
+
     Ok(())
 }
 
-fn emit_while_loop<'a>(w: &mut Write, while_loop: &WhileLoop<'a>) -> fmt::Result {
+fn emit_while_loop<'a>(w: &mut Write, _while_loop: &WhileLoop<'a>) -> fmt::Result {
+    write!(w, "while loop")?;
+
     Ok(())
 }
 
-fn emit_repeat_loop<'a>(w: &mut Write, repeat_loop: &RepeatLoop<'a>) -> fmt::Result {
+fn emit_repeat_loop<'a>(w: &mut Write, _repeat_loop: &RepeatLoop<'a>) -> fmt::Result {
+    write!(w, "repeat loop")?;
+
     Ok(())
 }
 
