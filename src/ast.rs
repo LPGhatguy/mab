@@ -82,6 +82,7 @@ pub enum Statement<'a> {
     NumericFor(NumericFor<'a>),
     WhileLoop(WhileLoop<'a>),
     RepeatLoop(RepeatLoop<'a>),
+    FunctionDeclaration(FunctionDeclaration<'a>),
 }
 
 // chunk ::= block

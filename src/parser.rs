@@ -1,6 +1,3 @@
-use std::borrow::Cow;
-use std::fmt;
-
 use tokenizer::{Token, TokenKind};
 use ast::*;
 use parser_core::*;
@@ -96,6 +93,7 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseNumericFor => Statement::NumericFor,
         ParseWhileLoop => Statement::WhileLoop,
         ParseRepeatLoop => Statement::RepeatLoop,
+        ParseFunctionDeclaration => Statement::FunctionDeclaration,
     })
 });
 
@@ -116,7 +114,7 @@ define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
 
     let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseOperator(",")).parse(state)?;
 
-    let (state, expressions) = match (ParseOperator("=").parse(state)) {
+    let (state, expressions) = match ParseOperator("=").parse(state) {
         Ok((state, _)) => DelimitedOneOrMore(ParseExpression, ParseOperator(",")).parse(state)?,
         Err(_) => (state, Vec::new()),
     };
