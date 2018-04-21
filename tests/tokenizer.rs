@@ -36,8 +36,12 @@ fn tokenizer() {
                 file.read_to_string(&mut expected_token_contents)
                     .expect("Unable to read from file!");
 
-                let result: Vec<Token> = serde_json::from_str(&expected_token_contents)
-                    .expect("Unable to deserialize JSON!");
+                let result: Vec<Token> = match serde_json::from_str(&expected_token_contents) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        panic!("Unable to deserialize JSON file {}:\n{}", expected_tokens_path, error);
+                    }
+                };
 
                 Some(result)
             },
@@ -50,8 +54,12 @@ fn tokenizer() {
                 file.read_to_string(&mut expected_ast_contents)
                     .expect("Unable to read from file!");
 
-                let result: Chunk = serde_json::from_str(&expected_ast_contents)
-                    .expect("Unable to deserialize JSON!");
+                let result: Chunk = match serde_json::from_str(&expected_ast_contents) {
+                    Ok(value) => value,
+                    Err(error) => {
+                        panic!("Unable to deserialize JSON file {}:\n{}", expected_ast_path, error);
+                    }
+                };
 
                 Some(result)
             },
@@ -74,9 +82,9 @@ fn tokenizer() {
 
         match expected_tokens {
             Some(expected_tokens) => {
-                println!("Checking against existing expectated tokens file {}", expected_tokens_path);
-
-                assert_eq!(tokens, expected_tokens)
+                if tokens != expected_tokens {
+                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected tokens file {}", tokens, expected_tokens, expected_tokens_path);
+                }
             },
             None => {
                 println!("Creating expectated tokens file {}", expected_tokens_path);
@@ -92,9 +100,9 @@ fn tokenizer() {
 
         match expected_ast {
             Some(expected_ast) => {
-                println!("Checking against existing expectated AST file {}", expected_ast_path);
-
-                assert_eq!(ast, expected_ast)
+                if ast != expected_ast {
+                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected AST file {}", ast, expected_ast, expected_ast_path);
+                }
             },
             None => {
                 println!("Creating expectated AST file {}", expected_ast_path);
