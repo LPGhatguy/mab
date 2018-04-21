@@ -139,7 +139,7 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
     }
 }
 
-pub struct DelimitedZeroOrMore<ItemParser, DelimiterParser>(pub ItemParser, pub DelimiterParser);
+pub struct DelimitedZeroOrMore<ItemParser, DelimiterParser>(pub ItemParser, pub DelimiterParser, pub bool);
 
 impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for DelimitedZeroOrMore<ItemParser, DelimiterParser> {
     type Item = Vec<ItemParser::Item>;
@@ -167,7 +167,19 @@ impl<'a, ItemParser: Parser<'a>, DelimiterParser: Parser<'a>> Parser<'a> for Del
                 Err(_) => break,
             }
 
-            let (next_state, value) = self.0.parse(state)?;
+            let (next_state, value) = match self.0.parse(state) {
+                Ok((next_state, value)) => (next_state, value),
+                Err(ParseAbort::NoMatch) => {
+                    // 2: allow trailing delimiter
+                    if self.2 {
+                        break
+                    }
+                    else {
+                        return Err(ParseAbort::NoMatch)
+                    }
+                },
+                Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message))
+            };
 
             state = next_state;
             values.push(value);
@@ -192,5 +204,23 @@ impl<'a, ItemParser: Parser<'a>> Parser<'a> for Optional<ItemParser> {
             Err(ParseAbort::NoMatch) => Ok((state, None)),
             Err(ParseAbort::Error(message)) => Err(ParseAbort::Error(message)),
         }
+    }
+}
+
+pub struct Or<InnerParser>(pub Vec<InnerParser>);
+
+impl<'a, InnerParser: Parser<'a>> Parser<'a> for Or<InnerParser> {
+    type Item = InnerParser::Item;
+
+    fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
+        for parser in &self.0 {
+            match parser.parse(state) {
+                Ok((new_state, matched_value)) => return Ok((new_state, matched_value)),
+                Err(ParseAbort::NoMatch) => (),
+                Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
+            }
+        }
+
+        Err(ParseAbort::NoMatch)
     }
 }
