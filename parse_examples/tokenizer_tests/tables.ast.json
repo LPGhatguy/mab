@@ -1,0 +1,73 @@
+{
+  "statements": [
+    {
+      "LocalAssignment": {
+        "names": [
+          "test"
+        ],
+        "values": [
+          {
+            "Table": {
+              "items": [
+                [
+                  {
+                    "Name": "a"
+                  },
+                  {
+                    "Number": "1"
+                  }
+                ],
+                [
+                  null,
+                  {
+                    "Number": "2"
+                  }
+                ],
+                [
+                  null,
+                  {
+                    "Number": "3"
+                  }
+                ],
+                [
+                  {
+                    "FunctionCall": {
+                      "name_expression": {
+                        "Name": "f"
+                      },
+                      "arguments": []
+                    }
+                  },
+                  {
+                    "Table": {
+                      "items": [
+                        [
+                          null,
+                          {
+                            "Number": "1"
+                          }
+                        ],
+                        [
+                          null,
+                          {
+                            "Number": "2"
+                          }
+                        ],
+                        [
+                          null,
+                          {
+                            "Number": "3"
+                          }
+                        ]
+                      ]
+                    }
+                  }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
