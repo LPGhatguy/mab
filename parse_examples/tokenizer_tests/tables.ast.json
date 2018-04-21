@@ -31,11 +31,13 @@
                 ],
                 [
                   {
-                    "FunctionCall": {
-                      "name_expression": {
-                        "Name": "f"
-                      },
-                      "arguments": []
+                    "Expression": {
+                      "FunctionCall": {
+                        "name_expression": {
+                          "Name": "f"
+                        },
+                        "arguments": []
+                      }
                     }
                   },
                   {

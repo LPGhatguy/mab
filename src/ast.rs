@@ -70,9 +70,19 @@ pub enum Expression<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum TableKey<'a> {
+    #[serde(borrow)]
+    // '[' expression ']'
+    Expression(Expression<'a>),
+
+    // identifier
+    Name(Cow<'a, str>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TableLiteral<'a> {
     #[serde(borrow)]
-    pub items: Vec<(Option<Expression<'a>>, Expression<'a>)>,
+    pub items: Vec<(Option<TableKey<'a>>, Expression<'a>)>,
 }
 
 // stat ::=  ‘;’ |

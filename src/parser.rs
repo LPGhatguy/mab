@@ -235,16 +235,16 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
 });
 
 struct ParseTableKey;
-define_parser!(ParseTableKey, Expression<'state>, |_, state| {
+define_parser!(ParseTableKey, TableKey<'state>, |_, state| {
     // First, try parsing an identifier (Lua allows bare literals as table keys)
     let (state, key) = match ParseIdentifier.parse(state) {
-        Ok((state, identifier)) => (state, Expression::Name(identifier.into())),
+        Ok((state, identifier)) => (state, TableKey::Name(identifier.into())),
         Err(ParseAbort::NoMatch) => {
             let (state, _) = ParseOperator("[").parse(state)?;
             let (state, key) = ParseExpression.parse(state)?;
             let (state, _) = ParseOperator("]").parse(state)?;
 
-            (state, key)
+            (state, TableKey::Expression(key))
         },
         Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
     };
@@ -253,7 +253,7 @@ define_parser!(ParseTableKey, Expression<'state>, |_, state| {
 });
 
 struct ParseTableValue;
-define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
+define_parser!(ParseTableValue, (Option<TableKey<'state>>, Expression<'state>), |_, state| {
     let (state, key) = Optional(ParseTableKey).parse(state)?;
 
     // We only check for '=' if there was a key
