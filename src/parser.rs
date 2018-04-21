@@ -237,19 +237,16 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
 struct ParseTableKey;
 define_parser!(ParseTableKey, Expression<'state>, |_, state| {
     // First, try parsing an identifier (Lua allows bare literals as table keys)
-    let (state, key) = Optional(ParseIdentifier).parse(state)
-        .map(|(state, maybe_key_str)| (state, maybe_key_str.map(|value| Expression::Name(value.into()))))?;
+    let (state, key) = match ParseIdentifier.parse(state) {
+        Ok((state, identifier)) => (state, Expression::Name(identifier.into())),
+        Err(ParseAbort::NoMatch) => {
+            let (state, _) = ParseOperator("[").parse(state)?;
+            let (state, key) = ParseExpression.parse(state)?;
+            let (state, _) = ParseOperator("]").parse(state)?;
 
-    let mut state = state;
-    let key = match key {
-        Some(key) => key,
-        None => {
-            let (new_state, _) = ParseOperator("[").parse(state)?;
-            let (new_state, key_expr) = ParseExpression.parse(new_state)?;
-            let (new_state, _) = ParseOperator("]").parse(new_state)?;
-            state = new_state;
-            key_expr
-        }
+            (state, key)
+        },
+        Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
     };
 
     let (state, _) = ParseOperator("=").parse(state)?;
