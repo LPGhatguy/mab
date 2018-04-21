@@ -14,7 +14,7 @@ This is the foundations for an extensible Lua parser written in Rust. I want to 
 * Style checker/reformatter, maybe named "Stylua"
 * Static typing like TypeScript/Flow
 * Documentation parser/generator
-* A more robust version of [Facebook's codemod](https://github.com/facebook/codemod)
+* A tool like [Google's Rerast for Rust](https://github.com/google/rerast) or [Facebook's codemod](https://github.com/facebook/codemod)
 
 ## TODO
 * Compress parser using macros
