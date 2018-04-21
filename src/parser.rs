@@ -232,31 +232,22 @@ define_parser!(ParseTableKey, Expression<'state>, |_, state| {
     let key = match key {
         Some(key) => key,
         None => {
-            println!("fallback to key expr parse; next token: {:?}", state.peek());
             let (new_state, _) = ParseOperator("[").parse(state)?;
-            println!("ate [");
             let (new_state, key_expr) = ParseExpression.parse(new_state)?;
-            println!("key expr: {:?}", key_expr);
             let (new_state, _) = ParseOperator("]").parse(new_state)?;
-            println!("ate ]");
             state = new_state;
             key_expr
         }
     };
-
-    println!("final key: {:?}", key);
     
     let (state, _) = ParseOperator("=").parse(state)?;
-    println!("ate =");
     Ok((state, key))
 });
 
 struct ParseTableValue;
 define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
     let (state, key) = Optional(ParseTableKey).parse(state)?;
-    println!("eating value");
     let (state, value) = ParseExpression.parse(state)?;
-    println!("value: {:?}", value);
     Ok((state, (key, value)))
 });
 
