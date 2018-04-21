@@ -1,0 +1,22 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "Number": "1"
+          },
+          {
+            "Name": "a"
+          },
+          {
+            "Number": "3"
+          }
+        ]
+      }
+    }
+  ]
+}

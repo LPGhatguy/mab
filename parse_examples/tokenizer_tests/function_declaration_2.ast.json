@@ -1,0 +1,17 @@
+{
+  "statements": [
+    {
+      "FunctionDeclaration": {
+        "name": "foo",
+        "body": {
+          "statements": []
+        },
+        "parameters": [
+          "a",
+          "b"
+        ],
+        "local": false
+      }
+    }
+  ]
+}

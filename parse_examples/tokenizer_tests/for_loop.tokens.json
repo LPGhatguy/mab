@@ -1,0 +1,110 @@
+[
+  {
+    "kind": {
+      "Keyword": "for"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 5
+  },
+  {
+    "kind": {
+      "Operator": "="
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "NumberLiteral": "1"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 9
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 10
+  },
+  {
+    "kind": {
+      "NumberLiteral": "10"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 12
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 14
+  },
+  {
+    "kind": {
+      "NumberLiteral": "2"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 16
+  },
+  {
+    "kind": {
+      "Keyword": "do"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 18
+  },
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "\r\n\t",
+    "line": 2,
+    "column": 2
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": "",
+    "line": 2,
+    "column": 8
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 9
+  },
+  {
+    "kind": {
+      "Keyword": "end"
+    },
+    "whitespace": "\r\n",
+    "line": 3,
+    "column": 1
+  }
+]

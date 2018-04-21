@@ -2,24 +2,27 @@
 //! character input into a list of tokens, which are then used by the parser
 //! to construct an AST.
 
+use std::borrow::Cow;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
 use regex::Regex;
 
 /// Represents a token kind.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
+    #[serde(borrow)]
+
     /// A reserved word of some form.
-    Keyword(&'a str),
+    Keyword(Cow<'a, str>),
     /// An operator, like `+`, `-`, or `,`.
-    Operator(&'a str),
+    Operator(Cow<'a, str>),
     /// An identifier that is not a keyword.
-    Identifier(&'a str),
+    Identifier(Cow<'a, str>),
     /// A number literal.
     /// The original value of the number, as it appeared in the source, is
     /// contained in the `&str` value.
-    NumberLiteral(&'a str),
+    NumberLiteral(Cow<'a, str>),
     /// A boolean literal.
     BoolLiteral(bool),
     /// The `nil` literal.
@@ -31,13 +34,15 @@ pub enum TokenKind<'a> {
 }
 
 /// A token in the source.
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token<'a> {
+    #[serde(borrow)]
+
     /// The kind of token this token is.
     pub kind: TokenKind<'a>,
 
     /// Any whitespace before the token.
-    pub whitespace: &'a str,
+    pub whitespace: Cow<'a, str>,
 
     /// The line in the source that the token came from.
     /// This starts at 1, not 0.
@@ -167,7 +172,7 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
 
         let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
                 if KEYWORDS.contains(s) {
-                    TokenKind::Keyword(s)
+                    TokenKind::Keyword(s.into())
                 } else if s == "true" {
                     TokenKind::BoolLiteral(true)
                 } else if s == "false" {
@@ -175,11 +180,11 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
                 } else if s == "nil" {
                     TokenKind::NilLiteral
                 } else {
-                    TokenKind::Identifier(s)
+                    TokenKind::Identifier(s.into())
                 }
             })
-            .or_else(|| try_advance(current, &PATTERN_OPERATOR, |s| TokenKind::Operator(s)))
-            .or_else(|| try_advance(current, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s)))
+            .or_else(|| try_advance(current, &PATTERN_OPERATOR, |s| TokenKind::Operator(s.into())))
+            .or_else(|| try_advance(current, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
             .or_else(|| try_advance(current, &PATTERN_OPEN_PAREN, |_| TokenKind::OpenParen))
             .or_else(|| try_advance(current, &PATTERN_CLOSE_PAREN, |_| TokenKind::CloseParen));
 
@@ -188,7 +193,7 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
                 current = result.new_source;
 
                 tokens.push(Token {
-                    whitespace,
+                    whitespace: whitespace.into(),
                     kind: result.matched_kind,
                     line: current_line,
                     column: current_column,
@@ -231,21 +236,21 @@ mod tests {
 
     #[test]
     fn keyword_vs_identifier() {
-        test_kinds_eq("local", vec![TokenKind::Keyword("local")]);
-        test_kinds_eq("local_", vec![TokenKind::Identifier("local_")]);
-        test_kinds_eq("locale", vec![TokenKind::Identifier("locale")]);
-        test_kinds_eq("_local", vec![TokenKind::Identifier("_local")]);
-        test_kinds_eq("local _", vec![TokenKind::Keyword("local"), TokenKind::Identifier("_")]);
+        test_kinds_eq("local", vec![TokenKind::Keyword("local".into())]);
+        test_kinds_eq("local_", vec![TokenKind::Identifier("local_".into())]);
+        test_kinds_eq("locale", vec![TokenKind::Identifier("locale".into())]);
+        test_kinds_eq("_local", vec![TokenKind::Identifier("_local".into())]);
+        test_kinds_eq("local _", vec![TokenKind::Keyword("local".into()), TokenKind::Identifier("_".into())]);
     }
 
     #[test]
     fn number_literals() {
-        test_kinds_eq("6", vec![TokenKind::NumberLiteral("6")]);
-        test_kinds_eq("0.231e-6", vec![TokenKind::NumberLiteral("0.231e-6")]);
-        test_kinds_eq("-123.7", vec![TokenKind::NumberLiteral("-123.7")]);
-        test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE")]);
-        test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe")]);
-        test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126")]);
+        test_kinds_eq("6", vec![TokenKind::NumberLiteral("6".into())]);
+        test_kinds_eq("0.231e-6", vec![TokenKind::NumberLiteral("0.231e-6".into())]);
+        test_kinds_eq("-123.7", vec![TokenKind::NumberLiteral("-123.7".into())]);
+        test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE".into())]);
+        test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe".into())]);
+        test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126".into())]);
     }
 
     #[test]
@@ -253,7 +258,7 @@ mod tests {
         let input = "  local";
         // This should always tokenize successfully
         let tokenized = tokenize(input).unwrap();
-        let first_token = tokenized[0];
+        let first_token = &tokenized[0];
 
         assert_eq!(first_token.whitespace, "  ");
     }
@@ -262,7 +267,7 @@ mod tests {
     fn whitespace_when_none_present() {
         let input = "local";
         let tokenized = tokenize(input).unwrap();
-        let first_token = tokenized[0];
+        let first_token = &tokenized[0];
 
         assert_eq!(first_token.whitespace, "");
     }
@@ -286,26 +291,26 @@ mod tests {
         let tokenized = tokenize(input).unwrap();
         assert_eq!(tokenized, vec![
             Token {
-                kind: TokenKind::Keyword("local"),
-                whitespace: "",
+                kind: TokenKind::Keyword("local".into()),
+                whitespace: "".into(),
                 line: 1,
                 column: 1,
             },
             Token {
-                kind: TokenKind::Identifier("test"),
-                whitespace: "\n                    ",
+                kind: TokenKind::Identifier("test".into()),
+                whitespace: "\n                    ".into(),
                 line: 2,
                 column: 21,
             },
             Token {
-                kind: TokenKind::Identifier("foo"),
-                whitespace: " ",
+                kind: TokenKind::Identifier("foo".into()),
+                whitespace: " ".into(),
                 line: 2,
                 column: 26,
             },
             Token {
-                kind: TokenKind::Identifier("bar"),
-                whitespace: "\n                    ",
+                kind: TokenKind::Identifier("bar".into()),
+                whitespace: "\n                    ".into(),
                 line: 3,
                 column: 21,
             }

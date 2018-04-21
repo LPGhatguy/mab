@@ -1,0 +1,206 @@
+[
+  {
+    "kind": {
+      "Keyword": "local"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "test"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Operator": "="
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 12
+  },
+  {
+    "kind": {
+      "Operator": "{"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 14
+  },
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "whitespace": "\n\t",
+    "line": 2,
+    "column": 2
+  },
+  {
+    "kind": {
+      "Operator": "="
+    },
+    "whitespace": " ",
+    "line": 2,
+    "column": 4
+  },
+  {
+    "kind": {
+      "NumberLiteral": "1"
+    },
+    "whitespace": " ",
+    "line": 2,
+    "column": 6
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 2,
+    "column": 7
+  },
+  {
+    "kind": {
+      "NumberLiteral": "2"
+    },
+    "whitespace": "\n\t",
+    "line": 3,
+    "column": 2
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 3,
+    "column": 3
+  },
+  {
+    "kind": {
+      "NumberLiteral": "3"
+    },
+    "whitespace": "\n\t",
+    "line": 4,
+    "column": 2
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 4,
+    "column": 3
+  },
+  {
+    "kind": {
+      "Operator": "["
+    },
+    "whitespace": "\n\t",
+    "line": 5,
+    "column": 2
+  },
+  {
+    "kind": {
+      "Identifier": "f"
+    },
+    "whitespace": "",
+    "line": 5,
+    "column": 3
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 5,
+    "column": 4
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 5,
+    "column": 5
+  },
+  {
+    "kind": {
+      "Operator": "]"
+    },
+    "whitespace": "",
+    "line": 5,
+    "column": 6
+  },
+  {
+    "kind": {
+      "Operator": "="
+    },
+    "whitespace": " ",
+    "line": 5,
+    "column": 8
+  },
+  {
+    "kind": {
+      "Operator": "{"
+    },
+    "whitespace": " ",
+    "line": 5,
+    "column": 10
+  },
+  {
+    "kind": {
+      "NumberLiteral": "1"
+    },
+    "whitespace": "\n\t\t",
+    "line": 6,
+    "column": 3
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 6,
+    "column": 4
+  },
+  {
+    "kind": {
+      "NumberLiteral": "2"
+    },
+    "whitespace": "\n\t\t",
+    "line": 7,
+    "column": 3
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 7,
+    "column": 4
+  },
+  {
+    "kind": {
+      "NumberLiteral": "3"
+    },
+    "whitespace": "\n\t\t",
+    "line": 8,
+    "column": 3
+  },
+  {
+    "kind": {
+      "Operator": "}"
+    },
+    "whitespace": "\n\t",
+    "line": 9,
+    "column": 2
+  },
+  {
+    "kind": {
+      "Operator": "}"
+    },
+    "whitespace": "\n",
+    "line": 10,
+    "column": 1
+  }
+]

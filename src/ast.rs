@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionCall<'a> {
     #[serde(borrow)]
@@ -8,20 +10,21 @@ pub struct FunctionCall<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Assignment<'a> {
     #[serde(borrow)]
-    pub names: Vec<&'a str>,
+    pub names: Vec<Cow<'a, str>>,
     pub values: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct LocalAssignment<'a> {
     #[serde(borrow)]
-    pub names: Vec<&'a str>,
+    pub names: Vec<Cow<'a, str>>,
     pub values: Vec<Expression<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct NumericFor<'a> {
-    pub var: &'a str,
+    #[serde(borrow)]
+    pub var: Cow<'a, str>,
     pub start: Expression<'a>,
     pub end: Expression<'a>,
     pub step: Option<Expression<'a>>,
@@ -44,9 +47,10 @@ pub struct RepeatLoop<'a> {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDeclaration<'a> {
-    pub name: &'a str,
+    #[serde(borrow)]
+    pub name: Cow<'a, str>,
     pub body: Chunk<'a>,
-    pub parameters: Vec<&'a str>,
+    pub parameters: Vec<Cow<'a, str>>,
     pub local: bool,
 }
 
@@ -54,14 +58,14 @@ pub struct FunctionDeclaration<'a> {
 pub enum Expression<'a> {
     Nil,
     Bool(bool),
-    Number(&'a str),
-    String(&'a str),
+    #[serde(borrow)]
+    Number(Cow<'a, str>),
+    String(Cow<'a, str>),
     VarArg,
     Function,
     Table(TableLiteral<'a>),
-    #[serde(borrow)]
     FunctionCall(FunctionCall<'a>),
-    Name(&'a str),
+    Name(Cow<'a, str>),
     ParenExpression(Box<Expression<'a>>),
 }
 

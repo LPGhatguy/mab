@@ -1,0 +1,38 @@
+[
+  {
+    "kind": {
+      "Keyword": "function"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "test"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 10
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 1,
+    "column": 14
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 1,
+    "column": 15
+  },
+  {
+    "kind": {
+      "Keyword": "end"
+    },
+    "whitespace": "\r\n",
+    "line": 2,
+    "column": 1
+  }
+]

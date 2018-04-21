@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use tokenizer::{Token, TokenKind};
 use ast::*;
 use parser_core::*;
@@ -35,31 +37,31 @@ define_parser!(ParseToken<'state>, &'state Token<'state>, |this: &ParseToken<'st
 });
 
 struct ParseNumber;
-define_parser!(ParseNumber, &'state str, |_, state: ParseState<'state>| {
+define_parser!(ParseNumber, Cow<'state, str>, |_, state: ParseState<'state>| {
     match state.peek() {
-        Some(&Token { kind: TokenKind::NumberLiteral(value), .. }) => Ok((state.advance(1), value)),
+        Some(&Token { kind: TokenKind::NumberLiteral(ref value), .. }) => Ok((state.advance(1), Cow::from(value.as_ref()))),
         _ => Err(ParseAbort::NoMatch),
     }
 });
 
 struct ParseIdentifier;
-define_parser!(ParseIdentifier, &'state str, |_, state: ParseState<'state>| {
+define_parser!(ParseIdentifier, Cow<'state, str>, |_, state: ParseState<'state>| {
     match state.peek() {
-        Some(&Token { kind: TokenKind::Identifier(name), .. }) => Ok((state.advance(1), name)),
+        Some(&Token { kind: TokenKind::Identifier(ref name), .. }) => Ok((state.advance(1), Cow::from(name.as_ref()))),
         _ => Err(ParseAbort::NoMatch),
     }
 });
 
 struct ParseKeyword(pub &'static str);
 define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>| {
-    let (state, _) = ParseToken(TokenKind::Keyword(this.0)).parse(state)?;
+    let (state, _) = ParseToken(TokenKind::Keyword(this.0.into())).parse(state)?;
 
     Ok((state, ()))
 });
 
 struct ParseOperator(pub &'static str);
 define_parser!(ParseOperator, (), |this: &ParseOperator, state: ParseState<'state>| {
-    let (state, _) = ParseToken(TokenKind::Operator(this.0)).parse(state)?;
+    let (state, _) = ParseToken(TokenKind::Operator(this.0.into())).parse(state)?;
 
     Ok((state, ()))
 });
@@ -152,12 +154,22 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
     let (state, end) = ParseExpression.parse(state)?;
 
     let (state, step) = match state.peek() {
-        Some(&Token { kind: TokenKind::Operator(","), .. }) => {
-            let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
+        Some(&Token { kind: TokenKind::Operator(ref operator), .. }) => {
+            if operator == "," {
+                let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
 
-            (new_state, Some(parsed_step))
+                (new_state, Some(parsed_step))
+            } else {
+                return Err(ParseAbort::NoMatch);
+            }
         },
-        Some(&Token { kind: TokenKind::Keyword("do"), .. }) => (state, None),
+        Some(&Token { kind: TokenKind::Keyword(ref keyword), .. }) => {
+            if keyword == "do" {
+                (state, None)
+            } else {
+                return Err(ParseAbort::NoMatch);
+            }
+        },
         _ => return Err(ParseAbort::NoMatch),
     };
 
@@ -226,7 +238,7 @@ struct ParseTableKey;
 define_parser!(ParseTableKey, Expression<'state>, |_, state| {
     // First, try parsing an identifier (Lua allows bare literals as table keys)
     let (state, key) = Optional(ParseIdentifier).parse(state)
-        .map(|(state, maybe_key_str)| (state, maybe_key_str.map(|value| Expression::Name(value))))?;
+        .map(|(state, maybe_key_str)| (state, maybe_key_str.map(|value| Expression::Name(value.into()))))?;
 
     let mut state = state;
     let key = match key {
@@ -239,7 +251,7 @@ define_parser!(ParseTableKey, Expression<'state>, |_, state| {
             key_expr
         }
     };
-    
+
     let (state, _) = ParseOperator("=").parse(state)?;
     Ok((state, key))
 });
@@ -260,175 +272,3 @@ define_parser!(ParseTableLiteral, TableLiteral<'state>, |_, state| {
         items
     }))
 });
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    use tokenizer::TokenKind::*;
-
-    macro_rules! token {
-        ($kind:expr) => (
-            Token {
-                line: 1,
-                column: 1,
-                whitespace: "",
-                kind: $kind,
-            }
-        )
-    }
-
-    #[test]
-    fn parse_function_call() {
-        let tokens = [
-            token!(Identifier("print")),
-            token!(OpenParen),
-            token!(Identifier("i")),
-            token!(CloseParen),
-        ];
-
-        let state = ParseState::new(&tokens);
-        let (_, function_call) = ParseFunctionCall.parse(state).unwrap();
-        assert_eq!(function_call, FunctionCall {
-            name_expression: Box::new(Expression::Name("print")),
-            arguments: vec![
-                Expression::Name("i"),
-            ]
-        })
-    }
-
-    #[test]
-    fn parse_function_decl() {
-        let tokens = [
-            token!(Keyword("local")),
-            token!(Keyword("function")),
-            token!(Identifier("test")),
-            token!(OpenParen),
-            token!(Identifier("a")),
-            token!(Operator(",")),
-            token!(Identifier("b")),
-            token!(CloseParen),
-            token!(Keyword("end")),
-        ];
-
-        let parse_state = ParseState::new(&tokens);
-        let (_, parsed_decl) = ParseFunctionDeclaration.parse(parse_state).unwrap();
-        assert_eq!(parsed_decl, FunctionDeclaration {
-            local: true,
-            name: "test",
-            parameters: vec![ "a", "b" ],
-            body: Chunk {
-                statements: vec![],
-            },
-        });
-
-        let tokens = [
-            token!(Keyword("function")),
-            token!(Identifier("test")),
-            token!(OpenParen),
-            token!(CloseParen),
-            token!(Identifier("print")),
-            token!(OpenParen),
-            token!(NumberLiteral("1")),
-            token!(CloseParen),
-            token!(Keyword("end")),
-        ];
-
-        let parse_state = ParseState::new(&tokens);
-        let (_, parsed_decl) = ParseFunctionDeclaration.parse(parse_state).unwrap();
-        assert_eq!(parsed_decl, FunctionDeclaration {
-            local: false,
-            name: "test",
-            parameters: vec![],
-            body: Chunk {
-                statements: vec![
-                    Statement::FunctionCall(
-                        FunctionCall {
-                            name_expression: Box::new(Expression::Name("print")),
-                            arguments: vec![
-                                Expression::Number("1"),
-                            ],
-                        }
-                    ),
-                ],
-            },
-        });
-    }
-
-    #[test]
-    fn parse_table_literal() {
-        let tokens = [
-            token!(Operator("{")),
-            token!(Identifier("a")),
-            token!(Operator("=")),
-            token!(Identifier("b")),
-            token!(Operator(",")),
-            token!(Operator("[")),
-            token!(Identifier("f")),
-            token!(OpenParen),
-            token!(CloseParen),
-            token!(Operator("]")),
-            token!(Operator("=")),
-            token!(NumberLiteral("1")),
-            token!(Operator(";")),
-            token!(Operator("}"))
-        ];
-
-        let state = ParseState::new(&tokens);
-        let (_, parsed_literal) = ParseTableLiteral.parse(state).unwrap();
-
-        assert_eq!(parsed_literal, TableLiteral {
-            items: vec![
-                (Some(Expression::Name("a")), Expression::Name("b")),
-                (Some(Expression::FunctionCall(FunctionCall {
-                    name_expression: Box::new(Expression::Name("f")),
-                    arguments: vec![],
-                })), Expression::Number("1"))
-            ]
-        });
-    }
-
-    #[test]
-    fn parse_for_loop() {
-        let data = [
-            token!(Keyword("for")),
-            token!(Identifier("i")),
-            token!(Operator("=")),
-            token!(NumberLiteral("1")),
-            token!(Operator(",")),
-            token!(NumberLiteral("10")),
-            token!(Operator(",")),
-            token!(NumberLiteral("2")),
-            token!(Keyword("do")),
-            token!(Identifier("print")),
-            token!(OpenParen),
-            token!(Identifier("i")),
-            token!(CloseParen),
-            token!(Keyword("end")),
-        ];
-
-        let parsed_chunk = parse_from_tokens(&data).unwrap();
-        let statement = &parsed_chunk.statements[0];
-
-        match statement {
-            &Statement::NumericFor(ref numeric_for) => {
-                assert_eq!(numeric_for.var, "i");
-                assert_eq!(numeric_for.start, Expression::Number("1"));
-                assert_eq!(numeric_for.end, Expression::Number("10"));
-                assert_eq!(numeric_for.step, Some(Expression::Number("2")));
-                assert_eq!(numeric_for.body, Chunk {
-                    statements: vec![
-                        Statement::FunctionCall(
-                            FunctionCall {
-                                name_expression: Box::new(Expression::Name("print")),
-                                arguments: vec![
-                                    Expression::Name("i")
-                                ]
-                            }
-                        )
-                    ]
-                })
-            },
-            _ => panic!("Incorrect statement kind {:?}", statement)
-        };
-    }
-}

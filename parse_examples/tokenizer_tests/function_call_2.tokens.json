@@ -1,0 +1,30 @@
+[
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 1,
+    "column": 6
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 1,
+    "column": 8
+  }
+]
