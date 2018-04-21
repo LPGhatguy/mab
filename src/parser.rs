@@ -249,13 +249,19 @@ define_parser!(ParseTableKey, Expression<'state>, |_, state| {
         Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message)),
     };
 
-    let (state, _) = ParseOperator("=").parse(state)?;
     Ok((state, key))
 });
 
 struct ParseTableValue;
 define_parser!(ParseTableValue, (Option<Expression<'state>>, Expression<'state>), |_, state| {
     let (state, key) = Optional(ParseTableKey).parse(state)?;
+
+    // We only check for '=' if there was a key
+    let state = match key {
+        Some(_) => ParseOperator("=").parse(state)?.0,
+        None => state
+    };
+
     let (state, value) = ParseExpression.parse(state)?;
     Ok((state, (key, value)))
 });
