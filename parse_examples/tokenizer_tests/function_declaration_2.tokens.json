@@ -55,7 +55,7 @@
     "kind": {
       "Keyword": "end"
     },
-    "whitespace": "\r\n",
+    "whitespace": "\n",
     "line": 2,
     "column": 1
   }

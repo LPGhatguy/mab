@@ -75,7 +75,7 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\r\n\t",
+    "whitespace": "\n\t",
     "line": 2,
     "column": 2
   },
@@ -103,7 +103,7 @@
     "kind": {
       "Keyword": "end"
     },
-    "whitespace": "\r\n",
+    "whitespace": "\n",
     "line": 3,
     "column": 1
   }
