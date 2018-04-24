@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use tokenizer::{Token, TokenKind, Symbol, Keyword};
+use tokenizer::{Token, TokenKind, Symbol};
 use ast::*;
 use parser_core::*;
 
@@ -52,13 +52,6 @@ define_parser!(ParseIdentifier, Cow<'state, str>, |_, state: ParseState<'state>|
     }
 });
 
-struct ParseKeyword(pub Keyword);
-define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>| {
-    let (state, _) = ParseToken(TokenKind::Keyword(this.0)).parse(state)?;
-
-    Ok((state, ()))
-});
-
 struct ParseSymbol(pub Symbol);
 define_parser!(ParseSymbol, (), |this: &ParseSymbol, state: ParseState<'state>| {
     let (state, _) = ParseToken(TokenKind::Symbol(this.0)).parse(state)?;
@@ -106,7 +99,7 @@ define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
         Ok((state, UnaryOpKind::Negate))
     } else if let Ok((state, _)) = ParseSymbol(Symbol::Hash).parse(state) {
         Ok((state, UnaryOpKind::Length))
-    } else if let Ok((state, _)) = ParseKeyword(Keyword::Not).parse(state) {
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::Not).parse(state) {
         Ok((state, UnaryOpKind::BooleanNot))
     } else {
         Err(ParseAbort::NoMatch)
@@ -114,20 +107,21 @@ define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
 });
 
 struct ParseBinaryOp;
-define_parser!(ParseBinaryOp, BinaryOpKind, |_, state| {
-    if let Ok((state, _)) = ParseSymbol(Symbol::Plus).parse(state) {
-        Ok((state, BinaryOpKind::Add))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Minus).parse(state) {
-        Ok((state, BinaryOpKind::Subtract))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Star).parse(state) {
-        Ok((state, BinaryOpKind::Multiply))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Slash).parse(state) {
-        Ok((state, BinaryOpKind::Divide))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Caret).parse(state) {
-        Ok((state, BinaryOpKind::Exponent))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::TwoDots).parse(state) {
-        Ok((state, BinaryOpKind::Concat))
-    } else {
+define_parser!(ParseBinaryOp, BinaryOpKind, |_, state: ParseState<'state>| {
+    if let Some(&Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
+        let kind = match symbol {
+            Symbol::Plus => BinaryOpKind::Add,
+            Symbol::Minus => BinaryOpKind::Subtract,
+            Symbol::Star => BinaryOpKind::Multiply,
+            Symbol::Slash => BinaryOpKind::Divide,
+            Symbol::Caret => BinaryOpKind::Exponent,
+            Symbol::TwoDots => BinaryOpKind::Concat,
+            _ => return Err(ParseAbort::NoMatch)
+        };
+
+        Ok((state.advance(1), kind))
+    }
+    else {
         Err(ParseAbort::NoMatch)
     }
 });
@@ -188,7 +182,7 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
 // local namelist [`=´ explist]
 struct ParseLocalAssignment;
 define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
-    let (state, _) = ParseKeyword(Keyword::Local).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Local).parse(state)?;
 
     let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(state)?;
 
@@ -221,7 +215,7 @@ define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
 
 struct ParseNumericFor;
 define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
-    let (state, _) = ParseKeyword(Keyword::For).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::For).parse(state)?;
     let (state, var) = ParseIdentifier.parse(state)?;
     let (state, _) = ParseSymbol(Symbol::Equal).parse(state)?;
     let (state, start) = ParseExpression.parse(state)?;
@@ -234,15 +228,15 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
 
             (new_state, Some(parsed_step))
         },
-        Some(&Token { kind: TokenKind::Keyword(Keyword::Do), .. }) => {
+        Some(&Token { kind: TokenKind::Symbol(Symbol::Do), .. }) => {
             (state, None)
         },
         _ => return Err(ParseAbort::NoMatch),
     };
 
-    let (state, _) = ParseKeyword(Keyword::Do).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Do).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
-    let (state, _) = ParseKeyword(Keyword::End).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
 
     Ok((state, NumericFor {
         var,
@@ -255,28 +249,28 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
 
 struct ParseIfStatement;
 define_parser!(ParseIfStatement, IfStatement<'state>, |_, state| {
-    let (state, _) = ParseKeyword(Keyword::If).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::If).parse(state)?;
     let (state, condition) = ParseExpression.parse(state)?;
-    let (state, _) = ParseKeyword(Keyword::Then).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Then).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
 
     let mut state = state;
     let mut else_if_branches = Vec::new();
     loop {
-        let (next_state, _) = match ParseKeyword(Keyword::ElseIf).parse(state) {
+        let (next_state, _) = match ParseSymbol(Symbol::ElseIf).parse(state) {
             Ok(v) => v,
             Err(_) => break,
         };
 
         let (next_state, condition) = ParseExpression.parse(next_state)?;
-        let (next_state, _) = ParseKeyword(Keyword::Then).parse(next_state)?;
+        let (next_state, _) = ParseSymbol(Symbol::Then).parse(next_state)?;
         let (next_state, body) = ParseChunk.parse(next_state)?;
 
         state = next_state;
         else_if_branches.push((condition, body));
     }
 
-    let (state, else_branch) = match ParseKeyword(Keyword::Else).parse(state) {
+    let (state, else_branch) = match ParseSymbol(Symbol::Else).parse(state) {
         Ok((state, _)) => {
             let (state, body) = ParseChunk.parse(state)?;
 
@@ -285,7 +279,7 @@ define_parser!(ParseIfStatement, IfStatement<'state>, |_, state| {
         Err(_) => (state, None),
     };
 
-    let (state, _) = ParseKeyword(Keyword::End).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
 
     Ok((state, IfStatement {
         condition,
@@ -297,11 +291,11 @@ define_parser!(ParseIfStatement, IfStatement<'state>, |_, state| {
 
 struct ParseWhileLoop;
 define_parser!(ParseWhileLoop, WhileLoop<'state>, |_, state| {
-    let (state, _) = ParseKeyword(Keyword::While).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::While).parse(state)?;
     let (state, condition) = ParseExpression.parse(state)?;
-    let (state, _) = ParseKeyword(Keyword::Do).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Do).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
-    let (state, _) = ParseKeyword(Keyword::End).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
 
     Ok((state, WhileLoop {
         condition,
@@ -311,9 +305,9 @@ define_parser!(ParseWhileLoop, WhileLoop<'state>, |_, state| {
 
 struct ParseRepeatLoop;
 define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
-    let (state, _) = ParseKeyword(Keyword::Repeat).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Repeat).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
-    let (state, _) = ParseKeyword(Keyword::Until).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Until).parse(state)?;
     let (state, condition) = ParseExpression.parse(state)?;
 
     Ok((state, RepeatLoop {
@@ -324,16 +318,16 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
 
 struct ParseFunctionDeclaration;
 define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state| {
-    let (state, local) = Optional(ParseKeyword(Keyword::Local)).parse(state)
+    let (state, local) = Optional(ParseSymbol(Symbol::Local)).parse(state)
         .map(|(state, value)| (state, value.is_some()))?;
 
-    let (state, _) = ParseKeyword(Keyword::Function).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Function).parse(state)?;
     let (state, name) = ParseIdentifier.parse(state)?;
     let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
     let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma), false).parse(state)?;
     let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
-    let (state, _) = ParseKeyword(Keyword::End).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
 
     Ok((state, FunctionDeclaration {
         local,

@@ -1,7 +1,7 @@
 [
   {
     "kind": {
-      "Keyword": "repeat"
+      "Symbol": "Repeat"
     },
     "whitespace": "",
     "line": 1,
@@ -41,7 +41,7 @@
   },
   {
     "kind": {
-      "Keyword": "until"
+      "Symbol": "Until"
     },
     "whitespace": "\n",
     "line": 3,

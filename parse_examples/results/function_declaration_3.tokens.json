@@ -1,7 +1,7 @@
 [
   {
     "kind": {
-      "Keyword": "local"
+      "Symbol": "Local"
     },
     "whitespace": "",
     "line": 1,
@@ -9,7 +9,7 @@
   },
   {
     "kind": {
-      "Keyword": "function"
+      "Symbol": "Function"
     },
     "whitespace": " ",
     "line": 1,
@@ -113,7 +113,7 @@
   },
   {
     "kind": {
-      "Keyword": "end"
+      "Symbol": "End"
     },
     "whitespace": "\n",
     "line": 3,

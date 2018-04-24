@@ -1,7 +1,7 @@
 [
   {
     "kind": {
-      "Keyword": "if"
+      "Symbol": "If"
     },
     "whitespace": "",
     "line": 1,
@@ -17,7 +17,7 @@
   },
   {
     "kind": {
-      "Keyword": "then"
+      "Symbol": "Then"
     },
     "whitespace": " ",
     "line": 1,
@@ -57,7 +57,7 @@
   },
   {
     "kind": {
-      "Keyword": "end"
+      "Symbol": "End"
     },
     "whitespace": "\n",
     "line": 3,

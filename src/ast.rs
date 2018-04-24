@@ -7,7 +7,7 @@ pub enum UnaryOpKind {
     Length, // #
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum BinaryOpKind {
     Add, // +
     Subtract, // -
