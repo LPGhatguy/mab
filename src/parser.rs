@@ -125,7 +125,7 @@ define_parser!(ParseBinaryOp, BinaryOpKind, |_, state| {
         Ok((state, BinaryOpKind::Divide))
     } else if let Ok((state, _)) = ParseSymbol(Symbol::Caret).parse(state) {
         Ok((state, BinaryOpKind::Exponent))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Concat).parse(state) {
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::TwoDots).parse(state) {
         Ok((state, BinaryOpKind::Concat))
     } else {
         Err(ParseAbort::NoMatch)
