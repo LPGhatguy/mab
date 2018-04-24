@@ -27,14 +27,6 @@ This is the foundations for an extensible, style-preserving Lua parser written i
 		* Leverage Rust's type system (`non_exhaustive` patterns, especially) to guarantee that tools can be recompiled with forks of this project with zero changes.
 		* Or, use a technique similar to an Entity Component System to implement extended tokens and AST nodes.
 
-## TODO
-* Pick a cool name
-* Finish grammar
-* Write the tools using this project
-
-## Notes
-* [Simple explanation of precedence climbing/Pratt parsing](https://news.ycombinator.com/item?id=13915458) for precedence.
-
 ## Contributing
 Contributions are welcome -- there is a lot of work to be done!
 
