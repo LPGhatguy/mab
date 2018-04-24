@@ -26,6 +26,8 @@ pub enum Symbol {
     Comma,
     Semicolon,
     Ellipse,
+    And,
+    Or
 }
 
 impl Symbol {
@@ -48,6 +50,8 @@ impl Symbol {
             Symbol::Comma => ",",
             Symbol::Semicolon => ";",
             Symbol::Ellipse => "...",
+            Symbol::And => "and",
+            Symbol::Or => "or",
         }
     }
 }
@@ -71,8 +75,6 @@ pub enum Keyword {
     False,
     Nil,
     Not,
-    And,
-    Or,
 }
 
 impl Keyword {
@@ -94,8 +96,6 @@ impl Keyword {
             Keyword::False => "false",
             Keyword::Nil => "nil",
             Keyword::Not => "not",
-            Keyword::And => "and",
-            Keyword::Or => "or",
         }
     }
 }
@@ -168,7 +168,7 @@ lazy_static! {
         Keyword::If, Keyword::While, Keyword::Repeat, Keyword::Until, Keyword::For,
         Keyword::Then, Keyword::Do, Keyword::Else, Keyword::ElseIf, Keyword::End,
         Keyword::True, Keyword::False, Keyword::Nil,
-        Keyword::Not, Keyword::And, Keyword::Or,
+        Keyword::Not,
     ];
 
     static ref OPERATORS: Vec<Symbol> = vec![
@@ -177,6 +177,7 @@ lazy_static! {
         Symbol::LeftParen, Symbol::RightParen,
 
         Symbol::Plus, Symbol::Minus, Symbol::Star, Symbol::Slash, Symbol::Caret, Symbol::TwoDots,
+        Symbol::And, Symbol::Or,
         Symbol::Hash,
         Symbol::Equal,
         Symbol::Comma, Symbol::Semicolon,
