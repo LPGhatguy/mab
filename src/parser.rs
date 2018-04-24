@@ -193,11 +193,39 @@ define_parser!(ParseIfStatement, IfStatement<'state>, |_, state| {
     let (state, condition) = ParseExpression.parse(state)?;
     let (state, _) = ParseKeyword("then").parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
+
+    let mut state = state;
+    let mut else_if_branches = Vec::new();
+    loop {
+        let (next_state, _) = match ParseKeyword("elseif").parse(state) {
+            Ok(v) => v,
+            Err(_) => break,
+        };
+
+        let (next_state, condition) = ParseExpression.parse(next_state)?;
+        let (next_state, _) = ParseKeyword("then").parse(next_state)?;
+        let (next_state, body) = ParseChunk.parse(next_state)?;
+
+        state = next_state;
+        else_if_branches.push((condition, body));
+    }
+
+    let (state, else_branch) = match ParseKeyword("else").parse(state) {
+        Ok((state, _)) => {
+            let (state, body) = ParseChunk.parse(state)?;
+
+            (state, Some(body))
+        },
+        Err(_) => (state, None),
+    };
+
     let (state, _) = ParseKeyword("end").parse(state)?;
 
     Ok((state, IfStatement {
         condition,
         body,
+        else_if_branches,
+        else_branch,
     }))
 });
 

@@ -36,6 +36,8 @@ pub struct IfStatement<'a> {
     #[serde(borrow)]
     pub condition: Expression<'a>,
     pub body: Chunk<'a>,
+    pub else_if_branches: Vec<(Expression<'a>, Chunk<'a>)>,
+    pub else_branch: Option<Chunk<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
