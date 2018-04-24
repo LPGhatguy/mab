@@ -107,31 +107,20 @@ define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
     }
 });
 
-lazy_static! {
-    static ref BINARY_OPS: HashMap<Symbol, BinaryOpKind> = {
-        let mut map = HashMap::new();
-
-        map.insert(Symbol::Plus, BinaryOpKind::Add);
-        map.insert(Symbol::Minus, BinaryOpKind::Subtract);
-        map.insert(Symbol::Star, BinaryOpKind::Multiply);
-        map.insert(Symbol::Slash, BinaryOpKind::Divide);
-        map.insert(Symbol::Caret, BinaryOpKind::Exponent);
-        map.insert(Symbol::TwoDots, BinaryOpKind::Concat);
-
-        map
-    };
-}
-
 struct ParseBinaryOp;
 define_parser!(ParseBinaryOp, BinaryOpKind, |_, state: ParseState<'state>| {
     if let Some(&Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
-        // TokenKind doesn't derive Hash, so we use the string version
-        if let Some(kind) = BINARY_OPS.get(&symbol) {
-            Ok((state.advance(1), *kind))
-        }
-        else {
-            Err(ParseAbort::NoMatch)
-        }
+        let kind = match symbol {
+            Symbol::Plus => BinaryOpKind::Add,
+            Symbol::Minus => BinaryOpKind::Subtract,
+            Symbol::Star => BinaryOpKind::Multiply,
+            Symbol::Slash => BinaryOpKind::Divide,
+            Symbol::Caret => BinaryOpKind::Exponent,
+            Symbol::TwoDots => BinaryOpKind::Concat,
+            _ => return Err(ParseAbort::NoMatch)
+        };
+
+        Ok((state.advance(1), kind))
     }
     else {
         Err(ParseAbort::NoMatch)
