@@ -113,6 +113,23 @@ define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
     }
 });
 
+struct ParseBinaryOp;
+define_parser!(ParseBinaryOp, BinaryOpKind, |_, state| {
+    if let Ok((state, _)) = ParseSymbol(Symbol::Plus).parse(state) {
+        Ok((state, BinaryOpKind::Add))
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::Minus).parse(state) {
+        Ok((state, BinaryOpKind::Subtract))
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::Star).parse(state) {
+        Ok((state, BinaryOpKind::Multiply))
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::Slash).parse(state) {
+        Ok((state, BinaryOpKind::Divide))
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::Caret).parse(state) {
+        Ok((state, BinaryOpKind::Exponent))
+    } else {
+        Err(ParseAbort::NoMatch)
+    }
+});
+
 // exp ::= unop exp | value [binop exp]
 struct ParseExpression;
 define_parser!(ParseExpression, Expression<'state>, |_, state| {
@@ -126,7 +143,22 @@ define_parser!(ParseExpression, Expression<'state>, |_, state| {
             })))
         },
         Err(_) => {
-            ParseValue.parse(state)
+            let (state, left) = ParseValue.parse(state)?;
+
+            match ParseBinaryOp.parse(state) {
+                Ok((state, operator)) => {
+                    let (state, right) = ParseExpression.parse(state)?;
+
+                    Ok((state, Expression::BinaryOp(BinaryOp {
+                        operator,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    })))
+                },
+                Err(_) => {
+                    Ok((state, left))
+                }
+            }
         }
     }
 });
