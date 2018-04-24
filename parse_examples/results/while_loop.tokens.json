@@ -1,0 +1,62 @@
+[
+  {
+    "kind": {
+      "Keyword": "while"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "continue"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Keyword": "do"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 16
+  },
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "\n\t",
+    "line": 2,
+    "column": 2
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Identifier": "hello"
+    },
+    "whitespace": "",
+    "line": 2,
+    "column": 8
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 13
+  },
+  {
+    "kind": {
+      "Keyword": "end"
+    },
+    "whitespace": "\n",
+    "line": 3,
+    "column": 1
+  }
+]

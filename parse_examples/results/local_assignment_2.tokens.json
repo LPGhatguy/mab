@@ -1,7 +1,7 @@
 [
   {
     "kind": {
-      "Keyword": "function"
+      "Keyword": "local"
     },
     "whitespace": "",
     "line": 1,
@@ -9,23 +9,41 @@
   },
   {
     "kind": {
-      "Identifier": "foo"
+      "Identifier": "x"
     },
     "whitespace": " ",
     "line": 1,
-    "column": 10
-  },
-  {
-    "kind": "OpenParen",
-    "whitespace": "",
-    "line": 1,
-    "column": 13
+    "column": 7
   },
   {
     "kind": {
-      "Identifier": "a"
+      "Operator": "="
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 9
+  },
+  {
+    "kind": {
+      "NumberLiteral": "5"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 11
+  },
+  {
+    "kind": {
+      "Operator": ","
     },
     "whitespace": "",
+    "line": 1,
+    "column": 12
+  },
+  {
+    "kind": {
+      "NumberLiteral": "6"
+    },
+    "whitespace": " ",
     "line": 1,
     "column": 14
   },
@@ -39,24 +57,10 @@
   },
   {
     "kind": {
-      "Identifier": "b"
+      "NumberLiteral": "7"
     },
     "whitespace": " ",
     "line": 1,
     "column": 17
-  },
-  {
-    "kind": "CloseParen",
-    "whitespace": "",
-    "line": 1,
-    "column": 18
-  },
-  {
-    "kind": {
-      "Keyword": "end"
-    },
-    "whitespace": "\n",
-    "line": 2,
-    "column": 1
   }
 ]

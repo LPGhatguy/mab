@@ -7,20 +7,31 @@ use std::io::{Read, Write};
 use lua_parser::{tokenize, parse_from_tokens, Token, ast::Chunk};
 
 #[test]
-fn tokenizer() {
-    for entry in read_dir("parse_examples/tokenizer_tests").unwrap() {
+fn parse_by_example() {
+    for entry in read_dir("parse_examples/source").unwrap() {
         let entry = entry.unwrap();
-        let path = entry.path().to_str().unwrap().to_string();
+        let entry_path = entry.path();
 
-        if !path.ends_with(".lua") {
-            continue;
-        }
+        let expected_tokens_path = {
+            let mut new_path = entry_path.parent().unwrap().parent().unwrap().to_path_buf();
+            new_path.push("results");
+            new_path.push(entry_path.file_name().unwrap());
+            new_path.set_extension("tokens.json");
 
-        let expected_tokens_path = path.replace(".lua", ".tokens.json");
-        let expected_ast_path = path.replace(".lua", ".ast.json");
+            new_path
+        };
+
+        let expected_ast_path = {
+            let mut new_path = entry_path.parent().unwrap().parent().unwrap().to_path_buf();
+            new_path.push("results");
+            new_path.push(entry_path.file_name().unwrap());
+            new_path.set_extension("ast.json");
+
+            new_path
+        };
 
         let contents = {
-            let mut file = File::open(entry.path())
+            let mut file = File::open(&entry_path)
                 .expect("Unable to open file!");
 
             let mut contents = String::new();
@@ -39,7 +50,7 @@ fn tokenizer() {
                 let result: Vec<Token> = match serde_json::from_str(&expected_token_contents) {
                     Ok(value) => value,
                     Err(error) => {
-                        panic!("Unable to deserialize JSON file {}:\n{}", expected_tokens_path, error);
+                        panic!("Unable to deserialize JSON file {}:\n{}", expected_tokens_path.display(), error);
                     }
                 };
 
@@ -57,7 +68,7 @@ fn tokenizer() {
                 let result: Chunk = match serde_json::from_str(&expected_ast_contents) {
                     Ok(value) => value,
                     Err(error) => {
-                        panic!("Unable to deserialize JSON file {}:\n{}", expected_ast_path, error);
+                        panic!("Unable to deserialize JSON file {}:\n{}", expected_ast_path.display(), error);
                     }
                 };
 
@@ -69,25 +80,25 @@ fn tokenizer() {
         let tokens = match tokenize(&contents) {
             Ok(tokens) => tokens,
             Err(err) => {
-                panic!("Failed to tokenize file {}: {:?}", entry.path().display(), err);
+                panic!("Failed to tokenize file {}: {:?}", entry_path.display(), err);
             },
         };
 
         let ast = match parse_from_tokens(&tokens) {
             Ok(ast) => ast,
             Err(err) => {
-                panic!("Failed to parse file {}: {:?}", entry.path().display(), err);
+                panic!("Failed to parse file {}: {:?}", entry_path.display(), err);
             },
         };
 
         match expected_tokens {
             Some(expected_tokens) => {
                 if tokens != expected_tokens {
-                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected tokens file {}", tokens, expected_tokens, expected_tokens_path);
+                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected tokens file {}", tokens, expected_tokens, expected_tokens_path.display());
                 }
             },
             None => {
-                println!("Creating expectated tokens file {}", expected_tokens_path);
+                println!("Creating expectated tokens file {}", expected_tokens_path.display());
 
                 let mut file = File::create(&expected_tokens_path)
                     .expect("Unable to create file!");
@@ -101,11 +112,11 @@ fn tokenizer() {
         match expected_ast {
             Some(expected_ast) => {
                 if ast != expected_ast {
-                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected AST file {}", ast, expected_ast, expected_ast_path);
+                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected AST file {}", ast, expected_ast, expected_ast_path.display());
                 }
             },
             None => {
-                println!("Creating expectated AST file {}", expected_ast_path);
+                println!("Creating expectated AST file {}", expected_ast_path.display());
 
                 let mut file = File::create(&expected_ast_path)
                     .expect("Unable to create file!");

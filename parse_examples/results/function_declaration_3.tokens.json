@@ -1,0 +1,114 @@
+[
+  {
+    "kind": {
+      "Keyword": "local"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Keyword": "function"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Identifier": "foo"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 16
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 1,
+    "column": 19
+  },
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 20
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 21
+  },
+  {
+    "kind": {
+      "Identifier": "b"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 23
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 24
+  },
+  {
+    "kind": {
+      "Identifier": "c"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 26
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 1,
+    "column": 27
+  },
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "\n\t",
+    "line": 2,
+    "column": 2
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "whitespace": "",
+    "line": 2,
+    "column": 8
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 9
+  },
+  {
+    "kind": {
+      "Keyword": "end"
+    },
+    "whitespace": "\n",
+    "line": 3,
+    "column": 1
+  }
+]

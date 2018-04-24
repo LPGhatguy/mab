@@ -1,0 +1,30 @@
+{
+  "statements": [
+    {
+      "FunctionDeclaration": {
+        "name": "foo",
+        "body": {
+          "statements": [
+            {
+              "FunctionCall": {
+                "name_expression": {
+                  "Name": "print"
+                },
+                "arguments": [
+                  {
+                    "Name": "test"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "parameters": [
+          "a",
+          "b"
+        ],
+        "local": false
+      }
+    }
+  ]
+}

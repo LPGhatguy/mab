@@ -1,0 +1,18 @@
+[
+  {
+    "kind": {
+      "Keyword": "local"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "x"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  }
+]

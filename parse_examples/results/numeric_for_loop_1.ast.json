@@ -1,0 +1,19 @@
+{
+  "statements": [
+    {
+      "NumericFor": {
+        "var": "i",
+        "start": {
+          "Number": "1"
+        },
+        "end": {
+          "Number": "10"
+        },
+        "step": null,
+        "body": {
+          "statements": []
+        }
+      }
+    }
+  ]
+}

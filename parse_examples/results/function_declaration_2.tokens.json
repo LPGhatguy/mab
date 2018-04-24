@@ -67,7 +67,7 @@
   },
   {
     "kind": {
-      "Identifier": "a"
+      "Identifier": "test"
     },
     "whitespace": "",
     "line": 2,
@@ -77,7 +77,7 @@
     "kind": "CloseParen",
     "whitespace": "",
     "line": 2,
-    "column": 9
+    "column": 12
   },
   {
     "kind": {

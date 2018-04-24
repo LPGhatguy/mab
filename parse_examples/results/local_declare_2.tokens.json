@@ -1,0 +1,50 @@
+[
+  {
+    "kind": {
+      "Keyword": "local"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "x"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 8
+  },
+  {
+    "kind": {
+      "Identifier": "y"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 10
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 11
+  },
+  {
+    "kind": {
+      "Identifier": "z"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 13
+  }
+]

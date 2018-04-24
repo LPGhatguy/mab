@@ -6,36 +6,7 @@ use std::io::Read;
 use lua_parser::{tokenize, parse_from_tokens};
 
 #[test]
-fn examples() {
-    for entry in read_dir("parse_examples/should_parse").unwrap() {
-        let entry = entry.unwrap();
-
-        let contents = {
-            let mut file = File::open(entry.path())
-                .expect("Unable to open file!");
-
-            let mut contents = String::new();
-            file.read_to_string(&mut contents)
-                .expect("Unable to read from file!");
-
-            contents
-        };
-
-        let tokens = match tokenize(&contents) {
-            Ok(tokens) => tokens,
-            Err(err) => {
-                panic!("Failed to tokenize file {}: {:?}", entry.path().display(), err);
-            },
-        };
-
-        match parse_from_tokens(&tokens) {
-            Ok(_) => {},
-            Err(message) => {
-                panic!("Failed to parse file {}: {}", entry.path().display(), message);
-            },
-        }
-    }
-
+fn should_not_parse() {
     for entry in read_dir("parse_examples/should_not_parse").unwrap() {
         let entry = entry.unwrap();
 

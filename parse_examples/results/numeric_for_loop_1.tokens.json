@@ -1,0 +1,66 @@
+[
+  {
+    "kind": {
+      "Keyword": "for"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 5
+  },
+  {
+    "kind": {
+      "Operator": "="
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "NumberLiteral": "1"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 9
+  },
+  {
+    "kind": {
+      "Operator": ","
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 10
+  },
+  {
+    "kind": {
+      "NumberLiteral": "10"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 12
+  },
+  {
+    "kind": {
+      "Keyword": "do"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 15
+  },
+  {
+    "kind": {
+      "Keyword": "end"
+    },
+    "whitespace": "\n",
+    "line": 2,
+    "column": 1
+  }
+]

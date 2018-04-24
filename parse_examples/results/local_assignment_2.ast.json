@@ -1,0 +1,22 @@
+{
+  "statements": [
+    {
+      "LocalAssignment": {
+        "names": [
+          "x"
+        ],
+        "values": [
+          {
+            "Number": "5"
+          },
+          {
+            "Number": "6"
+          },
+          {
+            "Number": "7"
+          }
+        ]
+      }
+    }
+  ]
+}

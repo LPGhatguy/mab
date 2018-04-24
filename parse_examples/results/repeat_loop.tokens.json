@@ -1,0 +1,54 @@
+[
+  {
+    "kind": {
+      "Keyword": "repeat"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "\n\t",
+    "line": 2,
+    "column": 2
+  },
+  {
+    "kind": "OpenParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 7
+  },
+  {
+    "kind": {
+      "NumberLiteral": "5"
+    },
+    "whitespace": "",
+    "line": 2,
+    "column": 8
+  },
+  {
+    "kind": "CloseParen",
+    "whitespace": "",
+    "line": 2,
+    "column": 9
+  },
+  {
+    "kind": {
+      "Keyword": "until"
+    },
+    "whitespace": "\n",
+    "line": 3,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Identifier": "x"
+    },
+    "whitespace": " ",
+    "line": 3,
+    "column": 7
+  }
+]

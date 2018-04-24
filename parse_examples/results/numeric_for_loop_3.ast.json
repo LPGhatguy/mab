@@ -1,0 +1,34 @@
+{
+  "statements": [
+    {
+      "NumericFor": {
+        "var": "i",
+        "start": {
+          "Name": "start"
+        },
+        "end": {
+          "Name": "limit"
+        },
+        "step": {
+          "Number": "2"
+        },
+        "body": {
+          "statements": [
+            {
+              "FunctionCall": {
+                "name_expression": {
+                  "Name": "print"
+                },
+                "arguments": [
+                  {
+                    "Name": "i"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
