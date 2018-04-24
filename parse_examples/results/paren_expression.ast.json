@@ -1,0 +1,18 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "ParenExpression": {
+              "Name": "a"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
