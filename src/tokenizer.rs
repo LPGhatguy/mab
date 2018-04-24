@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use regex::{self, Regex};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum Symbol {
     LeftBrace,
     RightBrace,
