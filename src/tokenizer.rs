@@ -324,11 +324,11 @@ mod tests {
 
     #[test]
     fn keyword_vs_identifier() {
-        test_kinds_eq("local", vec![TokenKind::Keyword(Keyword::Local)]);
+        test_kinds_eq("local", vec![TokenKind::Symbol(Symbol::Local)]);
         test_kinds_eq("local_", vec![TokenKind::Identifier("local_".into())]);
         test_kinds_eq("locale", vec![TokenKind::Identifier("locale".into())]);
         test_kinds_eq("_local", vec![TokenKind::Identifier("_local".into())]);
-        test_kinds_eq("local _", vec![TokenKind::Keyword(Keyword::Local), TokenKind::Identifier("_".into())]);
+        test_kinds_eq("local _", vec![TokenKind::Symbol(Symbol::Local), TokenKind::Identifier("_".into())]);
     }
 
     #[test]
@@ -379,7 +379,7 @@ mod tests {
         let tokenized = tokenize(input).unwrap();
         assert_eq!(tokenized, vec![
             Token {
-                kind: TokenKind::Keyword(Keyword::Local),
+                kind: TokenKind::Symbol(Symbol::Local),
                 whitespace: "".into(),
                 line: 1,
                 column: 1,
