@@ -103,7 +103,28 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
 // exp ::= unop exp | value [binop exp]
 struct ParseExpression;
 define_parser!(ParseExpression, Expression<'state>, |_, state| {
-    ParseValue.parse(state)
+    let (state, unary_operator) = {
+        if let Ok((state, _)) = ParseSymbol(Symbol::Minus).parse(state) {
+            (state, Some(UnaryOpKind::Negate))
+        } else if let Ok((state, _)) = ParseSymbol(Symbol::Hash).parse(state) {
+            (state, Some(UnaryOpKind::Length))
+        } else if let Ok((state, _)) = ParseKeyword(Keyword::Not).parse(state) {
+            (state, Some(UnaryOpKind::BooleanNot))
+        } else {
+            (state, None)
+        }
+    };
+
+    if let Some(operator) = unary_operator {
+        let (state, argument) = ParseExpression.parse(state)?;
+
+        Ok((state, Expression::UnaryOp(UnaryOp {
+            operator,
+            argument: Box::new(argument),
+        })))
+    } else {
+        ParseValue.parse(state)
+    }
 });
 
 struct ParseValue;

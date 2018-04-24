@@ -1,6 +1,37 @@
 use std::borrow::Cow;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum UnaryOpKind {
+    Negate, // -
+    BooleanNot, // not
+    Length, // #
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum BinaryOpKind {
+    Add, // +
+    Subtract, // -
+    Multiply, // *
+    Divide, // /
+    Exponent, // ^
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct UnaryOp<'a> {
+    pub operator: UnaryOpKind,
+    #[serde(borrow)]
+    pub argument: Box<Expression<'a>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BinaryOp<'a> {
+    pub operator: BinaryOpKind,
+    #[serde(borrow)]
+    pub left: Box<Expression<'a>>,
+    pub right: Box<Expression<'a>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionCall<'a> {
     #[serde(borrow)]
     pub name_expression: Box<Expression<'a>>,
@@ -76,6 +107,8 @@ pub enum Expression<'a> {
     FunctionCall(FunctionCall<'a>),
     Name(Cow<'a, str>),
     ParenExpression(Box<Expression<'a>>),
+    UnaryOp(UnaryOp<'a>),
+    BinaryOp(BinaryOp<'a>),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
