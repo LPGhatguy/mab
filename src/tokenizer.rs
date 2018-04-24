@@ -27,7 +27,23 @@ pub enum Symbol {
     Semicolon,
     Ellipse,
     And,
-    Or
+    Or,
+    Local,
+    Function,
+    If,
+    While,
+    Repeat,
+    Until,
+    For,
+    Then,
+    Do,
+    Else,
+    ElseIf,
+    End,
+    True,
+    False,
+    Nil,
+    Not,
 }
 
 impl Symbol {
@@ -52,50 +68,22 @@ impl Symbol {
             Symbol::Ellipse => "...",
             Symbol::And => "and",
             Symbol::Or => "or",
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Keyword {
-    Local,
-    Function,
-    If,
-    While,
-    Repeat,
-    Until,
-    For,
-    Then,
-    Do,
-    Else,
-    ElseIf,
-    End,
-    True,
-    False,
-    Nil,
-    Not,
-}
-
-impl Keyword {
-    pub fn to_str(&self) -> &'static str {
-        match *self {
-            Keyword::Local => "local",
-            Keyword::Function => "function",
-            Keyword::If => "if",
-            Keyword::While => "while",
-            Keyword::Repeat => "repeat",
-            Keyword::Until => "until",
-            Keyword::For => "for",
-            Keyword::Then => "then",
-            Keyword::Do => "do",
-            Keyword::Else => "else",
-            Keyword::ElseIf => "elseif",
-            Keyword::End => "end",
-            Keyword::True => "true",
-            Keyword::False => "false",
-            Keyword::Nil => "nil",
-            Keyword::Not => "not",
+            Symbol::Not => "not",
+            Symbol::Local => "local",
+            Symbol::Function => "function",
+            Symbol::If => "if",
+            Symbol::While => "while",
+            Symbol::Repeat => "repeat",
+            Symbol::Until => "until",
+            Symbol::For => "for",
+            Symbol::Then => "then",
+            Symbol::Do => "do",
+            Symbol::Else => "else",
+            Symbol::ElseIf => "elseif",
+            Symbol::End => "end",
+            Symbol::True => "true",
+            Symbol::False => "false",
+            Symbol::Nil => "nil",
         }
     }
 }
@@ -103,9 +91,6 @@ impl Keyword {
 /// Represents a token kind.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
-    /// A reserved word of some form.
-    Keyword(Keyword),
-
     /// An operator, like `+`, `-`, or `,`.
     Symbol(Symbol),
 
@@ -163,15 +148,7 @@ struct TryAdvanceResult<'a> {
 }
 
 lazy_static! {
-    static ref KEYWORDS: Vec<Keyword> = vec![
-        Keyword::Local, Keyword::Function,
-        Keyword::If, Keyword::While, Keyword::Repeat, Keyword::Until, Keyword::For,
-        Keyword::Then, Keyword::Do, Keyword::Else, Keyword::ElseIf, Keyword::End,
-        Keyword::True, Keyword::False, Keyword::Nil,
-        Keyword::Not,
-    ];
-
-    static ref OPERATORS: Vec<Symbol> = vec![
+    static ref SYMBOLS: Vec<Symbol> = vec![
         Symbol::LeftBrace, Symbol::RightBrace,
         Symbol::LeftBracket, Symbol::RightBracket,
         Symbol::LeftParen, Symbol::RightParen,
@@ -182,30 +159,26 @@ lazy_static! {
         Symbol::Equal,
         Symbol::Comma, Symbol::Semicolon,
         Symbol::Ellipse,
+
+        Symbol::Local, Symbol::Function,
+        Symbol::If, Symbol::While, Symbol::Repeat, Symbol::Until, Symbol::For,
+        Symbol::Then, Symbol::Do, Symbol::Else, Symbol::ElseIf, Symbol::End,
+        Symbol::True, Symbol::False, Symbol::Nil,
+        Symbol::Not,
     ];
 
-    static ref STR_TO_KEYWORD: HashMap<&'static str, Keyword> = {
+    static ref STR_TO_SYMBOL: HashMap<&'static str, Symbol> = {
         let mut map = HashMap::new();
 
-        for &keyword in KEYWORDS.iter() {
-            map.insert(keyword.to_str(), keyword);
-        }
-
-        map
-    };
-
-    static ref STR_TO_OPERATOR: HashMap<&'static str, Symbol> = {
-        let mut map = HashMap::new();
-
-        for &operator in OPERATORS.iter() {
+        for &operator in SYMBOLS.iter() {
             map.insert(operator.to_str(), operator);
         }
 
         map
     };
 
-    static ref PATTERN_OPERATOR: Regex = {
-        let source = OPERATORS
+    static ref PATTERN_SYMBOL: Regex = {
+        let source = SYMBOLS
             .iter()
             .map(|v| regex::escape(v.to_str()))
             .collect::<Vec<_>>()
@@ -301,14 +274,14 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
         current_column = new_column;
 
         let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
-                if let Some(&keyword) = STR_TO_KEYWORD.get(s) {
-                    TokenKind::Keyword(keyword)
+                if let Some(&symbol) = STR_TO_SYMBOL.get(s) {
+                    TokenKind::Symbol(symbol)
                 } else {
                     TokenKind::Identifier(s.into())
                 }
             })
             .or_else(|| try_advance(current, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
-            .or_else(|| try_advance(current, &PATTERN_OPERATOR, |s| TokenKind::Symbol(*STR_TO_OPERATOR.get(s).unwrap())));
+            .or_else(|| try_advance(current, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())));
 
         match result {
             Some(result) => {
@@ -337,98 +310,5 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
             line: current_line,
             column: current_column,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn test_kinds_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
-        let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
-        assert_eq!(kinds, expected);
-    }
-
-    #[test]
-    fn keyword_vs_identifier() {
-        test_kinds_eq("local", vec![TokenKind::Keyword(Keyword::Local)]);
-        test_kinds_eq("local_", vec![TokenKind::Identifier("local_".into())]);
-        test_kinds_eq("locale", vec![TokenKind::Identifier("locale".into())]);
-        test_kinds_eq("_local", vec![TokenKind::Identifier("_local".into())]);
-        test_kinds_eq("local _", vec![TokenKind::Keyword(Keyword::Local), TokenKind::Identifier("_".into())]);
-    }
-
-    #[test]
-    fn number_literals() {
-        test_kinds_eq("6", vec![TokenKind::NumberLiteral("6".into())]);
-        test_kinds_eq("0.231e-6", vec![TokenKind::NumberLiteral("0.231e-6".into())]);
-        test_kinds_eq("-123.7", vec![TokenKind::NumberLiteral("-123.7".into())]);
-        test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE".into())]);
-        test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe".into())]);
-        test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126".into())]);
-    }
-
-    #[test]
-    fn whitespace() {
-        let input = "  local";
-        // This should always tokenize successfully
-        let tokenized = tokenize(input).unwrap();
-        let first_token = &tokenized[0];
-
-        assert_eq!(first_token.whitespace, "  ");
-    }
-
-    #[test]
-    fn whitespace_when_none_present() {
-        let input = "local";
-        let tokenized = tokenize(input).unwrap();
-        let first_token = &tokenized[0];
-
-        assert_eq!(first_token.whitespace, "");
-    }
-
-    #[test]
-    fn get_new_line_info() {
-        let (new_line, new_column) = get_new_position("test", 1, 1);
-        assert_eq!(new_line, 1);
-        assert_eq!(new_column, 5);
-
-        let (new_line, new_column) = get_new_position("testy\ntest", 1, 1);
-        assert_eq!(new_line, 2);
-        assert_eq!(new_column, 5);
-    }
-
-    #[test]
-    fn source_tracking() {
-        let input = "local
-                    test foo
-                    bar";
-        let tokenized = tokenize(input).unwrap();
-        assert_eq!(tokenized, vec![
-            Token {
-                kind: TokenKind::Keyword(Keyword::Local),
-                whitespace: "".into(),
-                line: 1,
-                column: 1,
-            },
-            Token {
-                kind: TokenKind::Identifier("test".into()),
-                whitespace: "\n                    ".into(),
-                line: 2,
-                column: 21,
-            },
-            Token {
-                kind: TokenKind::Identifier("foo".into()),
-                whitespace: " ".into(),
-                line: 2,
-                column: 26,
-            },
-            Token {
-                kind: TokenKind::Identifier("bar".into()),
-                whitespace: "\n                    ".into(),
-                line: 3,
-                column: 21,
-            }
-        ]);
     }
 }
