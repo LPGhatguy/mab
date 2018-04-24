@@ -6,7 +6,42 @@ use std::borrow::Cow;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
-use regex::Regex;
+use regex::{self, Regex};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Operator {
+    LeftBrace,
+    RightBrace,
+    LeftBracket,
+    RightBracket,
+    LeftParen,
+    RightParen,
+    Plus,
+    Minus,
+    Equal,
+    Comma,
+    Semicolon,
+    Ellipse,
+}
+
+impl Operator {
+    pub fn to_str(&self) -> &'static str {
+        match *self {
+            Operator::LeftBrace => "{",
+            Operator::RightBrace => "}",
+            Operator::LeftBracket => "[",
+            Operator::RightBracket => "]",
+            Operator::LeftParen => "(",
+            Operator::RightParen => ")",
+            Operator::Plus => "+",
+            Operator::Minus => "-",
+            Operator::Equal => "=",
+            Operator::Comma => ",",
+            Operator::Semicolon => ";",
+            Operator::Ellipse => "...",
+        }
+    }
+}
 
 /// Represents a token kind.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -81,9 +116,26 @@ lazy_static! {
         "then", "do", "else", "elseif", "end",
     ]);
 
+    static ref OPERATORS: Vec<&'static str> = vec![
+        Operator::LeftBrace, Operator::RightBrace,
+        Operator::LeftBracket, Operator::RightBracket,
+        Operator::LeftParen, Operator::RightParen,
+
+        Operator::Plus, Operator::Minus,
+        Operator::Equal,
+        Operator::Comma, Operator::Semicolon,
+        Operator::Ellipse,
+    ].iter().map(Operator::to_str).collect::<Vec<_>>();
+
+    static ref PATTERN_OPERATOR: Regex = {
+        let source = OPERATORS.iter().map(|v| regex::escape(v)).collect::<Vec<_>>().join("|");
+
+        Regex::new(&format!("^({})", source)).unwrap()
+    };
+
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?(?:(?:\d*\.\d+)|(\d+))(?:[eE]-?\d+)?))").unwrap();
-    static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(\.\.\.|=|\+|,|\{|\}|\[|\]|;)").unwrap();
+    // static ref PATTERN_OPERATOR: Regex = Regex::new(r"^(\.\.\.|=|\+|,|\{|\}|\[|\]|;)").unwrap();
     static ref PATTERN_OPEN_PAREN: Regex = Regex::new(r"^(\()").unwrap();
     static ref PATTERN_CLOSE_PAREN: Regex = Regex::new(r"^(\))").unwrap();
 
@@ -183,10 +235,10 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
                     TokenKind::Identifier(s.into())
                 }
             })
-            .or_else(|| try_advance(current, &PATTERN_OPERATOR, |s| TokenKind::Operator(s.into())))
             .or_else(|| try_advance(current, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
             .or_else(|| try_advance(current, &PATTERN_OPEN_PAREN, |_| TokenKind::OpenParen))
-            .or_else(|| try_advance(current, &PATTERN_CLOSE_PAREN, |_| TokenKind::CloseParen));
+            .or_else(|| try_advance(current, &PATTERN_CLOSE_PAREN, |_| TokenKind::CloseParen))
+            .or_else(|| try_advance(current, &PATTERN_OPERATOR, |s| TokenKind::Operator(s.into())));
 
         match result {
             Some(result) => {
