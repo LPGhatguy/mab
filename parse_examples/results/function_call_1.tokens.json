@@ -8,13 +8,17 @@
     "column": 1
   },
   {
-    "kind": "OpenParen",
+    "kind": {
+      "Symbol": "LeftParen"
+    },
     "whitespace": "",
     "line": 1,
     "column": 6
   },
   {
-    "kind": "CloseParen",
+    "kind": {
+      "Symbol": "RightParen"
+    },
     "whitespace": "",
     "line": 1,
     "column": 7

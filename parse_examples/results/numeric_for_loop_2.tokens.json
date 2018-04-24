@@ -17,7 +17,7 @@
   },
   {
     "kind": {
-      "Operator": "="
+      "Symbol": "Equal"
     },
     "whitespace": " ",
     "line": 1,
@@ -33,7 +33,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 1,
@@ -49,7 +49,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 1,
@@ -80,7 +80,9 @@
     "column": 2
   },
   {
-    "kind": "OpenParen",
+    "kind": {
+      "Symbol": "LeftParen"
+    },
     "whitespace": "",
     "line": 2,
     "column": 7
@@ -94,7 +96,9 @@
     "column": 8
   },
   {
-    "kind": "CloseParen",
+    "kind": {
+      "Symbol": "RightParen"
+    },
     "whitespace": "",
     "line": 2,
     "column": 9

@@ -17,7 +17,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 1,
@@ -33,7 +33,7 @@
   },
   {
     "kind": {
-      "Operator": "="
+      "Symbol": "Equal"
     },
     "whitespace": " ",
     "line": 1,
@@ -49,7 +49,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 1,

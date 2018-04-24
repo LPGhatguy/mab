@@ -24,7 +24,9 @@
     "column": 16
   },
   {
-    "kind": "OpenParen",
+    "kind": {
+      "Symbol": "LeftParen"
+    },
     "whitespace": "",
     "line": 1,
     "column": 19
@@ -39,7 +41,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 1,
@@ -55,7 +57,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 1,
@@ -70,7 +72,9 @@
     "column": 26
   },
   {
-    "kind": "CloseParen",
+    "kind": {
+      "Symbol": "RightParen"
+    },
     "whitespace": "",
     "line": 1,
     "column": 27
@@ -84,7 +88,9 @@
     "column": 2
   },
   {
-    "kind": "OpenParen",
+    "kind": {
+      "Symbol": "LeftParen"
+    },
     "whitespace": "",
     "line": 2,
     "column": 7
@@ -98,7 +104,9 @@
     "column": 8
   },
   {
-    "kind": "CloseParen",
+    "kind": {
+      "Symbol": "RightParen"
+    },
     "whitespace": "",
     "line": 2,
     "column": 9

@@ -17,7 +17,7 @@
   },
   {
     "kind": {
-      "Operator": "="
+      "Symbol": "Equal"
     },
     "whitespace": " ",
     "line": 1,
@@ -25,7 +25,7 @@
   },
   {
     "kind": {
-      "Operator": "{"
+      "Symbol": "LeftBrace"
     },
     "whitespace": " ",
     "line": 1,
@@ -41,7 +41,7 @@
   },
   {
     "kind": {
-      "Operator": "="
+      "Symbol": "Equal"
     },
     "whitespace": " ",
     "line": 2,
@@ -57,7 +57,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 2,
@@ -73,7 +73,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 3,
@@ -89,7 +89,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 4,
@@ -97,7 +97,7 @@
   },
   {
     "kind": {
-      "Operator": "["
+      "Symbol": "LeftBracket"
     },
     "whitespace": "\n\t",
     "line": 5,
@@ -112,20 +112,24 @@
     "column": 3
   },
   {
-    "kind": "OpenParen",
+    "kind": {
+      "Symbol": "LeftParen"
+    },
     "whitespace": "",
     "line": 5,
     "column": 4
   },
   {
-    "kind": "CloseParen",
+    "kind": {
+      "Symbol": "RightParen"
+    },
     "whitespace": "",
     "line": 5,
     "column": 5
   },
   {
     "kind": {
-      "Operator": "]"
+      "Symbol": "RightBracket"
     },
     "whitespace": "",
     "line": 5,
@@ -133,7 +137,7 @@
   },
   {
     "kind": {
-      "Operator": "="
+      "Symbol": "Equal"
     },
     "whitespace": " ",
     "line": 5,
@@ -141,7 +145,7 @@
   },
   {
     "kind": {
-      "Operator": "{"
+      "Symbol": "LeftBrace"
     },
     "whitespace": " ",
     "line": 5,
@@ -157,7 +161,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 6,
@@ -173,7 +177,7 @@
   },
   {
     "kind": {
-      "Operator": ","
+      "Symbol": "Comma"
     },
     "whitespace": "",
     "line": 7,
@@ -189,7 +193,7 @@
   },
   {
     "kind": {
-      "Operator": "}"
+      "Symbol": "RightBrace"
     },
     "whitespace": "\n\t",
     "line": 9,
@@ -197,7 +201,7 @@
   },
   {
     "kind": {
-      "Operator": "}"
+      "Symbol": "RightBrace"
     },
     "whitespace": "\n",
     "line": 10,

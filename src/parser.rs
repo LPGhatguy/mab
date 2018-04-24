@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use tokenizer::{Token, TokenKind};
+use tokenizer::{Token, TokenKind, Symbol};
 use ast::*;
 use parser_core::*;
 
@@ -59,9 +59,9 @@ define_parser!(ParseKeyword, (), |this: &ParseKeyword, state: ParseState<'state>
     Ok((state, ()))
 });
 
-struct ParseOperator(pub &'static str);
-define_parser!(ParseOperator, (), |this: &ParseOperator, state: ParseState<'state>| {
-    let (state, _) = ParseToken(TokenKind::Operator(this.0.into())).parse(state)?;
+struct ParseSymbol(pub Symbol);
+define_parser!(ParseSymbol, (), |this: &ParseSymbol, state: ParseState<'state>| {
+    let (state, _) = ParseToken(TokenKind::Symbol(this.0)).parse(state)?;
 
     Ok((state, ()))
 });
@@ -121,10 +121,10 @@ struct ParseLocalAssignment;
 define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
     let (state, _) = ParseKeyword("local").parse(state)?;
 
-    let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseOperator(",")).parse(state)?;
+    let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(state)?;
 
-    let (state, expressions) = match ParseOperator("=").parse(state) {
-        Ok((state, _)) => DelimitedOneOrMore(ParseExpression, ParseOperator(",")).parse(state)?,
+    let (state, expressions) = match ParseSymbol(Symbol::Equal).parse(state) {
+        Ok((state, _)) => DelimitedOneOrMore(ParseExpression, ParseSymbol(Symbol::Comma)).parse(state)?,
         Err(_) => (state, Vec::new()),
     };
 
@@ -140,9 +140,9 @@ define_parser!(ParseLocalAssignment, LocalAssignment<'state>, |_, state| {
 struct ParseFunctionCall;
 define_parser!(ParseFunctionCall, FunctionCall<'state>, |_, state| {
     let (state, name) = ParseIdentifier.parse(state)?;
-    let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
-    let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseOperator(","), false).parse(state)?;
-    let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
+    let (state, expressions) = DelimitedZeroOrMore(ParseExpression, ParseSymbol(Symbol::Comma), false).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
 
     Ok((state, FunctionCall {
         name_expression: Box::new(Expression::Name(name)),
@@ -154,20 +154,16 @@ struct ParseNumericFor;
 define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
     let (state, _) = ParseKeyword("for").parse(state)?;
     let (state, var) = ParseIdentifier.parse(state)?;
-    let (state, _) = ParseOperator("=").parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Equal).parse(state)?;
     let (state, start) = ParseExpression.parse(state)?;
-    let (state, _) = ParseOperator(",").parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Comma).parse(state)?;
     let (state, end) = ParseExpression.parse(state)?;
 
     let (state, step) = match state.peek() {
-        Some(&Token { kind: TokenKind::Operator(ref operator), .. }) => {
-            if operator == "," {
-                let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
+        Some(&Token { kind: TokenKind::Symbol(Symbol::Comma), .. }) => {
+            let (new_state, parsed_step) = ParseExpression.parse(state.advance(1))?;
 
-                (new_state, Some(parsed_step))
-            } else {
-                return Err(ParseAbort::NoMatch);
-            }
+            (new_state, Some(parsed_step))
         },
         Some(&Token { kind: TokenKind::Keyword(ref keyword), .. }) => {
             if keyword == "do" {
@@ -268,9 +264,9 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
 
     let (state, _) = ParseKeyword("function").parse(state)?;
     let (state, name) = ParseIdentifier.parse(state)?;
-    let (state, _) = ParseToken(TokenKind::OpenParen).parse(state)?;
-    let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseOperator(","), false).parse(state)?;
-    let (state, _) = ParseToken(TokenKind::CloseParen).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
+    let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma), false).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
     let (state, _) = ParseKeyword("end").parse(state)?;
 
@@ -288,9 +284,9 @@ define_parser!(ParseTableKey, TableKey<'state>, |_, state| {
     let (state, key) = match ParseIdentifier.parse(state) {
         Ok((state, identifier)) => (state, TableKey::Name(identifier.into())),
         Err(ParseAbort::NoMatch) => {
-            let (state, _) = ParseOperator("[").parse(state)?;
+            let (state, _) = ParseSymbol(Symbol::LeftBracket).parse(state)?;
             let (state, key) = ParseExpression.parse(state)?;
-            let (state, _) = ParseOperator("]").parse(state)?;
+            let (state, _) = ParseSymbol(Symbol::RightBracket).parse(state)?;
 
             (state, TableKey::Expression(key))
         },
@@ -306,7 +302,7 @@ define_parser!(ParseTableValue, (Option<TableKey<'state>>, Expression<'state>), 
 
     // We only check for '=' if there was a key
     let state = match key {
-        Some(_) => ParseOperator("=").parse(state)?.0,
+        Some(_) => ParseSymbol(Symbol::Equal).parse(state)?.0,
         None => state
     };
 
@@ -316,9 +312,9 @@ define_parser!(ParseTableValue, (Option<TableKey<'state>>, Expression<'state>), 
 
 struct ParseTableLiteral;
 define_parser!(ParseTableLiteral, TableLiteral<'state>, |_, state| {
-    let (state, _) = ParseOperator("{").parse(state)?;
-    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseOperator(","), ParseOperator(";") ]), true).parse(state)?;
-    let (state, _) = ParseOperator("}").parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::LeftBrace).parse(state)?;
+    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseSymbol(Symbol::Comma), ParseSymbol(Symbol::Semicolon) ]), true).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::RightBrace).parse(state)?;
     Ok((state, TableLiteral {
         items
     }))
