@@ -14,6 +14,7 @@ pub enum BinaryOpKind {
     Multiply, // *
     Divide, // /
     Exponent, // ^
+    Concat, // ..
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
