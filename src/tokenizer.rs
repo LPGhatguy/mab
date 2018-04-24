@@ -176,7 +176,7 @@ lazy_static! {
         Symbol::LeftBracket, Symbol::RightBracket,
         Symbol::LeftParen, Symbol::RightParen,
 
-        Symbol::Plus, Symbol::Minus, Symbol::Star, Symbol::Slash, Symbol::Caret,
+        Symbol::Plus, Symbol::Minus, Symbol::Star, Symbol::Slash, Symbol::Caret, Symbol::Concat,
         Symbol::Hash,
         Symbol::Equal,
         Symbol::Comma, Symbol::Semicolon,
