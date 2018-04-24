@@ -128,22 +128,16 @@ impl<'state> Parser<'state> for ParseBinaryOp {
     type Item = BinaryOpKind;
 
     fn parse(&self, state: ParseState<'state>) -> Result<(ParseState<'state>, Self::Item), ParseAbort> {
-        if let Some(token) = state.peek() {
-            match token.kind {
-                // Binary operations are always symbols
-                TokenKind::Symbol(symbol) => {
-                    // TokenKind doesn't derive Hash, so we use the string version
-                    if let Some(kind) = BINARY_OPS.get(symbol.to_str()) {
-                        // We must clone the kind here.
-                        // We can't simply defererence it, because we can't move out of the borrow.
-                        // We also can't just return the reference, because we need an actual value.
-                        Ok((state.advance(1), kind.clone()))
-                    }
-                    else {
-                        Err(ParseAbort::NoMatch)
-                    }
-                },
-                _ => Err(ParseAbort::NoMatch)
+        if let Some(Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
+            // TokenKind doesn't derive Hash, so we use the string version
+            if let Some(kind) = BINARY_OPS.get(symbol.to_str()) {
+                // We must clone the kind here.
+                // We can't simply defererence it, because we can't move out of the borrow.
+                // We also can't just return the reference, because we need an actual value.
+                Ok((state.advance(1), kind.clone()))
+            }
+            else {
+                Err(ParseAbort::NoMatch)
             }
         }
         else {
