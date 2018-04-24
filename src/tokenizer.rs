@@ -3,8 +3,7 @@
 //! to construct an AST.
 
 use std::borrow::Cow;
-use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
+use std::collections::HashMap;
 
 use regex::{self, Regex};
 
@@ -43,16 +42,58 @@ impl Symbol {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Keyword {
+    Local,
+    Function,
+    If,
+    While,
+    Repeat,
+    Until,
+    For,
+    Then,
+    Do,
+    Else,
+    ElseIf,
+    End,
+    True,
+    False,
+    Nil,
+}
+
+impl Keyword {
+    pub fn to_str(&self) -> &'static str {
+        match *self {
+            Keyword::Local => "local",
+            Keyword::Function => "function",
+            Keyword::If => "if",
+            Keyword::While => "while",
+            Keyword::Repeat => "repeat",
+            Keyword::Until => "until",
+            Keyword::For => "for",
+            Keyword::Then => "then",
+            Keyword::Do => "do",
+            Keyword::Else => "else",
+            Keyword::ElseIf => "elseif",
+            Keyword::End => "end",
+            Keyword::True => "true",
+            Keyword::False => "false",
+            Keyword::Nil => "nil",
+        }
+    }
+}
+
 /// Represents a token kind.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
-    #[serde(borrow)]
     /// A reserved word of some form.
-    Keyword(Cow<'a, str>),
+    Keyword(Keyword),
 
     /// An operator, like `+`, `-`, or `,`.
     Symbol(Symbol),
 
+    #[serde(borrow)]
     /// An identifier that is not a keyword.
     Identifier(Cow<'a, str>),
 
@@ -60,12 +101,6 @@ pub enum TokenKind<'a> {
     /// The original value of the number, as it appeared in the source, is
     /// contained in the `&str` value.
     NumberLiteral(Cow<'a, str>),
-
-    /// A boolean literal.
-    BoolLiteral(bool),
-
-    /// The `nil` literal.
-    NilLiteral,
 }
 
 /// A token in the source.
@@ -82,9 +117,11 @@ pub struct Token<'a> {
     /// The line in the source that the token came from.
     /// This starts at 1, not 0.
     pub line: usize,
+
     /// The column in the source that the token came from.
     /// This starts at 1, not 0.
     pub column: usize,
+
     // TODO: A slice from the source indicating what the token came from
 }
 
@@ -110,11 +147,12 @@ struct TryAdvanceResult<'a> {
 }
 
 lazy_static! {
-    static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
-        "local", "function",
-        "if", "while", "repeat", "until", "for",
-        "then", "do", "else", "elseif", "end",
-    ]);
+    static ref KEYWORDS: Vec<Keyword> = vec![
+        Keyword::Local, Keyword::Function,
+        Keyword::If, Keyword::While, Keyword::Repeat, Keyword::Until, Keyword::For,
+        Keyword::Then, Keyword::Do, Keyword::Else, Keyword::ElseIf, Keyword::End,
+        Keyword::True, Keyword::False, Keyword::Nil,
+    ];
 
     static ref OPERATORS: Vec<Symbol> = vec![
         Symbol::LeftBrace, Symbol::RightBrace,
@@ -126,6 +164,16 @@ lazy_static! {
         Symbol::Comma, Symbol::Semicolon,
         Symbol::Ellipse,
     ];
+
+    static ref STR_TO_KEYWORD: HashMap<&'static str, Keyword> = {
+        let mut map = HashMap::new();
+
+        for &keyword in KEYWORDS.iter() {
+            map.insert(keyword.to_str(), keyword);
+        }
+
+        map
+    };
 
     static ref STR_TO_OPERATOR: HashMap<&'static str, Symbol> = {
         let mut map = HashMap::new();
@@ -234,14 +282,8 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
         current_column = new_column;
 
         let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
-                if KEYWORDS.contains(s) {
-                    TokenKind::Keyword(s.into())
-                } else if s == "true" {
-                    TokenKind::BoolLiteral(true)
-                } else if s == "false" {
-                    TokenKind::BoolLiteral(false)
-                } else if s == "nil" {
-                    TokenKind::NilLiteral
+                if let Some(&keyword) = STR_TO_KEYWORD.get(s) {
+                    TokenKind::Keyword(keyword)
                 } else {
                     TokenKind::Identifier(s.into())
                 }
@@ -289,19 +331,12 @@ mod tests {
     }
 
     #[test]
-    fn literals() {
-        test_kinds_eq("true", vec![TokenKind::BoolLiteral(true)]);
-        test_kinds_eq("false", vec![TokenKind::BoolLiteral(false)]);
-        test_kinds_eq("nil", vec![TokenKind::NilLiteral]);
-    }
-
-    #[test]
     fn keyword_vs_identifier() {
-        test_kinds_eq("local", vec![TokenKind::Keyword("local".into())]);
+        test_kinds_eq("local", vec![TokenKind::Keyword(Keyword::Local)]);
         test_kinds_eq("local_", vec![TokenKind::Identifier("local_".into())]);
         test_kinds_eq("locale", vec![TokenKind::Identifier("locale".into())]);
         test_kinds_eq("_local", vec![TokenKind::Identifier("_local".into())]);
-        test_kinds_eq("local _", vec![TokenKind::Keyword("local".into()), TokenKind::Identifier("_".into())]);
+        test_kinds_eq("local _", vec![TokenKind::Keyword(Keyword::Local), TokenKind::Identifier("_".into())]);
     }
 
     #[test]
@@ -352,7 +387,7 @@ mod tests {
         let tokenized = tokenize(input).unwrap();
         assert_eq!(tokenized, vec![
             Token {
-                kind: TokenKind::Keyword("local".into()),
+                kind: TokenKind::Keyword(Keyword::Local),
                 whitespace: "".into(),
                 line: 1,
                 column: 1,
