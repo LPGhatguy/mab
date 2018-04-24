@@ -1,7 +1,7 @@
 [
   {
     "kind": {
-      "Keyword": "if"
+      "Symbol": "If"
     },
     "whitespace": "",
     "line": 1,
@@ -17,7 +17,7 @@
   },
   {
     "kind": {
-      "Keyword": "then"
+      "Symbol": "Then"
     },
     "whitespace": " ",
     "line": 1,
@@ -57,7 +57,7 @@
   },
   {
     "kind": {
-      "Keyword": "elseif"
+      "Symbol": "ElseIf"
     },
     "whitespace": "\n",
     "line": 3,
@@ -73,7 +73,7 @@
   },
   {
     "kind": {
-      "Keyword": "then"
+      "Symbol": "Then"
     },
     "whitespace": " ",
     "line": 3,
@@ -113,7 +113,7 @@
   },
   {
     "kind": {
-      "Keyword": "elseif"
+      "Symbol": "ElseIf"
     },
     "whitespace": "\n",
     "line": 5,
@@ -129,7 +129,7 @@
   },
   {
     "kind": {
-      "Keyword": "then"
+      "Symbol": "Then"
     },
     "whitespace": " ",
     "line": 5,
@@ -169,7 +169,7 @@
   },
   {
     "kind": {
-      "Keyword": "else"
+      "Symbol": "Else"
     },
     "whitespace": "\n",
     "line": 7,
@@ -209,7 +209,7 @@
   },
   {
     "kind": {
-      "Keyword": "end"
+      "Symbol": "End"
     },
     "whitespace": "\n",
     "line": 9,
