@@ -1,5 +1,4 @@
 use std::borrow::Cow;
-use std::collections::HashMap;
 
 use tokenizer::{Token, TokenKind, Symbol};
 use ast::*;
