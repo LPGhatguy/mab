@@ -1,0 +1,24 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "BinaryOp": {
+              "operator": "Concat",
+              "left": {
+                "Name": "a"
+              },
+              "right": {
+                "Name": "b"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
