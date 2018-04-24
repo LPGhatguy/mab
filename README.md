@@ -8,7 +8,7 @@
 
 <hr />
 
-This is the foundations for an extensible, style-preserving Lua parser written in Rust. I want to use it for a number of future projects:
+This is the foundations for an extensible, style-preserving Lua 5.1+ parser written in Rust. I want to use it for a number of future projects:
 
 * Static analysis tool to replace luacheck
 * Style checker and reformatter like gofmt or rustfmt (maybe named "Stylua")
@@ -17,12 +17,13 @@ This is the foundations for an extensible, style-preserving Lua parser written i
 * A tool like [Google's Rerast for Rust](https://github.com/google/rerast) or [Facebook's codemod](https://github.com/facebook/codemod)
 
 ## Goals
+* PUC-Rio Lua 5.1+, LuaJIT 2.0+ support
+	* Optionally validate against specific versions of Lua by casting between ASTs
 * 100% style and whitespace preservation
 	* You should be able to read and overwrite your entire project and have zero changes
-* Solid AST with support for Lua 5.1+
 * Foundation for static analysis and strong typing
 * Support for language extensions without breaking existing tools
-	* The AST should be able to downlevel emit to any normal version of Lua
+	* The AST should be able to cast to any normal version of Lua
 	* The project should either:
 		* Leverage Rust's type system (`non_exhaustive` patterns, especially) to guarantee that tools can be recompiled with forks of this project with zero changes.
 		* Or, use a technique similar to an Entity Component System to implement extended tokens and AST nodes.
