@@ -100,30 +100,34 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
     })
 });
 
+struct ParseUnaryOp;
+define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
+    if let Ok((state, _)) = ParseSymbol(Symbol::Minus).parse(state) {
+        Ok((state, UnaryOpKind::Negate))
+    } else if let Ok((state, _)) = ParseSymbol(Symbol::Hash).parse(state) {
+        Ok((state, UnaryOpKind::Length))
+    } else if let Ok((state, _)) = ParseKeyword(Keyword::Not).parse(state) {
+        Ok((state, UnaryOpKind::BooleanNot))
+    } else {
+        Err(ParseAbort::NoMatch)
+    }
+});
+
 // exp ::= unop exp | value [binop exp]
 struct ParseExpression;
 define_parser!(ParseExpression, Expression<'state>, |_, state| {
-    let (state, unary_operator) = {
-        if let Ok((state, _)) = ParseSymbol(Symbol::Minus).parse(state) {
-            (state, Some(UnaryOpKind::Negate))
-        } else if let Ok((state, _)) = ParseSymbol(Symbol::Hash).parse(state) {
-            (state, Some(UnaryOpKind::Length))
-        } else if let Ok((state, _)) = ParseKeyword(Keyword::Not).parse(state) {
-            (state, Some(UnaryOpKind::BooleanNot))
-        } else {
-            (state, None)
+    match ParseUnaryOp.parse(state) {
+        Ok((state, operator)) => {
+            let (state, argument) = ParseExpression.parse(state)?;
+
+            Ok((state, Expression::UnaryOp(UnaryOp {
+                operator,
+                argument: Box::new(argument),
+            })))
+        },
+        Err(_) => {
+            ParseValue.parse(state)
         }
-    };
-
-    if let Some(operator) = unary_operator {
-        let (state, argument) = ParseExpression.parse(state)?;
-
-        Ok((state, Expression::UnaryOp(UnaryOp {
-            operator,
-            argument: Box::new(argument),
-        })))
-    } else {
-        ParseValue.parse(state)
     }
 });
 
