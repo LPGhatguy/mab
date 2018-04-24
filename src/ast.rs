@@ -102,7 +102,6 @@ pub enum Expression<'a> {
     Number(Cow<'a, str>),
     String(Cow<'a, str>),
     VarArg,
-    Function,
     Table(TableLiteral<'a>),
     FunctionCall(FunctionCall<'a>),
     Name(Cow<'a, str>),
