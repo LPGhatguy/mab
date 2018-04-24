@@ -124,9 +124,9 @@ lazy_static! {
 
 struct ParseBinaryOp;
 define_parser!(ParseBinaryOp, BinaryOpKind, |_, state: ParseState<'state>| {
-    if let Some(Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
+    if let Some(&Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
         // TokenKind doesn't derive Hash, so we use the string version
-        if let Some(kind) = BINARY_OPS.get(symbol) {
+        if let Some(kind) = BINARY_OPS.get(&symbol) {
             Ok((state.advance(1), *kind))
         }
         else {
