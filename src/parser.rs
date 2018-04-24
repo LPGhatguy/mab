@@ -93,6 +93,7 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseLocalAssignment => Statement::LocalAssignment,
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
+        ParseIfStatement => Statement::IfStatement,
         ParseWhileLoop => Statement::WhileLoop,
         ParseRepeatLoop => Statement::RepeatLoop,
         ParseFunctionDeclaration => Statement::FunctionDeclaration,
@@ -182,6 +183,20 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
         start,
         end,
         step,
+        body,
+    }))
+});
+
+struct ParseIfStatement;
+define_parser!(ParseIfStatement, IfStatement<'state>, |_, state| {
+    let (state, _) = ParseKeyword("if").parse(state)?;
+    let (state, condition) = ParseExpression.parse(state)?;
+    let (state, _) = ParseKeyword("then").parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseKeyword("end").parse(state)?;
+
+    Ok((state, IfStatement {
+        condition,
         body,
     }))
 });

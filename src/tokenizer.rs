@@ -77,8 +77,8 @@ struct TryAdvanceResult<'a> {
 lazy_static! {
     static ref KEYWORDS: HashSet<&'static str> = HashSet::from_iter(vec![
         "local", "function",
-        "while", "repeat", "until", "for",
-        "do", "end",
+        "if", "while", "repeat", "until", "for",
+        "then", "do", "end",
     ]);
 
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();

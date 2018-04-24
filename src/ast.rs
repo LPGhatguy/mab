@@ -32,6 +32,13 @@ pub struct NumericFor<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IfStatement<'a> {
+    #[serde(borrow)]
+    pub condition: Expression<'a>,
+    pub body: Chunk<'a>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WhileLoop<'a> {
     #[serde(borrow)]
     pub condition: Expression<'a>,
@@ -107,6 +114,7 @@ pub enum Statement<'a> {
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
     NumericFor(NumericFor<'a>),
+    IfStatement(IfStatement<'a>),
     WhileLoop(WhileLoop<'a>),
     RepeatLoop(RepeatLoop<'a>),
     FunctionDeclaration(FunctionDeclaration<'a>),
