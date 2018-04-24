@@ -103,6 +103,11 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
 // exp ::= unop exp | value [binop exp]
 struct ParseExpression;
 define_parser!(ParseExpression, Expression<'state>, |_, state| {
+    ParseValue.parse(state)
+});
+
+struct ParseValue;
+define_parser!(ParseValue, Expression<'state>, |_, state| {
     parse_first_of!(state, {
         ParseNumber => Expression::Number,
         ParseFunctionCall => Expression::FunctionCall,
