@@ -1,0 +1,21 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "UnaryOp": {
+              "operator": "BooleanNot",
+              "argument": {
+                "Name": "hello"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
