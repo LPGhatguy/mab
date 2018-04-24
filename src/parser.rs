@@ -127,6 +127,15 @@ define_parser!(ParseExpression, Expression<'state>, |_, state| {
     }
 });
 
+struct ParseParenExpression;
+define_parser!(ParseParenExpression, Box<Expression<'state>>, |_, state| {
+    let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
+    let (state, expression) = ParseExpression.parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
+
+    Ok((state, Box::new(expression)))
+});
+
 struct ParseValue;
 define_parser!(ParseValue, Expression<'state>, |_, state| {
     parse_first_of!(state, {
@@ -134,6 +143,7 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
         ParseFunctionCall => Expression::FunctionCall,
         ParseIdentifier => Expression::Name,
         ParseTableLiteral => Expression::Table,
+        ParseParenExpression => Expression::ParenExpression,
     })
 });
 
