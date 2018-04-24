@@ -312,3 +312,96 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_kinds_eq(input: &'static str, expected: Vec<TokenKind<'static>>) {
+        let kinds = tokenize(input).unwrap().iter().map(|v| v.kind.clone()).collect::<Vec<_>>();
+        assert_eq!(kinds, expected);
+    }
+
+    #[test]
+    fn keyword_vs_identifier() {
+        test_kinds_eq("local", vec![TokenKind::Keyword(Keyword::Local)]);
+        test_kinds_eq("local_", vec![TokenKind::Identifier("local_".into())]);
+        test_kinds_eq("locale", vec![TokenKind::Identifier("locale".into())]);
+        test_kinds_eq("_local", vec![TokenKind::Identifier("_local".into())]);
+        test_kinds_eq("local _", vec![TokenKind::Keyword(Keyword::Local), TokenKind::Identifier("_".into())]);
+    }
+
+    #[test]
+    fn number_literals() {
+        test_kinds_eq("6", vec![TokenKind::NumberLiteral("6".into())]);
+        test_kinds_eq("0.231e-6", vec![TokenKind::NumberLiteral("0.231e-6".into())]);
+        test_kinds_eq("-123.7", vec![TokenKind::NumberLiteral("-123.7".into())]);
+        test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE".into())]);
+        test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe".into())]);
+        test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126".into())]);
+    }
+
+    #[test]
+    fn whitespace() {
+        let input = "  local";
+        // This should always tokenize successfully
+        let tokenized = tokenize(input).unwrap();
+        let first_token = &tokenized[0];
+
+        assert_eq!(first_token.whitespace, "  ");
+    }
+
+    #[test]
+    fn whitespace_when_none_present() {
+        let input = "local";
+        let tokenized = tokenize(input).unwrap();
+        let first_token = &tokenized[0];
+
+        assert_eq!(first_token.whitespace, "");
+    }
+
+    #[test]
+    fn get_new_line_info() {
+        let (new_line, new_column) = get_new_position("test", 1, 1);
+        assert_eq!(new_line, 1);
+        assert_eq!(new_column, 5);
+
+        let (new_line, new_column) = get_new_position("testy\ntest", 1, 1);
+        assert_eq!(new_line, 2);
+        assert_eq!(new_column, 5);
+    }
+
+    #[test]
+    fn source_tracking() {
+        let input = "local
+                    test foo
+                    bar";
+        let tokenized = tokenize(input).unwrap();
+        assert_eq!(tokenized, vec![
+            Token {
+                kind: TokenKind::Keyword(Keyword::Local),
+                whitespace: "".into(),
+                line: 1,
+                column: 1,
+            },
+            Token {
+                kind: TokenKind::Identifier("test".into()),
+                whitespace: "\n                    ".into(),
+                line: 2,
+                column: 21,
+            },
+            Token {
+                kind: TokenKind::Identifier("foo".into()),
+                whitespace: " ".into(),
+                line: 2,
+                column: 26,
+            },
+            Token {
+                kind: TokenKind::Identifier("bar".into()),
+                whitespace: "\n                    ".into(),
+                line: 3,
+                column: 21,
+            }
+        ]);
+    }
+}
