@@ -108,43 +108,35 @@ define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
 });
 
 lazy_static! {
-    static ref BINARY_OPS: HashMap<&'static str, BinaryOpKind> = {
+    static ref BINARY_OPS: HashMap<Symbol, BinaryOpKind> = {
         let mut map = HashMap::new();
 
-        map.insert(Symbol::Plus.to_str(), BinaryOpKind::Add);
-        map.insert(Symbol::Minus.to_str(), BinaryOpKind::Subtract);
-        map.insert(Symbol::Star.to_str(), BinaryOpKind::Multiply);
-        map.insert(Symbol::Slash.to_str(), BinaryOpKind::Divide);
-        map.insert(Symbol::Caret.to_str(), BinaryOpKind::Exponent);
-        map.insert(Symbol::TwoDots.to_str(), BinaryOpKind::Concat);
+        map.insert(Symbol::Plus, BinaryOpKind::Add);
+        map.insert(Symbol::Minus, BinaryOpKind::Subtract);
+        map.insert(Symbol::Star, BinaryOpKind::Multiply);
+        map.insert(Symbol::Slash, BinaryOpKind::Divide);
+        map.insert(Symbol::Caret, BinaryOpKind::Exponent);
+        map.insert(Symbol::TwoDots, BinaryOpKind::Concat);
 
         map
     };
 }
 
 struct ParseBinaryOp;
-// Not using define_parser! because it causes some weird lifetime issues
-impl<'state> Parser<'state> for ParseBinaryOp {
-    type Item = BinaryOpKind;
-
-    fn parse(&self, state: ParseState<'state>) -> Result<(ParseState<'state>, Self::Item), ParseAbort> {
-        if let Some(Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
-            // TokenKind doesn't derive Hash, so we use the string version
-            if let Some(kind) = BINARY_OPS.get(symbol.to_str()) {
-                // We must clone the kind here.
-                // We can't simply defererence it, because we can't move out of the borrow.
-                // We also can't just return the reference, because we need an actual value.
-                Ok((state.advance(1), kind.clone()))
-            }
-            else {
-                Err(ParseAbort::NoMatch)
-            }
+define_parser!(ParseBinaryOp, BinaryOpKind, |_, state: ParseState<'state>| {
+    if let Some(Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
+        // TokenKind doesn't derive Hash, so we use the string version
+        if let Some(kind) = BINARY_OPS.get(symbol) {
+            Ok((state.advance(1), *kind))
         }
         else {
             Err(ParseAbort::NoMatch)
         }
     }
-}
+    else {
+        Err(ParseAbort::NoMatch)
+    }
+});
 
 // exp ::= unop exp | value [binop exp]
 struct ParseExpression;
