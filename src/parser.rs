@@ -100,12 +100,11 @@ define_parser!(ParseUnaryOp, UnaryOpKind, |_, state: ParseState<'state>| {
             Symbol::Minus => UnaryOpKind::Negate,
             Symbol::Hash => UnaryOpKind::Length,
             Symbol::Not => UnaryOpKind::BooleanNot,
-            _ => return Err(ParseAbort::NoMatch)
+            _ => return Err(ParseAbort::NoMatch),
         };
 
         Ok((state.advance(1), kind))
-    }
-    else {
+    } else {
         Err(ParseAbort::NoMatch)
     }
 });
@@ -120,12 +119,11 @@ define_parser!(ParseBinaryOp, BinaryOpKind, |_, state: ParseState<'state>| {
             Symbol::Slash => BinaryOpKind::Divide,
             Symbol::Caret => BinaryOpKind::Exponent,
             Symbol::TwoDots => BinaryOpKind::Concat,
-            _ => return Err(ParseAbort::NoMatch)
+            _ => return Err(ParseAbort::NoMatch),
         };
 
         Ok((state.advance(1), kind))
-    }
-    else {
+    } else {
         Err(ParseAbort::NoMatch)
     }
 });
