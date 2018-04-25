@@ -128,46 +128,76 @@ define_parser!(ParseBinaryOp, BinaryOpKind, |_, state: ParseState<'state>| {
     }
 });
 
-// exp ::= unop exp | value [binop exp]
+struct ParseExpressionAtPrecedence(u8);
+define_parser!(ParseExpressionAtPrecedence, Expression<'state>, |this: &ParseExpressionAtPrecedence, state| {
+    let min_precedence = this.0;
+    let (mut state, mut atom_lhs) = ParseExpressionAtom.parse(state)?;
+
+    loop {
+        let (next_state, operator) = match ParseBinaryOp.parse(state) {
+            Ok(v) => v,
+            Err(_) => break,
+        };
+
+        if operator.precedence() < min_precedence {
+            break;
+        }
+
+        let next_min_precedence = if operator.is_right_associative() {
+            operator.precedence()
+        } else {
+            operator.precedence() + 1
+        };
+
+        let (next_state, atom_rhs) = ParseExpressionAtPrecedence(next_min_precedence).parse(next_state)?;
+        state = next_state;
+
+        atom_lhs = Expression::BinaryOp(BinaryOp {
+            operator,
+            left: Box::new(atom_lhs),
+            right: Box::new(atom_rhs),
+        });
+    }
+
+    Ok((state, atom_lhs))
+});
+
 struct ParseExpression;
 define_parser!(ParseExpression, Expression<'state>, |_, state| {
-    match ParseUnaryOp.parse(state) {
-        Ok((state, operator)) => {
-            let (state, argument) = ParseExpression.parse(state)?;
+    ParseExpressionAtPrecedence(1).parse(state)
+});
 
-            Ok((state, Expression::UnaryOp(UnaryOp {
-                operator,
-                argument: Box::new(argument),
-            })))
-        },
-        Err(_) => {
-            let (state, left) = ParseValue.parse(state)?;
-
-            match ParseBinaryOp.parse(state) {
-                Ok((state, operator)) => {
-                    let (state, right) = ParseExpression.parse(state)?;
-
-                    Ok((state, Expression::BinaryOp(BinaryOp {
-                        operator,
-                        left: Box::new(left),
-                        right: Box::new(right),
-                    })))
-                },
-                Err(_) => {
-                    Ok((state, left))
-                }
-            }
-        }
+struct ParseExpressionAtom;
+define_parser!(ParseExpressionAtom, Expression<'state>, |_, state| {
+    if let Ok((next_state, expression)) = ParseUnaryExpression.parse(state) {
+        Ok((next_state, expression))
+    } else if let Ok((next_state, expression)) = ParseParenExpression.parse(state) {
+        Ok((next_state, expression))
+    } else if let Ok((next_state, expression)) = ParseValue.parse(state) {
+        Ok((next_state, expression))
+    } else {
+        Err(ParseAbort::NoMatch)
     }
 });
 
+struct ParseUnaryExpression;
+define_parser!(ParseUnaryExpression, Expression<'state>, |_, state| {
+    let (state, operator) = ParseUnaryOp.parse(state)?;
+    let (state, argument) = ParseExpressionAtPrecedence(operator.precedence()).parse(state)?;
+
+    Ok((state, Expression::UnaryOp(UnaryOp {
+        operator,
+        argument: Box::new(argument),
+    })))
+});
+
 struct ParseParenExpression;
-define_parser!(ParseParenExpression, Box<Expression<'state>>, |_, state| {
+define_parser!(ParseParenExpression, Expression<'state>, |_, state| {
     let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
     let (state, expression) = ParseExpression.parse(state)?;
     let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
 
-    Ok((state, Box::new(expression)))
+    Ok((state, Expression::ParenExpression(Box::new(expression))))
 });
 
 struct ParseValue;
@@ -177,7 +207,6 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
         ParseFunctionCall => Expression::FunctionCall,
         ParseIdentifier => Expression::Name,
         ParseTableLiteral => Expression::Table,
-        ParseParenExpression => Expression::ParenExpression,
     })
 });
 

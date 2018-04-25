@@ -8,7 +8,7 @@ pub enum UnaryOpKind {
 }
 
 impl UnaryOpKind {
-    pub fn precedence(self) -> u8 {
+    pub fn precedence(&self) -> u8 {
         11
     }
 }
@@ -37,19 +37,23 @@ impl BinaryOpKind {
     // 10 *     /     //    %
     // 11 unary operators (not   #     -     ~)
     // 12 ^
-    pub fn precedence(self) -> u8 {
-        match self {
+    pub fn precedence(&self) -> u8 {
+        match *self {
             BinaryOpKind::Concat => 8,
             BinaryOpKind::Add | BinaryOpKind::Subtract => 9,
             BinaryOpKind::Multiply | BinaryOpKind::Divide => 10,
             BinaryOpKind::Exponent => 12,
+            // BinaryOpKind::Concat => 1,
+            // BinaryOpKind::Add | BinaryOpKind::Subtract => 1,
+            // BinaryOpKind::Multiply | BinaryOpKind::Divide => 2,
+            // BinaryOpKind::Exponent => 3,
         }
     }
 
-    pub fn is_left_associative(self) -> bool {
-        match self {
-            BinaryOpKind::Exponent | BinaryOpKind::Concat => false,
-            _ => true,
+    pub fn is_right_associative(&self) -> bool {
+        match *self {
+            BinaryOpKind::Exponent | BinaryOpKind::Concat => true,
+            _ => false,
         }
     }
 }
