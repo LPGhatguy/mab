@@ -94,14 +94,18 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
 });
 
 struct ParseUnaryOp;
-define_parser!(ParseUnaryOp, UnaryOpKind, |_, state| {
-    if let Ok((state, _)) = ParseSymbol(Symbol::Minus).parse(state) {
-        Ok((state, UnaryOpKind::Negate))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Hash).parse(state) {
-        Ok((state, UnaryOpKind::Length))
-    } else if let Ok((state, _)) = ParseSymbol(Symbol::Not).parse(state) {
-        Ok((state, UnaryOpKind::BooleanNot))
-    } else {
+define_parser!(ParseUnaryOp, UnaryOpKind, |_, state: ParseState<'state>| {
+    if let Some(&Token { kind: TokenKind::Symbol(symbol), .. }) = state.peek() {
+        let kind = match symbol {
+            Symbol::Minus => UnaryOpKind::Negate,
+            Symbol::Hash => UnaryOpKind::Length,
+            Symbol::Not => UnaryOpKind::BooleanNot,
+            _ => return Err(ParseAbort::NoMatch)
+        };
+
+        Ok((state.advance(1), kind))
+    }
+    else {
         Err(ParseAbort::NoMatch)
     }
 });
