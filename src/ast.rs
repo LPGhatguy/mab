@@ -7,6 +7,12 @@ pub enum UnaryOpKind {
     Length, // #
 }
 
+impl UnaryOpKind {
+    pub fn precedence(self) -> u8 {
+        11
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum BinaryOpKind {
     Add, // +
@@ -15,6 +21,37 @@ pub enum BinaryOpKind {
     Divide, // /
     Exponent, // ^
     Concat, // ..
+}
+
+impl BinaryOpKind {
+    // From the 5.3 manual, ranked lowest to highest:
+    //  1 or
+    //  2 and
+    //  3 <     >     <=    >=    ~=    ==
+    //  4 |
+    //  5 ~
+    //  6 &
+    //  7 <<    >>
+    //  8 ..
+    //  9 +     -
+    // 10 *     /     //    %
+    // 11 unary operators (not   #     -     ~)
+    // 12 ^
+    pub fn precedence(self) -> u8 {
+        match self {
+            BinaryOpKind::Concat => 8,
+            BinaryOpKind::Add | BinaryOpKind::Subtract => 9,
+            BinaryOpKind::Multiply | BinaryOpKind::Divide => 10,
+            BinaryOpKind::Exponent => 12,
+        }
+    }
+
+    pub fn is_left_associative(self) -> bool {
+        match self {
+            BinaryOpKind::Exponent | BinaryOpKind::Concat => false,
+            _ => true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
