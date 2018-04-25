@@ -94,7 +94,7 @@ fn parse_by_example() {
         match expected_tokens {
             Some(expected_tokens) => {
                 if tokens != expected_tokens {
-                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected tokens file {}", tokens, expected_tokens, expected_tokens_path.display());
+                    panic!("\nReceived: {:#?}\n\nExpected: {:#?}\n\nFrom expected tokens file {}\n", tokens, expected_tokens, expected_tokens_path.display());
                 }
             },
             None => {
@@ -112,7 +112,7 @@ fn parse_by_example() {
         match expected_ast {
             Some(expected_ast) => {
                 if ast != expected_ast {
-                    panic!("Received: {:#?}\n\nExpected: {:#?}\n\nFrom expected AST file {}", ast, expected_ast, expected_ast_path.display());
+                    panic!("\nReceived: {:#?}\n\nExpected: {:#?}\n\nFrom expected AST file {}\n", ast, expected_ast, expected_ast_path.display());
                 }
             },
             None => {
