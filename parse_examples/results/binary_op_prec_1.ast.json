@@ -1,0 +1,32 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "BinaryOp": {
+              "operator": "Add",
+              "left": {
+                "BinaryOp": {
+                  "operator": "Multiply",
+                  "left": {
+                    "Name": "a"
+                  },
+                  "right": {
+                    "Name": "b"
+                  }
+                }
+              },
+              "right": {
+                "Name": "c"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

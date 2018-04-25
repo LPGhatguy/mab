@@ -1,0 +1,29 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "UnaryOp": {
+              "operator": "Negate",
+              "argument": {
+                "BinaryOp": {
+                  "operator": "Exponent",
+                  "left": {
+                    "Name": "a"
+                  },
+                  "right": {
+                    "Name": "b"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

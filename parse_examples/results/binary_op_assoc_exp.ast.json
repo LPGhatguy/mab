@@ -1,0 +1,32 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "print"
+        },
+        "arguments": [
+          {
+            "BinaryOp": {
+              "operator": "Exponent",
+              "left": {
+                "Name": "a"
+              },
+              "right": {
+                "BinaryOp": {
+                  "operator": "Exponent",
+                  "left": {
+                    "Name": "b"
+                  },
+                  "right": {
+                    "Name": "c"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

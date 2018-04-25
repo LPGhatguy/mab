@@ -1,0 +1,66 @@
+[
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 1
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 6
+  },
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 7
+  },
+  {
+    "kind": {
+      "Symbol": "Star"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 9
+  },
+  {
+    "kind": {
+      "Identifier": "b"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 11
+  },
+  {
+    "kind": {
+      "Symbol": "Plus"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 13
+  },
+  {
+    "kind": {
+      "Identifier": "c"
+    },
+    "whitespace": " ",
+    "line": 1,
+    "column": 15
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "whitespace": "",
+    "line": 1,
+    "column": 16
+  }
+]
