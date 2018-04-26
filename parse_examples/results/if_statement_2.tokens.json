@@ -4,103 +4,207 @@
       "Symbol": "If"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 2,
+      "line": 1,
+      "column": 3
+    }
   },
   {
     "kind": {
       "Identifier": "a"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 4
+    "start_position": {
+      "bytes": 3,
+      "line": 1,
+      "column": 4
+    },
+    "end_position": {
+      "bytes": 4,
+      "line": 1,
+      "column": 5
+    }
   },
   {
     "kind": {
       "Symbol": "Then"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 6
+    "start_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    }
   },
   {
     "kind": {
       "Identifier": "print"
     },
     "whitespace": "\n\t",
-    "line": 2,
-    "column": 2
+    "start_position": {
+      "bytes": 11,
+      "line": 2,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 16,
+      "line": 2,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 7
+    "start_position": {
+      "bytes": 16,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 17,
+      "line": 2,
+      "column": 8
+    }
   },
   {
     "kind": {
       "Identifier": "a"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 8
+    "start_position": {
+      "bytes": 17,
+      "line": 2,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 18,
+      "line": 2,
+      "column": 9
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 9
+    "start_position": {
+      "bytes": 18,
+      "line": 2,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 2,
+      "column": 10
+    }
   },
   {
     "kind": {
       "Symbol": "Else"
     },
     "whitespace": "\n",
-    "line": 3,
-    "column": 1
+    "start_position": {
+      "bytes": 20,
+      "line": 3,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 24,
+      "line": 3,
+      "column": 4
+    }
   },
   {
     "kind": {
       "Identifier": "print"
     },
     "whitespace": "\n\t",
-    "line": 4,
-    "column": 2
+    "start_position": {
+      "bytes": 26,
+      "line": 4,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 31,
+      "line": 4,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 4,
-    "column": 7
+    "start_position": {
+      "bytes": 31,
+      "line": 4,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 32,
+      "line": 4,
+      "column": 8
+    }
   },
   {
     "kind": {
       "Identifier": "b"
     },
     "whitespace": "",
-    "line": 4,
-    "column": 8
+    "start_position": {
+      "bytes": 32,
+      "line": 4,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 33,
+      "line": 4,
+      "column": 9
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 4,
-    "column": 9
+    "start_position": {
+      "bytes": 33,
+      "line": 4,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 34,
+      "line": 4,
+      "column": 10
+    }
   },
   {
     "kind": {
       "Symbol": "End"
     },
     "whitespace": "\n",
-    "line": 5,
-    "column": 1
+    "start_position": {
+      "bytes": 35,
+      "line": 5,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 38,
+      "line": 5,
+      "column": 3
+    }
   }
 ]

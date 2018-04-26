@@ -88,6 +88,44 @@ impl Symbol {
     }
 }
 
+/// Represents a position in the source text.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SourcePosition {
+    /// The number of bytes into the source, starting at 0.
+    pub bytes: usize,
+
+    /// The line , starting at 1.
+    pub line: usize,
+
+    /// The column in the source, starting at 1.
+    pub column: usize,
+}
+
+impl SourcePosition {
+    /// Calculate the source position after stepping over the given string.
+    pub fn next_position(&self, consumed: &str) -> SourcePosition {
+        let lines_consumed = consumed.matches("\n").count();
+
+        let column = if lines_consumed > 0 {
+            // If there was a newline we're on a totally different column
+            if let Some(range) = PATTERN_CHARS_AFTER_NEWLINE.find(consumed) {
+                range.end() - range.start()
+            } else {
+                0
+            }
+        } else {
+            // Otherwise we can just increment the current column by the length of the eaten chars
+            self.column + consumed.len()
+        };
+
+        SourcePosition {
+            bytes: self.bytes + consumed.len(),
+            line: self.line + lines_consumed,
+            column,
+        }
+    }
+}
+
 /// Represents a token kind.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
@@ -115,36 +153,22 @@ pub struct Token<'a> {
     /// Any whitespace before the token.
     pub whitespace: Cow<'a, str>,
 
-    /// The line in the source that the token came from.
-    /// This starts at 1, not 0.
-    pub line: usize,
+    /// The start of the token, not including whitespace, inclusive.
+    pub start_position: SourcePosition,
 
-    /// The column in the source that the token came from.
-    /// This starts at 1, not 0.
-    pub column: usize,
-
-    // TODO: A slice from the source indicating what the token came from
+    /// The end of the token, not including whitespace, exclusive.
+    pub end_position: SourcePosition,
 }
 
 /// An error with information about why tokenization failed.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TokenizeError<'a> {
+pub enum TokenizeError {
     /// The tokenizer encountered an unknown sequence in the source that it
     /// could not parse.
     UnknownSequence {
-        /// The remaining source, starting at the unknown sequence.
-        remainder: &'a str,
-        /// The line in the source that the unknown sequence started at.
-        line: usize,
-        /// The column in the source that the unknown sequence started at.
-        column: usize
+        /// The location in the source where the unknown sequence began.
+        position: SourcePosition,
     },
-}
-
-struct TryAdvanceResult<'a> {
-    new_source: &'a str,
-    eaten_str: &'a str,
-    matched_kind: TokenKind<'a>,
 }
 
 lazy_static! {
@@ -184,71 +208,48 @@ lazy_static! {
             .collect::<Vec<_>>()
             .join("|");
 
-        Regex::new(&format!("^({})", source)).unwrap()
+        Regex::new(&format!("^{}", source)).unwrap()
     };
 
-    static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^([_a-zA-Z][_a-zA-Z0-9]*)").unwrap();
-    static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?(?:(?:\d*\.\d+)|(\d+))(?:[eE]-?\d+)?))").unwrap();
-
+    static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^[_a-zA-Z][_a-zA-Z0-9]*").unwrap();
+    static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
-    static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n([^\n]+)$").unwrap();
+
+    static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
 
-/// Tries to matches the given pattern against the string slice.
-/// If it does, the 'tokenizer' fn is invokved to turn the result into a token.
-fn try_advance<'a, F>(source: &'a str, pattern: &Regex, tokenizer: F) -> Option<TryAdvanceResult<'a>>
-where
-    F: Fn(&'a str) -> TokenKind<'a>,
-{
-    if let Some(captures) = pattern.captures(source) {
-        // All patterns should have a capture, since some patterns (keywords)
-        // have noncapturing groups that need to be ignored!
-        let capture = captures.get(1).unwrap();
-        let contents = capture.as_str();
+struct AdvanceResult<'a> {
+    rest: &'a str,
+    contents: &'a str,
+    new_position: SourcePosition,
+}
 
-        Some(TryAdvanceResult {
-            new_source: &source[capture.end()..],
-            eaten_str: contents,
-            matched_kind: tokenizer(contents),
+/// Use a pattern to step forward in the source.
+fn advance<'a>(source: &'a str, position: &SourcePosition, pattern: &Regex) -> Option<AdvanceResult<'a>> {
+    if let Some(range) = pattern.find(source) {
+        let contents = &source[range.start()..range.end()];
+        let rest = &source[range.end()..];
+        let new_position = position.next_position(contents);
+
+        Some(AdvanceResult {
+            rest,
+            contents,
+            new_position,
         })
     } else {
         None
     }
 }
 
-fn eat<'a>(source: &'a str, pattern: &Regex) -> (&'a str, Option<&'a str>) {
-    if let Some(range) = pattern.find(source) {
-        let contents = &source[range.start()..range.end()];
-
-        (&source[range.end()..], Some(contents))
-    } else {
-        (source, None)
-    }
-}
-
-fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column: usize) -> (usize, usize) {
-    let lines_eaten = eaten_str.matches("\n").count();
-
-    let column = if lines_eaten > 0 {
-        // If there was a newline we're on a totally different column
-
-        if let Some(captures) = PATTERN_CHARS_AFTER_NEWLINE.captures(eaten_str) {
-            // If there's some characters after the newline, count them!
-            // Add 1 so we start at a column of 1
-            captures.get(1).unwrap().as_str().len() + 1
-        }
-        else {
-            // Otherwise, just restart at 1.
-            1
-        }
-    }
-    else {
-        // Otherwise we can just increment the current column by the length of the eaten chars
-        current_column + eaten_str.len()
-    };
-
-    // We return the new line count, not the delta line count
-    (current_line + lines_eaten, column)
+/// Tries to matches the given pattern against the string slice.
+/// If it does, the 'tokenizer' fn is invokved to turn the result into a token.
+fn advance_token<'a, F>(source: &'a str, position: &SourcePosition, pattern: &Regex, tokenizer: F) -> Option<(AdvanceResult<'a>, TokenKind<'a>)>
+where
+    F: Fn(&'a str) -> TokenKind<'a>,
+{
+    let result = advance(source, position, pattern)?;
+    let token_kind = tokenizer(result.contents);
+    Some((result, token_kind))
 }
 
 /// Tokenizes a source string completely and returns a [Vec][Vec] of [Tokens][Token].
@@ -257,47 +258,47 @@ fn get_new_position<'a>(eaten_str: &'a str, current_line: usize, current_column:
 /// Will return an [UnknownSequence][TokenizeError::UnknownSequence] if it
 /// encounters a sequence of characters that it cannot parse.
 // TODO: Change to returning iterator?
-pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>> {
+pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
     let mut tokens = Vec::new();
     let mut current = source;
-    let mut current_line = 1;
-    let mut current_column = 1;
+    let mut current_position = SourcePosition {
+        line: 1,
+        column: 1,
+        bytes: 0,
+    };
 
     loop {
-        let (next_current, matched_whitespace) = eat(current, &PATTERN_WHITESPACE);
-        let whitespace = matched_whitespace.unwrap_or("");
+        let whitespace = match advance(current, &current_position, &PATTERN_WHITESPACE) {
+            Some(result) => {
+                current = result.rest;
+                current_position = result.new_position;
+                result.contents
+            },
+            None => "",
+        };
 
-        current = next_current;
-
-        let (new_line, new_column) = get_new_position(whitespace, current_line, current_column);
-        current_line = new_line;
-        current_column = new_column;
-
-        let result = try_advance(current, &PATTERN_IDENTIFIER, |s| {
+        let advancement = advance_token(current, &current_position, &PATTERN_IDENTIFIER, |s| {
                 if let Some(&symbol) = STR_TO_SYMBOL.get(s) {
                     TokenKind::Symbol(symbol)
                 } else {
                     TokenKind::Identifier(s.into())
                 }
             })
-            .or_else(|| try_advance(current, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
-            .or_else(|| try_advance(current, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())));
+            .or_else(|| advance_token(current, &current_position, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
+            .or_else(|| advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())));
 
-        match result {
-            Some(result) => {
-                current = result.new_source;
-
+        match advancement {
+            Some((result, token_kind)) => {
                 tokens.push(Token {
                     whitespace: whitespace.into(),
-                    kind: result.matched_kind,
-                    line: current_line,
-                    column: current_column,
+                    kind: token_kind,
+                    start_position: current_position.clone(),
+                    end_position: result.new_position.clone(),
                 });
 
-                let (new_line, new_column) = get_new_position(result.eaten_str, current_line, current_column);
-                current_line = new_line;
-                current_column = new_column;
-            }
+                current = result.rest;
+                current_position = result.new_position;
+            },
             None => break,
         }
     }
@@ -306,9 +307,7 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError<'a>
         Ok(tokens)
     } else {
         Err(TokenizeError::UnknownSequence {
-            remainder: current,
-            line: current_line,
-            column: current_column,
+            position: current_position,
         })
     }
 }
@@ -362,13 +361,21 @@ mod tests {
 
     #[test]
     fn get_new_line_info() {
-        let (new_line, new_column) = get_new_position("test", 1, 1);
-        assert_eq!(new_line, 1);
-        assert_eq!(new_column, 5);
+        let position = SourcePosition {
+            bytes: 0,
+            line: 1,
+            column: 1,
+        };
 
-        let (new_line, new_column) = get_new_position("testy\ntest", 1, 1);
-        assert_eq!(new_line, 2);
-        assert_eq!(new_column, 5);
+        let new_position = position.next_position("test");
+        assert_eq!(new_position.bytes, 4);
+        assert_eq!(new_position.line, 1);
+        assert_eq!(new_position.column, 5);
+
+        let new_position = position.next_position("testy\ntest");
+        assert_eq!(new_position.bytes, 10);
+        assert_eq!(new_position.line, 2);
+        assert_eq!(new_position.column, 5);
     }
 
     #[test]
@@ -381,26 +388,58 @@ mod tests {
             Token {
                 kind: TokenKind::Symbol(Symbol::Local),
                 whitespace: "".into(),
-                line: 1,
-                column: 1,
+                start_position: SourcePosition {
+                    bytes: 0,
+                    line: 1,
+                    column: 1,
+                },
+                end_position: SourcePosition {
+                    bytes: 5,
+                    line: 1,
+                    column: 6,
+                },
             },
             Token {
                 kind: TokenKind::Identifier("test".into()),
                 whitespace: "\n                    ".into(),
-                line: 2,
-                column: 21,
+                start_position: SourcePosition {
+                    bytes: 26,
+                    line: 2,
+                    column: 21,
+                },
+                end_position: SourcePosition {
+                    bytes: 30,
+                    line: 2,
+                    column: 25,
+                },
             },
             Token {
                 kind: TokenKind::Identifier("foo".into()),
                 whitespace: " ".into(),
-                line: 2,
-                column: 26,
+                start_position: SourcePosition {
+                    bytes: 31,
+                    line: 2,
+                    column: 26,
+                },
+                end_position: SourcePosition {
+                    bytes: 34,
+                    line: 2,
+                    column: 29,
+                },
             },
             Token {
                 kind: TokenKind::Identifier("bar".into()),
                 whitespace: "\n                    ".into(),
-                line: 3,
-                column: 21,
+                start_position: SourcePosition {
+                    bytes: 55,
+                    line: 3,
+                    column: 21,
+                },
+                end_position: SourcePosition {
+                    bytes: 58,
+                    line: 3,
+                    column: 24,
+                },
             }
         ]);
     }

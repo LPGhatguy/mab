@@ -4,47 +4,95 @@
       "Identifier": "print"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 6
+    "start_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Identifier": "a"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 7
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 7,
+      "line": 1,
+      "column": 8
+    }
   },
   {
     "kind": {
       "Symbol": "Minus"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 9
+    "start_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    }
   },
   {
     "kind": {
       "Identifier": "b"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 11
+    "start_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 12
+    "start_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    },
+    "end_position": {
+      "bytes": 12,
+      "line": 1,
+      "column": 13
+    }
   }
 ]

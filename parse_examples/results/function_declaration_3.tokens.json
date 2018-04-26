@@ -4,119 +4,239 @@
       "Symbol": "Local"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
   },
   {
     "kind": {
       "Symbol": "Function"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 7
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    }
   },
   {
     "kind": {
       "Identifier": "foo"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 16
+    "start_position": {
+      "bytes": 15,
+      "line": 1,
+      "column": 16
+    },
+    "end_position": {
+      "bytes": 18,
+      "line": 1,
+      "column": 19
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 19
+    "start_position": {
+      "bytes": 18,
+      "line": 1,
+      "column": 19
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 1,
+      "column": 20
+    }
   },
   {
     "kind": {
       "Identifier": "a"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 20
+    "start_position": {
+      "bytes": 19,
+      "line": 1,
+      "column": 20
+    },
+    "end_position": {
+      "bytes": 20,
+      "line": 1,
+      "column": 21
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 21
+    "start_position": {
+      "bytes": 20,
+      "line": 1,
+      "column": 21
+    },
+    "end_position": {
+      "bytes": 21,
+      "line": 1,
+      "column": 22
+    }
   },
   {
     "kind": {
       "Identifier": "b"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 23
+    "start_position": {
+      "bytes": 22,
+      "line": 1,
+      "column": 23
+    },
+    "end_position": {
+      "bytes": 23,
+      "line": 1,
+      "column": 24
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 24
+    "start_position": {
+      "bytes": 23,
+      "line": 1,
+      "column": 24
+    },
+    "end_position": {
+      "bytes": 24,
+      "line": 1,
+      "column": 25
+    }
   },
   {
     "kind": {
       "Identifier": "c"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 26
+    "start_position": {
+      "bytes": 25,
+      "line": 1,
+      "column": 26
+    },
+    "end_position": {
+      "bytes": 26,
+      "line": 1,
+      "column": 27
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 27
+    "start_position": {
+      "bytes": 26,
+      "line": 1,
+      "column": 27
+    },
+    "end_position": {
+      "bytes": 27,
+      "line": 1,
+      "column": 28
+    }
   },
   {
     "kind": {
       "Identifier": "print"
     },
     "whitespace": "\n\t",
-    "line": 2,
-    "column": 2
+    "start_position": {
+      "bytes": 29,
+      "line": 2,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 34,
+      "line": 2,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 7
+    "start_position": {
+      "bytes": 34,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 35,
+      "line": 2,
+      "column": 8
+    }
   },
   {
     "kind": {
       "Identifier": "a"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 8
+    "start_position": {
+      "bytes": 35,
+      "line": 2,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 36,
+      "line": 2,
+      "column": 9
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 9
+    "start_position": {
+      "bytes": 36,
+      "line": 2,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 37,
+      "line": 2,
+      "column": 10
+    }
   },
   {
     "kind": {
       "Symbol": "End"
     },
     "whitespace": "\n",
-    "line": 3,
-    "column": 1
+    "start_position": {
+      "bytes": 38,
+      "line": 3,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 41,
+      "line": 3,
+      "column": 3
+    }
   }
 ]

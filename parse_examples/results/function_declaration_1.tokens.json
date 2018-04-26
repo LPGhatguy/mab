@@ -4,39 +4,79 @@
       "Symbol": "Function"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    }
   },
   {
     "kind": {
       "Identifier": "test"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 10
+    "start_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 13,
+      "line": 1,
+      "column": 14
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 14
+    "start_position": {
+      "bytes": 13,
+      "line": 1,
+      "column": 14
+    },
+    "end_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 15
+    "start_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    },
+    "end_position": {
+      "bytes": 15,
+      "line": 1,
+      "column": 16
+    }
   },
   {
     "kind": {
       "Symbol": "End"
     },
     "whitespace": "\n",
-    "line": 2,
-    "column": 1
+    "start_position": {
+      "bytes": 16,
+      "line": 2,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 2,
+      "column": 3
+    }
   }
 ]

@@ -4,207 +4,415 @@
       "Symbol": "Local"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
   },
   {
     "kind": {
       "Identifier": "test"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 7
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    }
   },
   {
     "kind": {
       "Symbol": "Equal"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 12
+    "start_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    },
+    "end_position": {
+      "bytes": 12,
+      "line": 1,
+      "column": 13
+    }
   },
   {
     "kind": {
       "Symbol": "LeftBrace"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 14
+    "start_position": {
+      "bytes": 13,
+      "line": 1,
+      "column": 14
+    },
+    "end_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    }
   },
   {
     "kind": {
       "Identifier": "a"
     },
     "whitespace": "\n\t",
-    "line": 2,
-    "column": 2
+    "start_position": {
+      "bytes": 16,
+      "line": 2,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 17,
+      "line": 2,
+      "column": 3
+    }
   },
   {
     "kind": {
       "Symbol": "Equal"
     },
     "whitespace": " ",
-    "line": 2,
-    "column": 4
+    "start_position": {
+      "bytes": 18,
+      "line": 2,
+      "column": 4
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 2,
+      "column": 5
+    }
   },
   {
     "kind": {
       "NumberLiteral": "1"
     },
     "whitespace": " ",
-    "line": 2,
-    "column": 6
+    "start_position": {
+      "bytes": 20,
+      "line": 2,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 21,
+      "line": 2,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 7
+    "start_position": {
+      "bytes": 21,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 22,
+      "line": 2,
+      "column": 8
+    }
   },
   {
     "kind": {
       "NumberLiteral": "2"
     },
     "whitespace": "\n\t",
-    "line": 3,
-    "column": 2
+    "start_position": {
+      "bytes": 24,
+      "line": 3,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 25,
+      "line": 3,
+      "column": 3
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 3,
-    "column": 3
+    "start_position": {
+      "bytes": 25,
+      "line": 3,
+      "column": 3
+    },
+    "end_position": {
+      "bytes": 26,
+      "line": 3,
+      "column": 4
+    }
   },
   {
     "kind": {
       "NumberLiteral": "3"
     },
     "whitespace": "\n\t",
-    "line": 4,
-    "column": 2
+    "start_position": {
+      "bytes": 28,
+      "line": 4,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 29,
+      "line": 4,
+      "column": 3
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 4,
-    "column": 3
+    "start_position": {
+      "bytes": 29,
+      "line": 4,
+      "column": 3
+    },
+    "end_position": {
+      "bytes": 30,
+      "line": 4,
+      "column": 4
+    }
   },
   {
     "kind": {
       "Symbol": "LeftBracket"
     },
     "whitespace": "\n\t",
-    "line": 5,
-    "column": 2
+    "start_position": {
+      "bytes": 32,
+      "line": 5,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 33,
+      "line": 5,
+      "column": 3
+    }
   },
   {
     "kind": {
       "Identifier": "f"
     },
     "whitespace": "",
-    "line": 5,
-    "column": 3
+    "start_position": {
+      "bytes": 33,
+      "line": 5,
+      "column": 3
+    },
+    "end_position": {
+      "bytes": 34,
+      "line": 5,
+      "column": 4
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 5,
-    "column": 4
+    "start_position": {
+      "bytes": 34,
+      "line": 5,
+      "column": 4
+    },
+    "end_position": {
+      "bytes": 35,
+      "line": 5,
+      "column": 5
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 5,
-    "column": 5
+    "start_position": {
+      "bytes": 35,
+      "line": 5,
+      "column": 5
+    },
+    "end_position": {
+      "bytes": 36,
+      "line": 5,
+      "column": 6
+    }
   },
   {
     "kind": {
       "Symbol": "RightBracket"
     },
     "whitespace": "",
-    "line": 5,
-    "column": 6
+    "start_position": {
+      "bytes": 36,
+      "line": 5,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 37,
+      "line": 5,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "Equal"
     },
     "whitespace": " ",
-    "line": 5,
-    "column": 8
+    "start_position": {
+      "bytes": 38,
+      "line": 5,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 39,
+      "line": 5,
+      "column": 9
+    }
   },
   {
     "kind": {
       "Symbol": "LeftBrace"
     },
     "whitespace": " ",
-    "line": 5,
-    "column": 10
+    "start_position": {
+      "bytes": 40,
+      "line": 5,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 41,
+      "line": 5,
+      "column": 11
+    }
   },
   {
     "kind": {
       "NumberLiteral": "1"
     },
     "whitespace": "\n\t\t",
-    "line": 6,
-    "column": 3
+    "start_position": {
+      "bytes": 44,
+      "line": 6,
+      "column": 3
+    },
+    "end_position": {
+      "bytes": 45,
+      "line": 6,
+      "column": 4
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 6,
-    "column": 4
+    "start_position": {
+      "bytes": 45,
+      "line": 6,
+      "column": 4
+    },
+    "end_position": {
+      "bytes": 46,
+      "line": 6,
+      "column": 5
+    }
   },
   {
     "kind": {
       "NumberLiteral": "2"
     },
     "whitespace": "\n\t\t",
-    "line": 7,
-    "column": 3
+    "start_position": {
+      "bytes": 49,
+      "line": 7,
+      "column": 3
+    },
+    "end_position": {
+      "bytes": 50,
+      "line": 7,
+      "column": 4
+    }
   },
   {
     "kind": {
       "Symbol": "Comma"
     },
     "whitespace": "",
-    "line": 7,
-    "column": 4
+    "start_position": {
+      "bytes": 50,
+      "line": 7,
+      "column": 4
+    },
+    "end_position": {
+      "bytes": 51,
+      "line": 7,
+      "column": 5
+    }
   },
   {
     "kind": {
       "NumberLiteral": "3"
     },
     "whitespace": "\n\t\t",
-    "line": 8,
-    "column": 3
+    "start_position": {
+      "bytes": 54,
+      "line": 8,
+      "column": 3
+    },
+    "end_position": {
+      "bytes": 55,
+      "line": 8,
+      "column": 4
+    }
   },
   {
     "kind": {
       "Symbol": "RightBrace"
     },
     "whitespace": "\n\t",
-    "line": 9,
-    "column": 2
+    "start_position": {
+      "bytes": 57,
+      "line": 9,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 58,
+      "line": 9,
+      "column": 3
+    }
   },
   {
     "kind": {
       "Symbol": "RightBrace"
     },
     "whitespace": "\n",
-    "line": 10,
-    "column": 1
+    "start_position": {
+      "bytes": 59,
+      "line": 10,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 60,
+      "line": 10,
+      "column": 1
+    }
   }
 ]

@@ -4,55 +4,111 @@
       "Symbol": "Repeat"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Identifier": "print"
     },
     "whitespace": "\n\t",
-    "line": 2,
-    "column": 2
+    "start_position": {
+      "bytes": 8,
+      "line": 2,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 13,
+      "line": 2,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "LeftParen"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 7
+    "start_position": {
+      "bytes": 13,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 14,
+      "line": 2,
+      "column": 8
+    }
   },
   {
     "kind": {
       "NumberLiteral": "5"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 8
+    "start_position": {
+      "bytes": 14,
+      "line": 2,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 15,
+      "line": 2,
+      "column": 9
+    }
   },
   {
     "kind": {
       "Symbol": "RightParen"
     },
     "whitespace": "",
-    "line": 2,
-    "column": 9
+    "start_position": {
+      "bytes": 15,
+      "line": 2,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 16,
+      "line": 2,
+      "column": 10
+    }
   },
   {
     "kind": {
       "Symbol": "Until"
     },
     "whitespace": "\n",
-    "line": 3,
-    "column": 1
+    "start_position": {
+      "bytes": 17,
+      "line": 3,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 22,
+      "line": 3,
+      "column": 5
+    }
   },
   {
     "kind": {
       "Identifier": "x"
     },
     "whitespace": " ",
-    "line": 3,
-    "column": 7
+    "start_position": {
+      "bytes": 23,
+      "line": 3,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 24,
+      "line": 3,
+      "column": 7
+    }
   }
 ]

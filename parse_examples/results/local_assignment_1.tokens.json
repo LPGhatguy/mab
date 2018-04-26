@@ -4,63 +4,127 @@
       "Symbol": "Local"
     },
     "whitespace": "",
-    "line": 1,
-    "column": 1
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
   },
   {
     "kind": {
       "Identifier": "x"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 7
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 7,
+      "line": 1,
+      "column": 8
+    }
   },
   {
     "kind": {
       "Symbol": "Equal"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 9
+    "start_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    }
   },
   {
     "kind": {
       "NumberLiteral": "5"
     },
     "whitespace": " ",
-    "line": 1,
-    "column": 11
+    "start_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    }
   },
   {
     "kind": {
       "Symbol": "Local"
     },
     "whitespace": "\n",
-    "line": 2,
-    "column": 1
+    "start_position": {
+      "bytes": 12,
+      "line": 2,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 17,
+      "line": 2,
+      "column": 5
+    }
   },
   {
     "kind": {
       "Identifier": "y"
     },
     "whitespace": " ",
-    "line": 2,
-    "column": 7
+    "start_position": {
+      "bytes": 18,
+      "line": 2,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 2,
+      "column": 7
+    }
   },
   {
     "kind": {
       "Symbol": "Equal"
     },
     "whitespace": " ",
-    "line": 2,
-    "column": 9
+    "start_position": {
+      "bytes": 20,
+      "line": 2,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 21,
+      "line": 2,
+      "column": 9
+    }
   },
   {
     "kind": {
       "NumberLiteral": "6"
     },
     "whitespace": " ",
-    "line": 2,
-    "column": 11
+    "start_position": {
+      "bytes": 22,
+      "line": 2,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 23,
+      "line": 2,
+      "column": 11
+    }
   }
 ]
