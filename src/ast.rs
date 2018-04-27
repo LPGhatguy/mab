@@ -105,6 +105,14 @@ pub struct NumericFor<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct GenericFor<'a> {
+    #[serde(borrow)]
+    pub vars: Vec<Cow<'a, str>>,
+    pub iterator: Expression<'a>,
+    pub body: Chunk<'a>
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct IfStatement<'a> {
     #[serde(borrow)]
     pub condition: Expression<'a>,
@@ -190,6 +198,7 @@ pub enum Statement<'a> {
     LocalAssignment(LocalAssignment<'a>),
     FunctionCall(FunctionCall<'a>),
     NumericFor(NumericFor<'a>),
+    GenericFor(GenericFor<'a>),
     IfStatement(IfStatement<'a>),
     WhileLoop(WhileLoop<'a>),
     RepeatLoop(RepeatLoop<'a>),

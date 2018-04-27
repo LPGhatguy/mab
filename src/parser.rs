@@ -91,6 +91,7 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseLocalAssignment => Statement::LocalAssignment,
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
+        ParseGenericFor => Statement::GenericFor,
         ParseIfStatement => Statement::IfStatement,
         ParseWhileLoop => Statement::WhileLoop,
         ParseRepeatLoop => Statement::RepeatLoop,
@@ -294,6 +295,23 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
         start,
         end,
         step,
+        body,
+    }))
+});
+
+struct ParseGenericFor;
+define_parser!(ParseGenericFor, GenericFor<'state>, |_, state| {
+    let (state, _) = ParseSymbol(Symbol::For).parse(state)?;
+    let (state, vars) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::In).parse(state)?;
+    let (state, iterator) = ParseExpression.parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Do).parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
+
+    Ok((state, GenericFor {
+        vars,
+        iterator,
         body,
     }))
 });

@@ -35,6 +35,7 @@ pub enum Symbol {
     Repeat,
     Until,
     For,
+    In,
     Then,
     Do,
     Else,
@@ -76,6 +77,7 @@ impl Symbol {
             Symbol::Repeat => "repeat",
             Symbol::Until => "until",
             Symbol::For => "for",
+            Symbol::In => "in",
             Symbol::Then => "then",
             Symbol::Do => "do",
             Symbol::Else => "else",
@@ -187,6 +189,7 @@ lazy_static! {
         Symbol::Local, Symbol::Function,
         Symbol::If, Symbol::While, Symbol::Repeat, Symbol::Until, Symbol::For,
         Symbol::Then, Symbol::Do, Symbol::Else, Symbol::ElseIf, Symbol::End,
+        Symbol::In,
         Symbol::True, Symbol::False, Symbol::Nil,
         Symbol::Not,
     ];

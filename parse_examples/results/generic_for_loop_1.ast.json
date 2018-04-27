@@ -1,0 +1,22 @@
+{
+  "statements": [
+    {
+      "GenericFor": {
+        "vars": [
+          "i"
+        ],
+        "iterator": {
+          "FunctionCall": {
+            "name_expression": {
+              "Name": "pairs"
+            },
+            "arguments": []
+          }
+        },
+        "body": {
+          "statements": []
+        }
+      }
+    }
+  ]
+}
