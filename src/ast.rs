@@ -108,7 +108,7 @@ pub struct NumericFor<'a> {
 pub struct GenericFor<'a> {
     #[serde(borrow)]
     pub vars: Vec<Cow<'a, str>>,
-    pub iterator: Expression<'a>,
+    pub item_source: Vec<Expression<'a>>,
     pub body: Chunk<'a>
 }
 

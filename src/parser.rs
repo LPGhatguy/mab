@@ -304,14 +304,14 @@ define_parser!(ParseGenericFor, GenericFor<'state>, |_, state| {
     let (state, _) = ParseSymbol(Symbol::For).parse(state)?;
     let (state, vars) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(state)?;
     let (state, _) = ParseSymbol(Symbol::In).parse(state)?;
-    let (state, iterator) = ParseExpression.parse(state)?;
+    let (state, item_source) = DelimitedOneOrMore(ParseExpression, ParseSymbol(Symbol::Comma)).parse(state)?;
     let (state, _) = ParseSymbol(Symbol::Do).parse(state)?;
     let (state, body) = ParseChunk.parse(state)?;
     let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
 
     Ok((state, GenericFor {
         vars,
-        iterator,
+        item_source,
         body,
     }))
 });

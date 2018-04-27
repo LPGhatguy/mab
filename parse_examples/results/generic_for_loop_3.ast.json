@@ -8,16 +8,10 @@
         ],
         "item_source": [
           {
-            "FunctionCall": {
-              "name_expression": {
-                "Name": "pairs"
-              },
-              "arguments": [
-                {
-                  "Name": "k"
-                }
-              ]
-            }
+            "Name": "next"
+          },
+          {
+            "Name": "t"
           }
         ],
         "body": {
