@@ -53,10 +53,15 @@ define_parser!(ParseIdentifier, Cow<'state, str>, |_, state: ParseState<'state>|
 });
 
 struct ParseSymbol(pub Symbol);
-define_parser!(ParseSymbol, (), |this: &ParseSymbol, state: ParseState<'state>| {
-    let (state, _) = ParseToken(TokenKind::Symbol(this.0)).parse(state)?;
+define_parser!(ParseSymbol, Symbol, |this: &ParseSymbol, state: ParseState<'state>| {
+    let (state, token) = ParseToken(TokenKind::Symbol(this.0)).parse(state)?;
+    let symbol = match token.kind {
+        TokenKind::Symbol(symbol) => symbol,
+        // The parsing will only succeed if we can eat a symbol.
+        _ => unreachable!()
+    };
 
-    Ok((state, ()))
+    Ok((state, symbol))
 });
 
 // chunk ::= {stat [`;´]} [laststat [`;´]]
