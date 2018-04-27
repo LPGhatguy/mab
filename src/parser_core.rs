@@ -50,7 +50,7 @@ pub trait Parser<'a> {
 
 #[macro_export]
 macro_rules! parse_first_of {
-    ($state: ident, { $( $parser: expr => $constructor: path ),* $(,)* }) => (
+    ($state: ident, { $( $parser: expr => $constructor: expr ),* $(,)* }) => (
         {
             $(
                 match $parser.parse($state) {
