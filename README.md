@@ -8,7 +8,7 @@
 
 <hr />
 
-This is the foundations for an extensible, style-preserving Lua 5.1+ parser written in Rust. I want to use it for a number of future projects:
+This is a work in progress lossless Lua 5.1+ parser written in Rust. I want to use it for a number of future projects:
 
 * Static analysis tool to replace luacheck
 * Style checker and reformatter like gofmt or rustfmt (maybe named "Stylua")
