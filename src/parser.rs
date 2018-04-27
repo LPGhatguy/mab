@@ -221,7 +221,7 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
 
 struct ParseBoolean;
 define_parser!(ParseBoolean, bool, |_, state| {
-    let (state, matched) = Or(vec![ ParseSymbol(Symbol::True), ParseSymbol(Symbol::False) ]).parse(state)?;
+    let (state, matched) = Or(&[ ParseSymbol(Symbol::True), ParseSymbol(Symbol::False) ]).parse(state)?;
     Ok((state, matched == Symbol::True))
 });
 
@@ -441,7 +441,7 @@ define_parser!(ParseTableValue, (Option<TableKey<'state>>, Expression<'state>), 
 struct ParseTableLiteral;
 define_parser!(ParseTableLiteral, TableLiteral<'state>, |_, state| {
     let (state, _) = ParseSymbol(Symbol::LeftBrace).parse(state)?;
-    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseSymbol(Symbol::Comma), ParseSymbol(Symbol::Semicolon) ]), true).parse(state)?;
+    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(&[ ParseSymbol(Symbol::Comma), ParseSymbol(Symbol::Semicolon) ]), true).parse(state)?;
     let (state, _) = ParseSymbol(Symbol::RightBrace).parse(state)?;
     Ok((state, TableLiteral {
         items
