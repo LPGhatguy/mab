@@ -213,6 +213,8 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
         ParseIdentifier => Expression::Name,
         ParseTableLiteral => Expression::Table,
         ParseBoolean => Expression::Bool,
+        // Hack: parse_first_of! cannot handle unit values
+        ParseNil => |_| Expression::Nil,
     })
 });
 
@@ -220,6 +222,12 @@ struct ParseBoolean;
 define_parser!(ParseBoolean, bool, |_, state| {
     let (state, matched) = Or(vec![ ParseSymbol(Symbol::True), ParseSymbol(Symbol::False) ]).parse(state)?;
     Ok((state, matched == Symbol::True))
+});
+
+struct ParseNil;
+define_parser!(ParseNil, (), |_, state| {
+    let (state, _) = ParseSymbol(Symbol::Nil).parse(state)?;
+    Ok((state, ()))
 });
 
 // local namelist [`=´ explist]
