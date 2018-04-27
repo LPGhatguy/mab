@@ -1,0 +1,28 @@
+{
+  "statements": [
+    {
+      "LocalAssignment": {
+        "names": [
+          "a"
+        ],
+        "values": [
+          {
+            "Bool": true
+          }
+        ]
+      }
+    },
+    {
+      "LocalAssignment": {
+        "names": [
+          "b"
+        ],
+        "values": [
+          {
+            "Bool": false
+          }
+        ]
+      }
+    }
+  ]
+}

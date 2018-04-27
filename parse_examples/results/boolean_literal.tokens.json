@@ -1,0 +1,130 @@
+[
+  {
+    "kind": {
+      "Symbol": "Local"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 7,
+      "line": 1,
+      "column": 8
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Equal"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "True"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Local"
+    },
+    "whitespace": "\n",
+    "start_position": {
+      "bytes": 15,
+      "line": 2,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 20,
+      "line": 2,
+      "column": 5
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "b"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 21,
+      "line": 2,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 22,
+      "line": 2,
+      "column": 7
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Equal"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 23,
+      "line": 2,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 24,
+      "line": 2,
+      "column": 9
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "False"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 25,
+      "line": 2,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 30,
+      "line": 2,
+      "column": 15
+    }
+  }
+]

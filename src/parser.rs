@@ -212,7 +212,14 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
         ParseFunctionCall => Expression::FunctionCall,
         ParseIdentifier => Expression::Name,
         ParseTableLiteral => Expression::Table,
+        ParseBoolean => Expression::Bool,
     })
+});
+
+struct ParseBoolean;
+define_parser!(ParseBoolean, bool, |_, state| {
+    let (state, matched) = Or(vec![ ParseSymbol(Symbol::True), ParseSymbol(Symbol::False) ]).parse(state)?;
+    Ok((state, matched == Symbol::True))
 });
 
 // local namelist [`=´ explist]
