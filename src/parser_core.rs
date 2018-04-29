@@ -50,7 +50,7 @@ pub trait Parser<'a> {
 
 #[macro_export]
 macro_rules! parse_first_of {
-    ($state: ident, { $( $parser: expr => $constructor: path ),* $(,)* }) => (
+    ($state: ident, { $( $parser: expr => $constructor: expr ),* $(,)* }) => (
         {
             $(
                 match $parser.parse($state) {
@@ -207,13 +207,13 @@ impl<'a, ItemParser: Parser<'a>> Parser<'a> for Optional<ItemParser> {
     }
 }
 
-pub struct Or<InnerParser>(pub Vec<InnerParser>);
+pub struct Or<'a, InnerParser: 'a>(pub &'a [InnerParser]);
 
-impl<'a, InnerParser: Parser<'a>> Parser<'a> for Or<InnerParser> {
+impl<'a, InnerParser: Parser<'a>> Parser<'a> for Or<'a, InnerParser> {
     type Item = InnerParser::Item;
 
     fn parse(&self, state: ParseState<'a>) -> Result<(ParseState<'a>, Self::Item), ParseAbort> {
-        for parser in &self.0 {
+        for parser in self.0 {
             match parser.parse(state) {
                 Ok((new_state, matched_value)) => return Ok((new_state, matched_value)),
                 Err(ParseAbort::NoMatch) => (),

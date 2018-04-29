@@ -1,0 +1,130 @@
+[
+  {
+    "kind": {
+      "Symbol": "For"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 3,
+      "line": 1,
+      "column": 4
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 4,
+      "line": 1,
+      "column": 5
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "In"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "pairs"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 14,
+      "line": 1,
+      "column": 15
+    },
+    "end_position": {
+      "bytes": 15,
+      "line": 1,
+      "column": 16
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 15,
+      "line": 1,
+      "column": 16
+    },
+    "end_position": {
+      "bytes": 16,
+      "line": 1,
+      "column": 17
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Do"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 17,
+      "line": 1,
+      "column": 18
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 1,
+      "column": 20
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "End"
+    },
+    "whitespace": "\n",
+    "start_position": {
+      "bytes": 20,
+      "line": 2,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 23,
+      "line": 2,
+      "column": 3
+    }
+  }
+]

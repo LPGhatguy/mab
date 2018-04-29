@@ -16,6 +16,7 @@ fn emit_statement<'a>(w: &mut Write, statement: &Statement<'a>) -> fmt::Result {
         &Statement::LocalAssignment(ref value) => emit_local_assignment(w, value)?,
         &Statement::FunctionCall(ref value) => emit_function_call(w, value)?,
         &Statement::NumericFor(ref value) => emit_numeric_for(w, value)?,
+        &Statement::GenericFor(ref value) => emit_generic_for(w, value)?,
         &Statement::IfStatement(ref value) => emit_if_statement(w, value)?,
         &Statement::WhileLoop(ref value) => emit_while_loop(w, value)?,
         &Statement::RepeatLoop(ref value) => emit_repeat_loop(w, value)?,
@@ -45,6 +46,12 @@ fn emit_function_call<'a>(w: &mut Write, _function_call: &FunctionCall<'a>) -> f
 
 fn emit_numeric_for<'a>(w: &mut Write, _numeric_for: &NumericFor<'a>) -> fmt::Result {
     write!(w, "numeric for")?;
+
+    Ok(())
+}
+
+fn emit_generic_for<'a>(w: &mut Write, _generic_for: &GenericFor<'a>) -> fmt::Result {
+    write!(w, "generic for")?;
 
     Ok(())
 }

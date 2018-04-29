@@ -1,0 +1,39 @@
+{
+  "statements": [
+    {
+      "GenericFor": {
+        "vars": [
+          "i",
+          "v"
+        ],
+        "item_source": [
+          {
+            "Name": "next"
+          },
+          {
+            "Name": "t"
+          }
+        ],
+        "body": {
+          "statements": [
+            {
+              "FunctionCall": {
+                "name_expression": {
+                  "Name": "print"
+                },
+                "arguments": [
+                  {
+                    "Name": "i"
+                  },
+                  {
+                    "Name": "v"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

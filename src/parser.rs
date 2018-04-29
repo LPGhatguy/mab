@@ -53,10 +53,15 @@ define_parser!(ParseIdentifier, Cow<'state, str>, |_, state: ParseState<'state>|
 });
 
 struct ParseSymbol(pub Symbol);
-define_parser!(ParseSymbol, (), |this: &ParseSymbol, state: ParseState<'state>| {
-    let (state, _) = ParseToken(TokenKind::Symbol(this.0)).parse(state)?;
+define_parser!(ParseSymbol, Symbol, |this: &ParseSymbol, state: ParseState<'state>| {
+    let (state, token) = ParseToken(TokenKind::Symbol(this.0)).parse(state)?;
+    let symbol = match token.kind {
+        TokenKind::Symbol(symbol) => symbol,
+        // The parsing will only succeed if we can eat a symbol.
+        _ => unreachable!()
+    };
 
-    Ok((state, ()))
+    Ok((state, symbol))
 });
 
 // chunk ::= {stat [`;´]} [laststat [`;´]]
@@ -86,6 +91,7 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseLocalAssignment => Statement::LocalAssignment,
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
+        ParseGenericFor => Statement::GenericFor,
         ParseIfStatement => Statement::IfStatement,
         ParseWhileLoop => Statement::WhileLoop,
         ParseRepeatLoop => Statement::RepeatLoop,
@@ -207,7 +213,22 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
         ParseFunctionCall => Expression::FunctionCall,
         ParseIdentifier => Expression::Name,
         ParseTableLiteral => Expression::Table,
+        ParseBoolean => Expression::Bool,
+        // Hack: parse_first_of! cannot handle unit values
+        ParseNil => |_| Expression::Nil,
     })
+});
+
+struct ParseBoolean;
+define_parser!(ParseBoolean, bool, |_, state| {
+    let (state, matched) = Or(&[ ParseSymbol(Symbol::True), ParseSymbol(Symbol::False) ]).parse(state)?;
+    Ok((state, matched == Symbol::True))
+});
+
+struct ParseNil;
+define_parser!(ParseNil, (), |_, state| {
+    let (state, _) = ParseSymbol(Symbol::Nil).parse(state)?;
+    Ok((state, ()))
 });
 
 // local namelist [`=´ explist]
@@ -274,6 +295,23 @@ define_parser!(ParseNumericFor, NumericFor<'state>, |_, state| {
         start,
         end,
         step,
+        body,
+    }))
+});
+
+struct ParseGenericFor;
+define_parser!(ParseGenericFor, GenericFor<'state>, |_, state| {
+    let (state, _) = ParseSymbol(Symbol::For).parse(state)?;
+    let (state, vars) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::In).parse(state)?;
+    let (state, item_source) = DelimitedOneOrMore(ParseExpression, ParseSymbol(Symbol::Comma)).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Do).parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
+
+    Ok((state, GenericFor {
+        vars,
+        item_source,
         body,
     }))
 });
@@ -403,7 +441,7 @@ define_parser!(ParseTableValue, (Option<TableKey<'state>>, Expression<'state>), 
 struct ParseTableLiteral;
 define_parser!(ParseTableLiteral, TableLiteral<'state>, |_, state| {
     let (state, _) = ParseSymbol(Symbol::LeftBrace).parse(state)?;
-    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(vec![ ParseSymbol(Symbol::Comma), ParseSymbol(Symbol::Semicolon) ]), true).parse(state)?;
+    let (state, items) = DelimitedZeroOrMore(ParseTableValue, Or(&[ ParseSymbol(Symbol::Comma), ParseSymbol(Symbol::Semicolon) ]), true).parse(state)?;
     let (state, _) = ParseSymbol(Symbol::RightBrace).parse(state)?;
     Ok((state, TableLiteral {
         items

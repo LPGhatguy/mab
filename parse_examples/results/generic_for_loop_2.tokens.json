@@ -1,0 +1,274 @@
+[
+  {
+    "kind": {
+      "Symbol": "For"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 3,
+      "line": 1,
+      "column": 4
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 4,
+      "line": 1,
+      "column": 5
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Comma"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "v"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 7,
+      "line": 1,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "In"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "pairs"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 12,
+      "line": 1,
+      "column": 13
+    },
+    "end_position": {
+      "bytes": 17,
+      "line": 1,
+      "column": 18
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 17,
+      "line": 1,
+      "column": 18
+    },
+    "end_position": {
+      "bytes": 18,
+      "line": 1,
+      "column": 19
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "k"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 18,
+      "line": 1,
+      "column": 19
+    },
+    "end_position": {
+      "bytes": 19,
+      "line": 1,
+      "column": 20
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 19,
+      "line": 1,
+      "column": 20
+    },
+    "end_position": {
+      "bytes": 20,
+      "line": 1,
+      "column": 21
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Do"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 21,
+      "line": 1,
+      "column": 22
+    },
+    "end_position": {
+      "bytes": 23,
+      "line": 1,
+      "column": 24
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "whitespace": "\n\t",
+    "start_position": {
+      "bytes": 25,
+      "line": 2,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 30,
+      "line": 2,
+      "column": 7
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 30,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 31,
+      "line": 2,
+      "column": 8
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "i"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 31,
+      "line": 2,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 32,
+      "line": 2,
+      "column": 9
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Comma"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 32,
+      "line": 2,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 33,
+      "line": 2,
+      "column": 10
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "v"
+    },
+    "whitespace": " ",
+    "start_position": {
+      "bytes": 34,
+      "line": 2,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 35,
+      "line": 2,
+      "column": 12
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "whitespace": "",
+    "start_position": {
+      "bytes": 35,
+      "line": 2,
+      "column": 12
+    },
+    "end_position": {
+      "bytes": 36,
+      "line": 2,
+      "column": 13
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "End"
+    },
+    "whitespace": "\n",
+    "start_position": {
+      "bytes": 37,
+      "line": 3,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 40,
+      "line": 3,
+      "column": 3
+    }
+  }
+]
