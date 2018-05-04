@@ -282,6 +282,104 @@ where
     Ok((result, token_kind))
 }
 
+// Similar to try! or the ? operator, but handles cases differently.
+macro_rules! try_advance {
+    ( $rule: expr ) => (
+        match $rule {
+            Ok(token_kind) => return Ok(token_kind),
+            Err(AdvanceError::Error(err)) => return Err(AdvanceError::Error(err)),
+            Err(_) => {},
+        }
+    )
+}
+
+fn parse_identifier<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    advance_token(current, &current_position, &PATTERN_IDENTIFIER, |s| {
+        if let Some(&symbol) = STR_TO_SYMBOL.get(s) {
+            TokenKind::Symbol(symbol)
+        } else {
+            TokenKind::Identifier(s.into())
+        }
+    })
+}
+
+fn parse_number_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    advance_token(current, &current_position, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into()))
+}
+
+fn parse_symbol<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap()))
+}
+
+fn parse_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    let quote_character = if current.starts_with("\"") {
+        '"'
+    } else if current.starts_with("'") {
+        '\''
+    } else {
+        return Err(AdvanceError::NoMatch);
+    };
+
+    let mut literal_end = None;
+    let mut last_was_escape = false;
+
+    for (index, character) in current.char_indices().skip(1) {
+        if character == '\\' {
+            last_was_escape = !last_was_escape;
+        } else if character == quote_character {
+            if last_was_escape {
+                last_was_escape = false;
+            } else {
+                literal_end = Some(index);
+                break;
+            }
+        } else if character == '\r' || character == '\n' {
+            return Err(AdvanceError::Error(TokenizeError::UnclosedString {
+                position: *current_position,
+            }));
+        } else {
+            last_was_escape = false;
+        }
+    }
+
+    let literal_end = match literal_end {
+        Some(v) => v,
+        None => {
+            return Err(AdvanceError::Error(TokenizeError::UnclosedString {
+                position: *current_position,
+            }));
+        },
+    };
+
+    let literal = match quote_character {
+        '"' => StringLiteral::DoubleQuote {
+            raw_content: Cow::from(&current[1..literal_end])
+        },
+        '\'' => StringLiteral::SingleQuote {
+            raw_content: Cow::from(&current[1..literal_end])
+        },
+        _ => unreachable!()
+    };
+
+    let advance_result = AdvanceResult {
+        rest: &current[literal_end + 1..],
+        contents: "",
+        new_position: current_position.next_position(&current[..literal_end + 1]),
+    };
+
+    Ok((advance_result, TokenKind::StringLiteral(literal)))
+}
+
+/// Attempts to advance one token into the stream.
+fn tokenize_step<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    try_advance!(parse_identifier(current, current_position));
+    try_advance!(parse_number_literal(current, current_position));
+    try_advance!(parse_symbol(current, current_position));
+    try_advance!(parse_string_literal(current, current_position));
+
+    return Err(AdvanceError::NoMatch);
+}
+
 /// Tokenizes a source string completely and returns a [Vec][Vec] of [Tokens][Token].
 ///
 /// # Errors
@@ -307,69 +405,7 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
             Err(_) => "",
         };
 
-        let advancement = advance_token(current, &current_position, &PATTERN_IDENTIFIER, |s| {
-                if let Some(&symbol) = STR_TO_SYMBOL.get(s) {
-                    TokenKind::Symbol(symbol)
-                } else {
-                    TokenKind::Identifier(s.into())
-                }
-            })
-            .or_else(|_| advance_token(current, &current_position, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
-            .or_else(|_| advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())))
-            .or_else(|_| {
-                if current.starts_with("\"") {
-                    let mut literal_end = None;
-                    let mut last_was_escape = false;
-
-                    for (index, character) in current.char_indices().skip(1) {
-                        match character {
-                            '\\' => {
-                                last_was_escape = !last_was_escape;
-                            },
-                            '"' => {
-                                if last_was_escape {
-                                    last_was_escape = false;
-                                } else {
-                                    literal_end = Some(index);
-                                    break;
-                                }
-                            },
-                            '\r' | '\n' => {
-                                return Err(AdvanceError::Error(TokenizeError::UnclosedString {
-                                    position: current_position,
-                                }));
-                            },
-                            _ => {
-                                last_was_escape = false;
-                            },
-                        }
-                    }
-
-                    let literal_end = match literal_end {
-                        Some(v) => v,
-                        None => {
-                            return Err(AdvanceError::Error(TokenizeError::UnclosedString {
-                                position: current_position,
-                            }));
-                        },
-                    };
-
-                    Ok((
-                        AdvanceResult {
-                            rest: &current[literal_end + 1..],
-                            contents: "",
-                            new_position: current_position.next_position(&current[..literal_end + 1]),
-                        },
-                        TokenKind::StringLiteral(StringLiteral::DoubleQuote {
-                            raw_content: current[1..literal_end].into(),
-                        })
-                    ))
-                } else {
-                    Err(AdvanceError::NoMatch)
-                }
-            });
-
-        match advancement {
+        match tokenize_step(current, &current_position) {
             Ok((result, token_kind)) => {
                 tokens.push(Token {
                     whitespace: whitespace.into(),
@@ -381,7 +417,8 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 current = result.rest;
                 current_position = result.new_position;
             },
-            Err(_) => break,
+            Err(AdvanceError::Error(e)) => return Err(e),
+            Err(AdvanceError::NoMatch) => break,
         }
     }
 
@@ -420,6 +457,43 @@ mod tests {
         test_kinds_eq("0x12AfEE", vec![TokenKind::NumberLiteral("0x12AfEE".into())]);
         test_kinds_eq("-0x123FFe", vec![TokenKind::NumberLiteral("-0x123FFe".into())]);
         test_kinds_eq("1023.47e126", vec![TokenKind::NumberLiteral("1023.47e126".into())]);
+    }
+
+    #[test]
+    fn string_literals() {
+        test_kinds_eq("\"\"", vec![TokenKind::StringLiteral(StringLiteral::DoubleQuote { raw_content: "".into() })]);
+        test_kinds_eq("\"hello\"", vec![TokenKind::StringLiteral(StringLiteral::DoubleQuote { raw_content: "hello".into() })]);
+        test_kinds_eq("\"he\\\"llo\"", vec![TokenKind::StringLiteral(StringLiteral::DoubleQuote { raw_content: "he\\\"llo".into() })]);
+        test_kinds_eq("\"he\\nllo\"", vec![TokenKind::StringLiteral(StringLiteral::DoubleQuote { raw_content: "he\\nllo".into() })]);
+
+        test_kinds_eq("''", vec![TokenKind::StringLiteral(StringLiteral::SingleQuote { raw_content: "".into() })]);
+        test_kinds_eq("'hello'", vec![TokenKind::StringLiteral(StringLiteral::SingleQuote { raw_content: "hello".into() })]);
+        test_kinds_eq("'he\\'llo'", vec![TokenKind::StringLiteral(StringLiteral::SingleQuote { raw_content: "he\\'llo".into() })]);
+        test_kinds_eq("'he\\nllo'", vec![TokenKind::StringLiteral(StringLiteral::SingleQuote { raw_content: "he\\nllo".into() })]);
+
+        assert_eq!(tokenize("\""), Err(TokenizeError::UnclosedString {
+            position: SourcePosition {
+                bytes: 0,
+                line: 1,
+                column: 1,
+            },
+        }));
+
+        assert_eq!(tokenize("\"\n"), Err(TokenizeError::UnclosedString {
+            position: SourcePosition {
+                bytes: 0,
+                line: 1,
+                column: 1,
+            },
+        }));
+
+        assert_eq!(tokenize("\"hello"), Err(TokenizeError::UnclosedString {
+            position: SourcePosition {
+                bytes: 0,
+                line: 1,
+                column: 1,
+            },
+        }));
     }
 
     #[test]
