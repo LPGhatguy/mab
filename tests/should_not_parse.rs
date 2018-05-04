@@ -21,10 +21,14 @@ fn should_not_parse() {
             contents
         };
 
+        println!("\nTokenizing file {}", entry.path().display());
+
         let tokens = match tokenize(&contents) {
             Ok(tokens) => tokens,
             Err(_) => continue,
         };
+
+        println!("Parsing file {}", entry.path().display());
 
         let ast = match parse_from_tokens(&tokens) {
             Ok(ast) => ast,

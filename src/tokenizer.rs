@@ -91,7 +91,7 @@ impl Symbol {
 }
 
 /// Represents a position in the source text.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SourcePosition {
     /// The number of bytes into the source, starting at 0.
     pub bytes: usize,
@@ -188,6 +188,11 @@ pub enum TokenizeError {
         /// The location in the source where the unknown sequence began.
         position: SourcePosition,
     },
+
+    /// A string was begun that never finished.
+    UnclosedString {
+        position: SourcePosition,
+    },
 }
 
 lazy_static! {
@@ -244,32 +249,37 @@ struct AdvanceResult<'a> {
     new_position: SourcePosition,
 }
 
+enum AdvanceError {
+    NoMatch,
+    Error(TokenizeError),
+}
+
 /// Use a pattern to step forward in the source.
-fn advance<'a>(source: &'a str, position: &SourcePosition, pattern: &Regex) -> Option<AdvanceResult<'a>> {
+fn advance<'a>(source: &'a str, position: &SourcePosition, pattern: &Regex) -> Result<AdvanceResult<'a>, AdvanceError> {
     if let Some(range) = pattern.find(source) {
         let contents = &source[range.start()..range.end()];
         let rest = &source[range.end()..];
         let new_position = position.next_position(contents);
 
-        Some(AdvanceResult {
+        Ok(AdvanceResult {
             rest,
             contents,
             new_position,
         })
     } else {
-        None
+        Err(AdvanceError::NoMatch)
     }
 }
 
 /// Tries to matches the given pattern against the string slice.
 /// If it does, the 'tokenizer' fn is invokved to turn the result into a token.
-fn advance_token<'a, F>(source: &'a str, position: &SourcePosition, pattern: &Regex, tokenizer: F) -> Option<(AdvanceResult<'a>, TokenKind<'a>)>
+fn advance_token<'a, F>(source: &'a str, position: &SourcePosition, pattern: &Regex, tokenizer: F) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError>
 where
     F: Fn(&'a str) -> TokenKind<'a>,
 {
     let result = advance(source, position, pattern)?;
     let token_kind = tokenizer(result.contents);
-    Some((result, token_kind))
+    Ok((result, token_kind))
 }
 
 /// Tokenizes a source string completely and returns a [Vec][Vec] of [Tokens][Token].
@@ -289,12 +299,12 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
 
     loop {
         let whitespace = match advance(current, &current_position, &PATTERN_WHITESPACE) {
-            Some(result) => {
+            Ok(result) => {
                 current = result.rest;
                 current_position = result.new_position;
                 result.contents
             },
-            None => "",
+            Err(_) => "",
         };
 
         let advancement = advance_token(current, &current_position, &PATTERN_IDENTIFIER, |s| {
@@ -304,11 +314,11 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                     TokenKind::Identifier(s.into())
                 }
             })
-            .or_else(|| advance_token(current, &current_position, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
-            .or_else(|| advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())))
-            .or_else(|| {
+            .or_else(|_| advance_token(current, &current_position, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
+            .or_else(|_| advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())))
+            .or_else(|_| {
                 if current.starts_with("\"") {
-                    let mut literal_end = 0;
+                    let mut literal_end = None;
                     let mut last_was_escape = false;
 
                     for (index, character) in current.char_indices().skip(1) {
@@ -320,13 +330,14 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                                 if last_was_escape {
                                     last_was_escape = false;
                                 } else {
-                                    literal_end = index;
+                                    literal_end = Some(index);
                                     break;
                                 }
                             },
                             '\r' | '\n' => {
-                                // TODO: nicer error
-                                panic!("Unexpected newline found in string literal!");
+                                return Err(AdvanceError::Error(TokenizeError::UnclosedString {
+                                    position: current_position,
+                                }));
                             },
                             _ => {
                                 last_was_escape = false;
@@ -334,7 +345,16 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                         }
                     }
 
-                    Some((
+                    let literal_end = match literal_end {
+                        Some(v) => v,
+                        None => {
+                            return Err(AdvanceError::Error(TokenizeError::UnclosedString {
+                                position: current_position,
+                            }));
+                        },
+                    };
+
+                    Ok((
                         AdvanceResult {
                             rest: &current[literal_end + 1..],
                             contents: "",
@@ -345,12 +365,12 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                         })
                     ))
                 } else {
-                    None
+                    Err(AdvanceError::NoMatch)
                 }
             });
 
         match advancement {
-            Some((result, token_kind)) => {
+            Ok((result, token_kind)) => {
                 tokens.push(Token {
                     whitespace: whitespace.into(),
                     kind: token_kind,
@@ -361,7 +381,7 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 current = result.rest;
                 current_position = result.new_position;
             },
-            None => break,
+            Err(_) => break,
         }
     }
 
