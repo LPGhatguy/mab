@@ -84,13 +84,6 @@ fn parse_by_example() {
             },
         };
 
-        let ast = match parse_from_tokens(&tokens) {
-            Ok(ast) => ast,
-            Err(err) => {
-                panic!("Failed to parse file {}: {:?}", entry_path.display(), err);
-            },
-        };
-
         match expected_tokens {
             Some(expected_tokens) => {
                 if tokens != expected_tokens {
@@ -108,6 +101,13 @@ fn parse_by_example() {
                 file.write_all(contents.as_bytes()).unwrap();
             }
         }
+
+        let ast = match parse_from_tokens(&tokens) {
+            Ok(ast) => ast,
+            Err(err) => {
+                panic!("Failed to parse file {}: {:?}", entry_path.display(), err);
+            },
+        };
 
         match expected_ast {
             Some(expected_ast) => {
