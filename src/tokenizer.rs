@@ -233,7 +233,7 @@ lazy_static! {
             .collect::<Vec<_>>()
             .join("|");
 
-        Regex::new(&format!("^{}", source)).unwrap()
+        Regex::new(&format!("^(?:{})", source)).unwrap()
     };
 
     static ref PATTERN_IDENTIFIER: Regex = Regex::new(r"^[_a-zA-Z][_a-zA-Z0-9]*").unwrap();
