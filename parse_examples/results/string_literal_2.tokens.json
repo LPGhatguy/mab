@@ -34,7 +34,7 @@
   {
     "kind": {
       "StringLiteral": {
-        "type": "DoubleQuote",
+        "type": "SingleQuote",
         "raw_content": "Hello, world!"
       }
     },

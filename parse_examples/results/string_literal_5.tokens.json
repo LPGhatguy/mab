@@ -34,8 +34,8 @@
   {
     "kind": {
       "StringLiteral": {
-        "type": "DoubleQuote",
-        "raw_content": "Hello, world!"
+        "type": "SingleQuote",
+        "raw_content": "Hello, \"world!\""
       }
     },
     "whitespace": "",
@@ -45,9 +45,9 @@
       "column": 7
     },
     "end_position": {
-      "bytes": 21,
+      "bytes": 23,
       "line": 1,
-      "column": 22
+      "column": 24
     }
   },
   {
@@ -56,14 +56,14 @@
     },
     "whitespace": "",
     "start_position": {
-      "bytes": 21,
+      "bytes": 23,
       "line": 1,
-      "column": 22
+      "column": 24
     },
     "end_position": {
-      "bytes": 22,
+      "bytes": 24,
       "line": 1,
-      "column": 23
+      "column": 25
     }
   }
 ]

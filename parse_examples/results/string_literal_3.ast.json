@@ -9,7 +9,7 @@
           {
             "String": {
               "type": "DoubleQuote",
-              "raw_content": "Hello, world!"
+              "raw_content": "Hello, \\\"world!\\\""
             }
           }
         ]

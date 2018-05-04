@@ -8,8 +8,8 @@
         "arguments": [
           {
             "String": {
-              "type": "DoubleQuote",
-              "raw_content": "Hello, world!"
+              "type": "SingleQuote",
+              "raw_content": "Hello, \\'world!\\'"
             }
           }
         ]

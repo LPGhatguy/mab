@@ -1,1 +1,1 @@
-local x = "Hello!"
+print("Hello, world!")
