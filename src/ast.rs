@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use tokenizer::StringLiteral;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UnaryOpKind {
@@ -150,7 +151,7 @@ pub enum Expression<'a> {
     Bool(bool),
     #[serde(borrow)]
     Number(Cow<'a, str>),
-    String(Cow<'a, str>),
+    String(StringLiteral<'a>),
     VarArg,
     Table(TableLiteral<'a>),
     FunctionCall(FunctionCall<'a>),

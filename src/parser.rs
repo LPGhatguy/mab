@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 
-use tokenizer::{Token, TokenKind, Symbol};
+use tokenizer::{Token, TokenKind, Symbol, StringLiteral};
 use ast::*;
 use parser_core::*;
 
@@ -216,6 +216,7 @@ define_parser!(ParseValue, Expression<'state>, |_, state| {
         ParseBoolean => Expression::Bool,
         // Hack: parse_first_of! cannot handle unit values
         ParseNil => |_| Expression::Nil,
+        ParseString => Expression::String,
     })
 });
 
@@ -229,6 +230,14 @@ struct ParseNil;
 define_parser!(ParseNil, (), |_, state| {
     let (state, _) = ParseSymbol(Symbol::Nil).parse(state)?;
     Ok((state, ()))
+});
+
+struct ParseString;
+define_parser!(ParseString, StringLiteral<'state>, |_, state: ParseState<'state>| {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::StringLiteral(ref value), .. }) => Ok((state.advance(1), value.clone())),
+        _ => Err(ParseAbort::NoMatch),
+    }
 });
 
 // local namelist [`=´ explist]

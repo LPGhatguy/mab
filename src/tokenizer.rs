@@ -128,6 +128,21 @@ impl SourcePosition {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum StringLiteral<'a> {
+    DoubleQuote {
+        raw_content: Cow<'a, str>,
+    },
+    SingleQuote {
+        raw_content: Cow<'a, str>,
+    },
+    LongForm {
+        raw_content: Cow<'a, str>,
+        depth: u32,
+    },
+}
+
 /// Represents a token kind.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
@@ -142,6 +157,8 @@ pub enum TokenKind<'a> {
     /// The original value of the number, as it appeared in the source, is
     /// contained in the `&str` value.
     NumberLiteral(Cow<'a, str>),
+
+    StringLiteral(StringLiteral<'a>),
 }
 
 /// A token in the source.
@@ -288,7 +305,49 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 }
             })
             .or_else(|| advance_token(current, &current_position, &PATTERN_NUMBER_LITERAL, |s| TokenKind::NumberLiteral(s.into())))
-            .or_else(|| advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())));
+            .or_else(|| advance_token(current, &current_position, &PATTERN_SYMBOL, |s| TokenKind::Symbol(*STR_TO_SYMBOL.get(s).unwrap())))
+            .or_else(|| {
+                if current.starts_with("\"") {
+                    let mut literal_end = 0;
+                    let mut last_was_escape = false;
+
+                    for (index, character) in current.char_indices().skip(1) {
+                        match character {
+                            '\\' => {
+                                last_was_escape = !last_was_escape;
+                            },
+                            '"' => {
+                                if last_was_escape {
+                                    last_was_escape = false;
+                                } else {
+                                    literal_end = index;
+                                    break;
+                                }
+                            },
+                            '\r' | '\n' => {
+                                // TODO: nicer error
+                                panic!("Unexpected newline found in string literal!");
+                            },
+                            _ => {
+                                last_was_escape = false;
+                            },
+                        }
+                    }
+
+                    Some((
+                        AdvanceResult {
+                            rest: &current[literal_end + 1..],
+                            contents: "",
+                            new_position: current_position.next_position(&current[..literal_end + 1]),
+                        },
+                        TokenKind::StringLiteral(StringLiteral::DoubleQuote {
+                            raw_content: current[1..literal_end].into(),
+                        })
+                    ))
+                } else {
+                    None
+                }
+            });
 
         match advancement {
             Some((result, token_kind)) => {

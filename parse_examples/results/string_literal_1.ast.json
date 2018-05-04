@@ -1,0 +1,19 @@
+{
+  "statements": [
+    {
+      "LocalAssignment": {
+        "names": [
+          "x"
+        ],
+        "values": [
+          {
+            "String": {
+              "type": "DoubleQuote",
+              "raw_content": "Hello!"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
