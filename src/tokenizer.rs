@@ -358,7 +358,7 @@ fn parse_string_literal<'a>(current: &'a str, current_position: &SourcePosition)
         '\'' => StringLiteral::SingleQuote {
             raw_content: Cow::from(&current[1..literal_end])
         },
-        _ => unreachable!()
+        _ => unreachable!(),
     };
 
     let advance_result = AdvanceResult {
