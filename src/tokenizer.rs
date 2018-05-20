@@ -146,16 +146,14 @@ pub enum StringLiteral<'a> {
 /// Represents a token kind.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TokenKind<'a> {
-    /// An operator, like `+`, `-`, or `,`.
+    /// An operator like `+` or `,` or a keyword like `not`.
     Symbol(Symbol),
 
-    #[serde(borrow)]
     /// An identifier that is not a keyword.
+    #[serde(borrow)]
     Identifier(Cow<'a, str>),
 
-    /// A number literal.
-    /// The original value of the number, as it appeared in the source, is
-    /// contained in the `&str` value.
+    /// A number literal as it appeared in the source.
     NumberLiteral(Cow<'a, str>),
 
     StringLiteral(StringLiteral<'a>),
@@ -184,9 +182,8 @@ pub enum TokenPrefix<'a> {
 /// A token in the source.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token<'a> {
-    #[serde(borrow)]
-
     /// The kind of token this token is.
+    #[serde(borrow)]
     pub kind: TokenKind<'a>,
 
     /// Any whitespace and comments before the token.
