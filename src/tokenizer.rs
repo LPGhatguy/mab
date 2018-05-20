@@ -387,14 +387,19 @@ fn parse_string_literal<'a>(current: &'a str, current_position: &SourcePosition)
     Ok((advance_result, TokenKind::StringLiteral(literal)))
 }
 
+fn parse_long_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    Err(AdvanceError::NoMatch)
+}
+
 /// Attempts to advance one token into the stream.
 fn tokenize_step<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     try_advance!(parse_identifier(current, current_position));
     try_advance!(parse_number_literal(current, current_position));
     try_advance!(parse_symbol(current, current_position));
     try_advance!(parse_string_literal(current, current_position));
+    try_advance!(parse_long_string_literal(current, current_position));
 
-    return Err(AdvanceError::NoMatch);
+    Err(AdvanceError::NoMatch)
 }
 
 /// Tokenizes a source string completely and returns a [Vec][Vec] of [Tokens][Token].
