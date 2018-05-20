@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "Function"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "test"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 9,
       "line": 1,
@@ -35,7 +39,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 13,
       "line": 1,
@@ -51,7 +55,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 14,
       "line": 1,
@@ -67,7 +71,11 @@
     "kind": {
       "Symbol": "End"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 16,
       "line": 2,

@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "If"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "a"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 3,
       "line": 1,
@@ -35,7 +39,11 @@
     "kind": {
       "Symbol": "Then"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 5,
       "line": 1,
@@ -51,7 +59,11 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\n\t",
+    "prefix": [
+      {
+        "Whitespace": "\n\t"
+      }
+    ],
     "start_position": {
       "bytes": 11,
       "line": 2,
@@ -67,7 +79,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 16,
       "line": 2,
@@ -83,7 +95,7 @@
     "kind": {
       "Identifier": "a"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 17,
       "line": 2,
@@ -99,7 +111,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 18,
       "line": 2,
@@ -115,7 +127,11 @@
     "kind": {
       "Symbol": "Else"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 20,
       "line": 3,
@@ -131,7 +147,11 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\n\t",
+    "prefix": [
+      {
+        "Whitespace": "\n\t"
+      }
+    ],
     "start_position": {
       "bytes": 26,
       "line": 4,
@@ -147,7 +167,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 31,
       "line": 4,
@@ -163,7 +183,7 @@
     "kind": {
       "Identifier": "b"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 32,
       "line": 4,
@@ -179,7 +199,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 33,
       "line": 4,
@@ -195,7 +215,11 @@
     "kind": {
       "Symbol": "End"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 35,
       "line": 5,

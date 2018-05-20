@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "For"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "i"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 4,
       "line": 1,
@@ -35,7 +39,11 @@
     "kind": {
       "Symbol": "Equal"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 6,
       "line": 1,
@@ -51,7 +59,11 @@
     "kind": {
       "Identifier": "start"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 8,
       "line": 1,
@@ -67,7 +79,7 @@
     "kind": {
       "Symbol": "Comma"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 13,
       "line": 1,
@@ -83,7 +95,11 @@
     "kind": {
       "Identifier": "limit"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 15,
       "line": 1,
@@ -99,7 +115,7 @@
     "kind": {
       "Symbol": "Comma"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 20,
       "line": 1,
@@ -115,7 +131,11 @@
     "kind": {
       "NumberLiteral": "2"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 22,
       "line": 1,
@@ -131,7 +151,11 @@
     "kind": {
       "Symbol": "Do"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 24,
       "line": 1,
@@ -147,7 +171,11 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\n    ",
+    "prefix": [
+      {
+        "Whitespace": "\n    "
+      }
+    ],
     "start_position": {
       "bytes": 31,
       "line": 2,
@@ -163,7 +191,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 36,
       "line": 2,
@@ -179,7 +207,7 @@
     "kind": {
       "Identifier": "i"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 37,
       "line": 2,
@@ -195,7 +223,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 38,
       "line": 2,
@@ -211,7 +239,11 @@
     "kind": {
       "Symbol": "End"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 40,
       "line": 3,

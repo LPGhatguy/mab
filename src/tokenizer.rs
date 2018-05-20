@@ -161,6 +161,26 @@ pub enum TokenKind<'a> {
     StringLiteral(StringLiteral<'a>),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Comment<'a> {
+    SingleLine {
+        content: Cow<'a, str>,
+    },
+    MultiLine {
+        content: Cow<'a, str>,
+        depth: u32,
+    },
+}
+
+/// An item that appears before tokens, like comments and whitespace.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TokenPrefix<'a> {
+    #[serde(borrow)]
+    Whitespace(Cow<'a, str>),
+
+    Comment(Comment<'a>),
+}
+
 /// A token in the source.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Token<'a> {
@@ -169,8 +189,8 @@ pub struct Token<'a> {
     /// The kind of token this token is.
     pub kind: TokenKind<'a>,
 
-    /// Any whitespace before the token.
-    pub whitespace: Cow<'a, str>,
+    /// Any whitespace and comments before the token.
+    pub prefix: Vec<TokenPrefix<'a>>,
 
     /// The start of the token, not including whitespace, inclusive.
     pub start_position: SourcePosition,
@@ -400,15 +420,21 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
             Ok(result) => {
                 current = result.rest;
                 current_position = result.new_position;
-                result.contents
+                Some(result.contents)
             },
-            Err(_) => "",
+            Err(_) => None,
         };
 
         match tokenize_step(current, &current_position) {
             Ok((result, token_kind)) => {
+                let mut prefix = Vec::new();
+
+                if let Some(whitespace) = whitespace {
+                    prefix.push(TokenPrefix::Whitespace(whitespace.into()));
+                }
+
                 tokens.push(Token {
-                    whitespace: whitespace.into(),
+                    prefix,
                     kind: token_kind,
                     start_position: current_position.clone(),
                     end_position: result.new_position.clone(),
@@ -503,7 +529,7 @@ mod tests {
         let tokenized = tokenize(input).unwrap();
         let first_token = &tokenized[0];
 
-        assert_eq!(first_token.whitespace, "  ");
+        assert_eq!(first_token.prefix, &[TokenPrefix::Whitespace("  ".into())]);
     }
 
     #[test]
@@ -512,7 +538,7 @@ mod tests {
         let tokenized = tokenize(input).unwrap();
         let first_token = &tokenized[0];
 
-        assert_eq!(first_token.whitespace, "");
+        assert_eq!(first_token.prefix, &[]);
     }
 
     #[test]
@@ -536,14 +562,12 @@ mod tests {
 
     #[test]
     fn source_tracking() {
-        let input = "local
-                    test foo
-                    bar";
+        let input = "local\n   test foo\n     bar";
         let tokenized = tokenize(input).unwrap();
         assert_eq!(tokenized, vec![
             Token {
                 kind: TokenKind::Symbol(Symbol::Local),
-                whitespace: "".into(),
+                prefix: Vec::new(),
                 start_position: SourcePosition {
                     bytes: 0,
                     line: 1,
@@ -557,44 +581,50 @@ mod tests {
             },
             Token {
                 kind: TokenKind::Identifier("test".into()),
-                whitespace: "\n                    ".into(),
+                prefix: vec![
+                    TokenPrefix::Whitespace("\n   ".into()),
+                ],
                 start_position: SourcePosition {
-                    bytes: 26,
+                    bytes: 9,
                     line: 2,
-                    column: 21,
+                    column: 4,
                 },
                 end_position: SourcePosition {
-                    bytes: 30,
+                    bytes: 13,
                     line: 2,
-                    column: 25,
+                    column: 8,
                 },
             },
             Token {
                 kind: TokenKind::Identifier("foo".into()),
-                whitespace: " ".into(),
+                prefix: vec![
+                    TokenPrefix::Whitespace(" ".into()),
+                ],
                 start_position: SourcePosition {
-                    bytes: 31,
+                    bytes: 14,
                     line: 2,
-                    column: 26,
+                    column: 9,
                 },
                 end_position: SourcePosition {
-                    bytes: 34,
+                    bytes: 17,
                     line: 2,
-                    column: 29,
+                    column: 12,
                 },
             },
             Token {
                 kind: TokenKind::Identifier("bar".into()),
-                whitespace: "\n                    ".into(),
+                prefix: vec![
+                    TokenPrefix::Whitespace("\n     ".into()),
+                ],
                 start_position: SourcePosition {
-                    bytes: 55,
+                    bytes: 23,
                     line: 3,
-                    column: 21,
+                    column: 6,
                 },
                 end_position: SourcePosition {
-                    bytes: 58,
+                    bytes: 26,
                     line: 3,
-                    column: 24,
+                    column: 9,
                 },
             }
         ]);

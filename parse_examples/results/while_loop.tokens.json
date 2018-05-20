@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "While"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "continue"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 6,
       "line": 1,
@@ -35,7 +39,11 @@
     "kind": {
       "Symbol": "Do"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 15,
       "line": 1,
@@ -51,7 +59,11 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\n\t",
+    "prefix": [
+      {
+        "Whitespace": "\n\t"
+      }
+    ],
     "start_position": {
       "bytes": 19,
       "line": 2,
@@ -67,7 +79,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 24,
       "line": 2,
@@ -83,7 +95,7 @@
     "kind": {
       "Identifier": "hello"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 25,
       "line": 2,
@@ -99,7 +111,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 30,
       "line": 2,
@@ -115,7 +127,11 @@
     "kind": {
       "Symbol": "End"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 32,
       "line": 3,

@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "Repeat"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\n\t",
+    "prefix": [
+      {
+        "Whitespace": "\n\t"
+      }
+    ],
     "start_position": {
       "bytes": 8,
       "line": 2,
@@ -35,7 +39,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 13,
       "line": 2,
@@ -51,7 +55,7 @@
     "kind": {
       "NumberLiteral": "5"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 14,
       "line": 2,
@@ -67,7 +71,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 15,
       "line": 2,
@@ -83,7 +87,11 @@
     "kind": {
       "Symbol": "Until"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 17,
       "line": 3,
@@ -99,7 +107,11 @@
     "kind": {
       "Identifier": "x"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 23,
       "line": 3,

@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "Local"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "x"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 6,
       "line": 1,
@@ -35,7 +39,11 @@
     "kind": {
       "Symbol": "Equal"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 8,
       "line": 1,
@@ -51,7 +59,11 @@
     "kind": {
       "NumberLiteral": "5"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 10,
       "line": 1,
@@ -67,7 +79,11 @@
     "kind": {
       "Symbol": "Local"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 12,
       "line": 2,
@@ -83,7 +99,11 @@
     "kind": {
       "Identifier": "y"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 18,
       "line": 2,
@@ -99,7 +119,11 @@
     "kind": {
       "Symbol": "Equal"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 20,
       "line": 2,
@@ -115,7 +139,11 @@
     "kind": {
       "NumberLiteral": "6"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 22,
       "line": 2,

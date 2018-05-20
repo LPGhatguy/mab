@@ -3,7 +3,7 @@
     "kind": {
       "Symbol": "Function"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,11 @@
     "kind": {
       "Identifier": "foo"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 9,
       "line": 1,
@@ -35,7 +39,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 12,
       "line": 1,
@@ -51,7 +55,7 @@
     "kind": {
       "Identifier": "a"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 13,
       "line": 1,
@@ -67,7 +71,7 @@
     "kind": {
       "Symbol": "Comma"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 14,
       "line": 1,
@@ -83,7 +87,11 @@
     "kind": {
       "Identifier": "b"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 16,
       "line": 1,
@@ -99,7 +107,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 17,
       "line": 1,
@@ -115,7 +123,11 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "\n\t",
+    "prefix": [
+      {
+        "Whitespace": "\n\t"
+      }
+    ],
     "start_position": {
       "bytes": 20,
       "line": 2,
@@ -131,7 +143,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 25,
       "line": 2,
@@ -147,7 +159,7 @@
     "kind": {
       "Identifier": "test"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 26,
       "line": 2,
@@ -163,7 +175,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 30,
       "line": 2,
@@ -179,7 +191,11 @@
     "kind": {
       "Symbol": "End"
     },
-    "whitespace": "\n",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
     "start_position": {
       "bytes": 32,
       "line": 3,

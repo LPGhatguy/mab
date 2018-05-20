@@ -3,7 +3,7 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 5,
       "line": 1,
@@ -35,7 +35,7 @@
     "kind": {
       "Identifier": "a"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 6,
       "line": 1,
@@ -51,7 +51,11 @@
     "kind": {
       "Symbol": "Plus"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 8,
       "line": 1,
@@ -67,7 +71,11 @@
     "kind": {
       "Identifier": "b"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 10,
       "line": 1,
@@ -83,7 +91,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 11,
       "line": 1,

@@ -3,7 +3,7 @@
     "kind": {
       "Identifier": "print"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 0,
       "line": 1,
@@ -19,7 +19,7 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 5,
       "line": 1,
@@ -35,7 +35,7 @@
     "kind": {
       "Identifier": "a"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 6,
       "line": 1,
@@ -51,7 +51,11 @@
     "kind": {
       "Symbol": "Star"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 8,
       "line": 1,
@@ -67,7 +71,11 @@
     "kind": {
       "Identifier": "b"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 10,
       "line": 1,
@@ -83,7 +91,11 @@
     "kind": {
       "Symbol": "Caret"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 12,
       "line": 1,
@@ -99,7 +111,11 @@
     "kind": {
       "Symbol": "LeftParen"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 14,
       "line": 1,
@@ -115,7 +131,7 @@
     "kind": {
       "Identifier": "c"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 15,
       "line": 1,
@@ -131,7 +147,11 @@
     "kind": {
       "Symbol": "Plus"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 17,
       "line": 1,
@@ -147,7 +167,11 @@
     "kind": {
       "Identifier": "d"
     },
-    "whitespace": " ",
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
     "start_position": {
       "bytes": 19,
       "line": 1,
@@ -163,7 +187,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 20,
       "line": 1,
@@ -179,7 +203,7 @@
     "kind": {
       "Symbol": "RightParen"
     },
-    "whitespace": "",
+    "prefix": [],
     "start_position": {
       "bytes": 21,
       "line": 1,
