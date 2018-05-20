@@ -157,6 +157,8 @@ pub enum TokenKind<'a> {
     NumberLiteral(Cow<'a, str>),
 
     StringLiteral(StringLiteral<'a>),
+
+    EndOfFile,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -451,12 +453,28 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 current = result.rest;
                 current_position = result.new_position;
 
-                prefix.push(TokenPrefix::Whitespace(result.contents.into()))
+                prefix.push(TokenPrefix::Whitespace(result.contents.into()));
             } else if let Ok((result, comment)) = parse_comment(current, &current_position) {
-                unimplemented!()
+                current = result.rest;
+                current_position = result.new_position;
+
+                prefix.push(TokenPrefix::Comment(comment));
             } else {
                 break;
             }
+        }
+
+        if current.is_empty() {
+            if !prefix.is_empty() {
+                tokens.push(Token {
+                    prefix,
+                    kind: TokenKind::EndOfFile,
+                    start_position: current_position.clone(),
+                    end_position: current_position.clone(),
+                });
+            }
+
+            break;
         }
 
         match tokenize_step(current, &current_position) {
@@ -472,17 +490,17 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 current_position = result.new_position;
             },
             Err(AdvanceError::Error(e)) => return Err(e),
-            Err(AdvanceError::NoMatch) => break,
+            Err(AdvanceError::NoMatch) => {
+                if !current.is_empty() {
+                    return Err(TokenizeError::UnknownSequence {
+                        position: current_position,
+                    });
+                }
+            },
         }
     }
 
-    if current.is_empty() {
-        Ok(tokens)
-    } else {
-        Err(TokenizeError::UnknownSequence {
-            position: current_position,
-        })
-    }
+    Ok(tokens)
 }
 
 #[cfg(test)]

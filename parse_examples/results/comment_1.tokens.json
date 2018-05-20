@@ -1,0 +1,34 @@
+[
+  {
+    "kind": "EndOfFile",
+    "prefix": [
+      {
+        "Comment": {
+          "SingleLine": {
+            "content": " Hello, world!"
+          }
+        }
+      },
+      {
+        "Whitespace": "\n"
+      },
+      {
+        "Comment": {
+          "SingleLine": {
+            "content": " Hey!"
+          }
+        }
+      }
+    ],
+    "start_position": {
+      "bytes": 24,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 24,
+      "line": 2,
+      "column": 7
+    }
+  }
+]

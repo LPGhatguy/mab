@@ -14,6 +14,7 @@ pub fn parse_from_tokens<'a>(tokens: &'a [Token<'a>]) -> Result<Chunk<'a>, Strin
     };
 
     match state.peek() {
+        Some(Token { kind: TokenKind::EndOfFile, .. }) => {},
         Some(token) => return Err(format!("A token was left at the end of the stream: {:?}", token)),
         None => {},
     }
