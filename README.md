@@ -1,4 +1,4 @@
-<h1 align="center">Lua Parser in Rust</h1>
+<h1 align="center">Mab, a Lossless Lua Parser in Rust</h1>
 
 <div align="center">
 	<a href="https://travis-ci.org/LPGhatguy/lua-parser">
@@ -8,7 +8,9 @@
 
 <hr />
 
-This is a work in progress lossless Lua 5.1+ parser written in Rust. I want to use it for a number of future projects:
+This is a work in progress *lossless* Lua 5.1+ parser written in Rust. It will preserve all comments, whitespace, and style distinctions like quotes and escaping.
+
+I want to use Mab for a number of future projects:
 
 * Static analysis tool to replace luacheck
 * Style checker and reformatter like gofmt or rustfmt (maybe named "Stylua")
@@ -25,11 +27,13 @@ This is a work in progress lossless Lua 5.1+ parser written in Rust. I want to u
 * Support for language extensions without breaking existing tools
 	* The AST should be able to cast to any normal version of Lua
 	* The project should either:
-		* Leverage Rust's type system (`non_exhaustive` patterns, especially) to guarantee that tools can be recompiled with forks of this project with zero changes.
+		* Leverage Rust's type system (non-exhaustive patterns, especially) to guarantee that tools can be recompiled with forks of this project with zero changes.
 		* Or, use a technique similar to an Entity Component System to implement extended tokens and AST nodes.
 
 ## Contributing
 Contributions are welcome -- there is a lot of work to be done!
+
+Mab supports Rust 1.26 stable and newer.
 
 There is already a fairly sizable test suite implemented as a "parse by example" system. Test file inputs are located in `parse_examples/source`.
 

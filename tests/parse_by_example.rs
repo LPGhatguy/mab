@@ -1,10 +1,10 @@
-extern crate lua_parser;
+extern crate mab;
 extern crate serde_json;
 
 use std::fs::{File, read_dir};
 use std::io::{Read, Write};
 
-use lua_parser::{tokenize, parse_from_tokens, Token, ast::Chunk};
+use mab::{tokenize, parse_from_tokens, Token, ast::Chunk};
 
 #[test]
 fn parse_by_example() {

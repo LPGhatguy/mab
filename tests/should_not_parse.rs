@@ -1,9 +1,9 @@
-extern crate lua_parser;
+extern crate mab;
 
 use std::fs::{File, read_dir};
 use std::io::Read;
 
-use lua_parser::{tokenize, parse_from_tokens};
+use mab::{tokenize, parse_from_tokens};
 
 #[test]
 fn should_not_parse() {
