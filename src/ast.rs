@@ -44,10 +44,6 @@ impl BinaryOpKind {
             BinaryOpKind::Add | BinaryOpKind::Subtract => 9,
             BinaryOpKind::Multiply | BinaryOpKind::Divide => 10,
             BinaryOpKind::Exponent => 12,
-            // BinaryOpKind::Concat => 1,
-            // BinaryOpKind::Add | BinaryOpKind::Subtract => 1,
-            // BinaryOpKind::Multiply | BinaryOpKind::Divide => 2,
-            // BinaryOpKind::Exponent => 3,
         }
     }
 
