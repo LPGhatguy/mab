@@ -1,0 +1,170 @@
+[
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "prefix": [
+      {
+        "Comment": {
+          "SingleLine": {
+            "content": " These are print statements."
+          }
+        }
+      },
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 31,
+      "line": 2,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 36,
+      "line": 2,
+      "column": 5
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 36,
+      "line": 2,
+      "column": 5
+    },
+    "end_position": {
+      "bytes": 37,
+      "line": 2,
+      "column": 6
+    }
+  },
+  {
+    "kind": {
+      "NumberLiteral": "5"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 37,
+      "line": 2,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 38,
+      "line": 2,
+      "column": 7
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 38,
+      "line": 2,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 39,
+      "line": 2,
+      "column": 8
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "print"
+    },
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 40,
+      "line": 3,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 45,
+      "line": 3,
+      "column": 5
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 45,
+      "line": 3,
+      "column": 5
+    },
+    "end_position": {
+      "bytes": 46,
+      "line": 3,
+      "column": 6
+    }
+  },
+  {
+    "kind": {
+      "NumberLiteral": "6"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 46,
+      "line": 3,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 47,
+      "line": 3,
+      "column": 7
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 47,
+      "line": 3,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 48,
+      "line": 3,
+      "column": 8
+    }
+  },
+  {
+    "kind": "EndOfFile",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      },
+      {
+        "Comment": {
+          "SingleLine": {
+            "content": " Cool?"
+          }
+        }
+      }
+    ],
+    "start_position": {
+      "bytes": 57,
+      "line": 4,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 57,
+      "line": 4,
+      "column": 8
+    }
+  }
+]
