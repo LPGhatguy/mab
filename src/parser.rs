@@ -97,6 +97,7 @@ define_parser!(ParseStatement, Statement<'state>, |_, state| {
         ParseWhileLoop => Statement::WhileLoop,
         ParseRepeatLoop => Statement::RepeatLoop,
         ParseFunctionDeclaration => Statement::FunctionDeclaration,
+        ParseAssignment => Statement::Assignment,
     })
 });
 
@@ -207,6 +208,122 @@ define_parser!(ParseParenExpression, Expression<'state>, |_, state| {
     Ok((state, Expression::ParenExpression(Box::new(expression))))
 });
 
+struct ParseIndex;
+define_parser!(ParseIndex, Index<'state>, |_, state: ParseState<'state>| {
+    match state.peek() {
+        Some(&Token { kind: TokenKind::Symbol(Symbol::Dot), .. }) => {
+            let (state, name) = ParseIdentifier.parse(state.advance(1))?;
+            println!("parsed dot index {:?}", name);
+            Ok((state, Index::Name(name)))
+        },
+        Some(&Token { kind: TokenKind::Symbol(Symbol::LeftBracket), .. }) => {
+            let (state, expression) = ParseExpression.parse(state.advance(1))?;
+            let (state, _) = ParseSymbol(Symbol::RightBracket).parse(state)?;
+            println!("parsed bracketed index {:?}", expression);
+            Ok((state, Index::Bracketed(expression)))
+        },
+        _ => Err(ParseAbort::NoMatch),
+    }
+});
+
+struct ParsePrefix;
+define_parser!(ParsePrefix, Expression<'state>, |_, state| {
+    // prefix ::= '(' exp ')' | Name
+    match ParseParenExpression.parse(state) {
+        Ok((state, prefix_expr)) => Ok((state, prefix_expr)),
+        Err(ParseAbort::NoMatch) => {
+            let (state, name) = ParseIdentifier.parse(state)?;
+            Ok((state, Expression::Name(name)))
+        },
+        Err(ParseAbort::Error(message)) => Err(ParseAbort::Error(message)),
+    }
+});
+
+struct ParseFunctionArgumentList;
+define_parser!(ParseFunctionArgumentList, Vec<Expression<'state>>, |_, state| {
+    let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
+    let (state, args) = ZeroOrMore(ParseExpression).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
+    Ok((state, args))
+});
+
+struct ParseFunctionArguments;
+define_parser!(ParseFunctionArguments, FunctionArguments<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseTableLiteral => FunctionArguments::Table,
+        ParseString => FunctionArguments::String,
+        ParseFunctionArgumentList => FunctionArguments::List,
+    })
+});
+
+struct ParseMethodCall;
+define_parser!(ParseMethodCall, (Cow<'state, str>, FunctionArguments<'state>), |_, state| {
+    let (state, _) = ParseSymbol(Symbol::Colon).parse(state)?;
+    let (state, name) = ParseIdentifier.parse(state)?;
+    let (state, args) = ParseFunctionArguments.parse(state)?;
+    Ok((state, (name, args)))
+});
+
+struct ParseCall;
+define_parser!(ParseCall, Call<'state>, |_, state| {
+    parse_first_of!(state, {
+        ParseFunctionArguments => Call::Anonymous,
+        ParseMethodCall => |(name, args)| Call::Method(name, args),
+    })
+});
+
+struct ParseSuffix;
+define_parser!(ParseSuffix, Suffix<'state>, |_, state| {
+    // suffix ::= call | index
+    parse_first_of!(state, {
+        ParseIndex => Suffix::Index,
+        ParseCall => Suffix::Call,
+    })
+});
+
+struct ParseComplexVarName;
+define_parser!(ParseComplexVarName, VarName<'state>, |_, state| {
+    // var ::= prefix {suffix} index | Name
+    let (state, prefix) = ParsePrefix.parse(state)?;
+    let (state, suffixes) = ZeroOrMore(ParseSuffix).parse(state)?;
+    let mut result_suffixes = suffixes.clone();
+    let last_suffix = suffixes.last();
+
+    // This is necessary because a suffix can *also* be an index, so we might have parsed what
+    // should have been the index as a suffix!
+    let (state, index) = match ParseIndex.parse(state) {
+        // If there was an index after the last suffix (if the last suffix was a call), then
+        // we're done!
+        Ok((new_state, index)) => (new_state, index),
+        // Otherwise, the index is actually the last suffix in disguise, and we have to pull
+        // it out of the vector.
+        Err(ParseAbort::NoMatch) => {
+            match last_suffix {
+                Some(Suffix::Index(index)) => {
+                    result_suffixes.pop();
+                    (state, index.clone())
+                },
+                _ => return Err(ParseAbort::NoMatch),
+            }
+        },
+        Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message))
+    };
+
+    Ok((state, VarName::Expression(prefix, result_suffixes, index)))
+});
+
+struct ParseVarName;
+define_parser!(ParseVarName, VarName<'state>, |_, state| {
+    match ParseComplexVarName.parse(state) {
+        Ok((state, name)) => Ok((state, name)),
+        Err(ParseAbort::NoMatch) => {
+            let (state, name) = ParseIdentifier.parse(state)?;
+            Ok((state, VarName::Name(name)))
+        },
+        Err(ParseAbort::Error(message)) => Err(ParseAbort::Error(message)),
+    }
+});
+
 struct ParseValue;
 define_parser!(ParseValue, Expression<'state>, |_, state| {
     parse_first_of!(state, {
@@ -239,6 +356,19 @@ define_parser!(ParseString, StringLiteral<'state>, |_, state: ParseState<'state>
         Some(&Token { kind: TokenKind::StringLiteral(ref value), .. }) => Ok((state.advance(1), value.clone())),
         _ => Err(ParseAbort::NoMatch),
     }
+});
+
+struct ParseAssignment;
+define_parser!(ParseAssignment, Assignment<'state>, |_, state| {
+    let (state, names) = DelimitedOneOrMore(ParseVarName, ParseSymbol(Symbol::Comma)).parse(state)?;
+    // An = is required for assignment, unlike local assignment
+    let (state, _) = ParseSymbol(Symbol::Equal).parse(state)?;
+    let (state, expressions) = DelimitedOneOrMore(ParseExpression, ParseSymbol(Symbol::Comma)).parse(state)?;
+
+    Ok((state, Assignment {
+        names: names,
+        values: expressions,
+    }))
 });
 
 // local namelist [`=´ explist]
