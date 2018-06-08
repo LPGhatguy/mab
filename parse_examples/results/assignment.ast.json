@@ -1,0 +1,114 @@
+{
+  "statements": [
+    {
+      "Assignment": {
+        "names": [
+          {
+            "Name": "a"
+          },
+          {
+            "Name": "b"
+          },
+          {
+            "Expression": [
+              {
+                "Name": "c"
+              },
+              [
+                {
+                  "Index": {
+                    "Name": "d"
+                  }
+                },
+                {
+                  "Index": {
+                    "Name": "e"
+                  }
+                },
+                {
+                  "Index": {
+                    "Bracketed": {
+                      "Name": "f"
+                    }
+                  }
+                },
+                {
+                  "Index": {
+                    "Bracketed": {
+                      "Name": "g"
+                    }
+                  }
+                }
+              ],
+              {
+                "Bracketed": {
+                  "Number": "1"
+                }
+              }
+            ]
+          },
+          {
+            "Expression": [
+              {
+                "Name": "h"
+              },
+              [
+                {
+                  "Call": {
+                    "Method": [
+                      "i",
+                      {
+                        "List": []
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Index": {
+                    "Name": "j"
+                  }
+                },
+                {
+                  "Index": {
+                    "Bracketed": {
+                      "Name": "k"
+                    }
+                  }
+                },
+                {
+                  "Call": {
+                    "Method": [
+                      "l",
+                      {
+                        "List": []
+                      }
+                    ]
+                  }
+                }
+              ],
+              {
+                "Bracketed": {
+                  "Name": "m"
+                }
+              }
+            ]
+          }
+        ],
+        "values": [
+          {
+            "Bool": true
+          },
+          {
+            "Bool": false
+          },
+          {
+            "Number": "1"
+          },
+          {
+            "Number": "4"
+          }
+        ]
+      }
+    }
+  ]
+}
