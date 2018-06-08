@@ -194,7 +194,7 @@ pub enum Suffix<'a> {
 pub enum VarName<'a> {
     #[serde(borrow)]
     Name(Cow<'a, str>),
-    Expression(Expression<'a>, Vec<Suffix<'a>>, Index<'a>),
+    Expression(Expression<'a>, Vec<Suffix<'a>>),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

@@ -286,30 +286,14 @@ define_parser!(ParseComplexVarName, VarName<'state>, |_, state| {
     // var ::= prefix {suffix} index | Name
     let (state, prefix) = ParsePrefix.parse(state)?;
     let (state, suffixes) = ZeroOrMore(ParseSuffix).parse(state)?;
-    let mut result_suffixes = suffixes.clone();
-    let last_suffix = suffixes.last();
 
-    // This is necessary because a suffix can *also* be an index, so we might have parsed what
-    // should have been the index as a suffix!
-    let (state, index) = match ParseIndex.parse(state) {
-        // If there was an index after the last suffix (if the last suffix was a call), then
-        // we're done!
-        Ok((new_state, index)) => (new_state, index),
-        // Otherwise, the index is actually the last suffix in disguise, and we have to pull
-        // it out of the vector.
-        Err(ParseAbort::NoMatch) => {
-            match last_suffix {
-                Some(Suffix::Index(index)) => {
-                    result_suffixes.pop();
-                    (state, index.clone())
-                },
-                _ => return Err(ParseAbort::NoMatch),
-            }
-        },
-        Err(ParseAbort::Error(message)) => return Err(ParseAbort::Error(message))
-    };
-
-    Ok((state, VarName::Expression(prefix, result_suffixes, index)))
+    // Check if the last suffix is an index, as it must be for this to be valid Lua
+    if let Some(Suffix::Index(_)) = suffixes.last() {
+        Ok((state, VarName::Expression(prefix, suffixes)))
+    }
+    else {
+        Err(ParseAbort::NoMatch)
+    }
 });
 
 struct ParseVarName;

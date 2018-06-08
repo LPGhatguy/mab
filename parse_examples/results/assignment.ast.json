@@ -38,13 +38,15 @@
                       "Name": "g"
                     }
                   }
+                },
+                {
+                  "Index": {
+                    "Bracketed": {
+                      "Number": "1"
+                    }
+                  }
                 }
-              ],
-              {
-                "Bracketed": {
-                  "Number": "1"
-                }
-              }
+              ]
             ]
           },
           {
@@ -84,13 +86,15 @@
                       }
                     ]
                   }
+                },
+                {
+                  "Index": {
+                    "Bracketed": {
+                      "Name": "m"
+                    }
+                  }
                 }
-              ],
-              {
-                "Bracketed": {
-                  "Name": "m"
-                }
-              }
+              ]
             ]
           }
         ],
