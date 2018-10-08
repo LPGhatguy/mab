@@ -1,0 +1,20 @@
+{
+  "statements": [
+    {
+      "Assignment": {
+        "names": [
+          "a",
+          "b"
+        ],
+        "values": [
+          {
+            "Number": "5"
+          },
+          {
+            "Number": "8"
+          }
+        ]
+      }
+    }
+  ]
+}

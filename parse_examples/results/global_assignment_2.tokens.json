@@ -1,0 +1,148 @@
+[
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 1,
+      "line": 1,
+      "column": 2
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Comma"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 1,
+      "line": 1,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 2,
+      "line": 1,
+      "column": 3
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "b"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 3,
+      "line": 1,
+      "column": 4
+    },
+    "end_position": {
+      "bytes": 4,
+      "line": 1,
+      "column": 5
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Equal"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    },
+    "end_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    }
+  },
+  {
+    "kind": {
+      "NumberLiteral": "5"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 7,
+      "line": 1,
+      "column": 8
+    },
+    "end_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Comma"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    }
+  },
+  {
+    "kind": {
+      "NumberLiteral": "8"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    }
+  },
+  {
+    "kind": "EndOfFile",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 12,
+      "line": 2,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 12,
+      "line": 2,
+      "column": 0
+    }
+  }
+]
