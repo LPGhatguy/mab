@@ -90,6 +90,7 @@ struct ParseStatement;
 define_parser!(ParseStatement, Statement<'state>, |_, state| {
     parse_first_of!(state, {
         ParseLocalAssignment => Statement::LocalAssignment,
+        ParseAssignment => Statement::Assignment,
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
         ParseGenericFor => Statement::GenericFor,
@@ -239,6 +240,22 @@ define_parser!(ParseString, StringLiteral<'state>, |_, state: ParseState<'state>
         Some(&Token { kind: TokenKind::StringLiteral(ref value), .. }) => Ok((state.advance(1), value.clone())),
         _ => Err(ParseAbort::NoMatch),
     }
+});
+
+// local namelist [`=´ explist]
+struct ParseAssignment;
+define_parser!(ParseAssignment, Assignment<'state>, |_, initial_state| {
+    let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(initial_state)?;
+
+    let (state, expressions) = match ParseSymbol(Symbol::Equal).parse(state) {
+        Ok((state, _)) => DelimitedOneOrMore(ParseExpression, ParseSymbol(Symbol::Comma)).parse(state)?,
+        Err(_) => return Err(ParseAbort::NoMatch),
+    };
+
+    Ok((state, Assignment {
+        names: names,
+        values: expressions,
+    }))
 });
 
 // local namelist [`=´ explist]
