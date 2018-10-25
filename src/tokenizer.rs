@@ -258,7 +258,7 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
-    static ref PATTERN_MULTI_LINE_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)-- *\]\]").unwrap();
+    static ref PATTERN_MULTI_LINE_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)\]\]").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
@@ -417,7 +417,7 @@ fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> 
         let new_position = position.next_position(contents);
 
         let comment = Comment::MultiLine {
-            content: contents.into(),
+            content: contents[4..(contents.len() - 2)].into(),
         };
 
         Ok((AdvanceResult {
@@ -438,7 +438,7 @@ fn parse_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(Adv
         let new_position = position.next_position(contents);
 
         let comment = Comment::SingleLine {
-            content: contents.into(),
+            content: contents[2..].into(),
         };
 
         Ok((AdvanceResult {
