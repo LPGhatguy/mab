@@ -417,8 +417,8 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
 
 fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
     if let Some(captures) = PATTERN_MULTI_LINE_COMMENT_START.captures(current) {
-        let full_capture = captures.get(0).unwrap();
-        let rest = &current[full_capture.end()..];
+        let start_capture = captures.get(0).unwrap();
+        let rest = &current[start_capture.end()..];
 
         let depth = captures.get(1).unwrap().as_str().len() as u32;
 
@@ -427,12 +427,12 @@ fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> 
 
         if let Some(end_match) = end_reg.captures(rest) {
             let end_capture = end_match.get(0).unwrap();
-            let contents = &current[full_capture.start()..full_capture.end() + end_capture.end()];
+            let contents = &current[start_capture.start()..start_capture.end() + end_capture.end()];
             let rest = &rest[end_capture.end()..];
             let new_position = position.next_position(contents);
 
             let comment = Comment::MultiLine {
-                content: contents[full_capture.end()..full_capture.end() + end_capture.start()].into(),
+                content: contents[start_capture.end()..start_capture.end() + end_capture.start()].into(),
                 depth
             };
 
