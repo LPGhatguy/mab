@@ -2,7 +2,12 @@
   "statements": [
     {
       "FunctionDeclaration": {
-        "name": "test",
+        "name": {
+          "segments": [
+            "test"
+          ],
+          "method": null
+        },
         "body": {
           "statements": []
         },
