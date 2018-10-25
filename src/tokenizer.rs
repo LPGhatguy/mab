@@ -258,7 +258,7 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
-    static ref PATTERN_BLOCK_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)-- *\]\]").unwrap();
+    static ref PATTERN_MULTI_LINE_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)-- *\]\]").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
@@ -409,8 +409,8 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
     advance(current, position, &PATTERN_WHITESPACE)
 }
 
-fn parse_block_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
-    if let Some(captures) = PATTERN_BLOCK_COMMENT.captures(current) {
+fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
+    if let Some(captures) = PATTERN_MULTI_LINE_COMMENT.captures(current) {
         let full_capture = captures.get(0).unwrap();
         let contents = full_capture.as_str();
         let rest = &current[full_capture.end()..];
@@ -475,7 +475,7 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 current_position = result.new_position;
 
                 prefix.push(TokenPrefix::Whitespace(result.contents.into()));
-            } else if let Ok((result, comment)) = parse_block_comment(current, &current_position) {
+            } else if let Ok((result, comment)) = parse_multi_line_comment(current, &current_position) {
                 current = result.rest;
                 current_position = result.new_position;
 
