@@ -438,7 +438,7 @@ fn parse_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(Adv
         let new_position = position.next_position(contents);
 
         let comment = Comment::SingleLine {
-            content: contents[0..].into(),
+            content: contents.into(),
         };
 
         Ok((AdvanceResult {
