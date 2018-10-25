@@ -9,7 +9,7 @@
         "Comment": {
           "MultiLine": {
             "content": "\n    @ a a a\n",
-            "depth": 0
+            "depth": 1
           }
         }
       },
@@ -18,12 +18,12 @@
       }
     ],
     "start_position": {
-      "bytes": 21,
+      "bytes": 23,
       "line": 5,
       "column": 0
     },
     "end_position": {
-      "bytes": 21,
+      "bytes": 23,
       "line": 5,
       "column": 0
     }

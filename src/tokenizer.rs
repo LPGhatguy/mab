@@ -168,6 +168,7 @@ pub enum Comment<'a> {
     },
     MultiLine {
         content: Cow<'a, str>,
+        depth: u32,
     },
 }
 
@@ -209,6 +210,11 @@ pub enum TokenizeError {
 
     /// A string was begun that never finished.
     UnclosedString {
+        position: SourcePosition,
+    },
+
+    /// An unclosed multi-line comment
+    UnclosedComment {
         position: SourcePosition,
     },
 }
@@ -258,7 +264,7 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
-    static ref PATTERN_MULTI_LINE_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)\]\]").unwrap();
+    static ref PATTERN_MULTI_LINE_COMMENT_START: Regex = Regex::new(r"^--\[(=*)\[").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
@@ -410,21 +416,30 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
 }
 
 fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
-    if let Some(captures) = PATTERN_MULTI_LINE_COMMENT.captures(current) {
+    if let Some(captures) = PATTERN_MULTI_LINE_COMMENT_START.captures(current) {
         let full_capture = captures.get(0).unwrap();
-        let contents = full_capture.as_str();
         let rest = &current[full_capture.end()..];
-        let new_position = position.next_position(contents);
 
-        let comment = Comment::MultiLine {
-            content: contents[4..(contents.len() - 2)].into(),
-        };
+        let depth = captures.get(1).unwrap().as_str().len() as u32;
 
-        Ok((AdvanceResult {
-            rest,
-            contents,
-            new_position,
-        }, comment))
+        let reg_str = format!("(.*?)\\]={{{}}}\\]", depth); // Expands to something like (.*?)\]={5}\]
+        let end_reg = Regex::new(reg_str.as_str()).unwrap();
+
+        if let Some(end_match) = end_reg.captures(rest) {
+            let end_capture = end_match.get(0).unwrap();
+            let contents = &current[full_capture.start()..full_capture.end() + end_capture.end()];
+            let rest = &rest[end_capture.end()..];
+            let new_position = position.next_position(contents);
+
+            let comment = Comment::MultiLine {
+                content: contents[full_capture.end()..full_capture.end() + end_capture.start()].into(),
+                depth
+            };
+
+            Ok((AdvanceResult { rest, contents, new_position}, comment))
+        } else {
+            Err(AdvanceError::Error(TokenizeError::UnclosedComment{position: *position}))
+        }
     } else {
         Err(AdvanceError::NoMatch)
     }
