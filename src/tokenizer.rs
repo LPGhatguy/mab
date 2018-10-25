@@ -258,7 +258,7 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
-    static ref PATTERN_BLOCK_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)--\]\]").unwrap();
+    static ref PATTERN_BLOCK_COMMENT: Regex = Regex::new(r"(?ms)^--\[\[(.*?)-- *\]\]").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
@@ -410,16 +410,14 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
 }
 
 fn parse_block_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
-    println!("Block comment? {:?}", current);
     if let Some(captures) = PATTERN_BLOCK_COMMENT.captures(current) {
-        println!("Block comment!");
         let full_capture = captures.get(0).unwrap();
         let contents = full_capture.as_str();
         let rest = &current[full_capture.end()..];
         let new_position = position.next_position(contents);
 
         let comment = Comment::MultiLine {
-            content: contents[2..].into(),
+            content: contents.into(),
         };
 
         Ok((AdvanceResult {
@@ -440,7 +438,7 @@ fn parse_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(Adv
         let new_position = position.next_position(contents);
 
         let comment = Comment::SingleLine {
-            content: contents[2..].into(),
+            content: contents[0..].into(),
         };
 
         Ok((AdvanceResult {

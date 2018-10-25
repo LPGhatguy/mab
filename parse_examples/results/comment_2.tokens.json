@@ -7,7 +7,7 @@
       {
         "Comment": {
           "SingleLine": {
-            "content": " These are print statements."
+            "content": "-- These are print statements."
           }
         }
       },
@@ -151,7 +151,7 @@
       {
         "Comment": {
           "SingleLine": {
-            "content": " Cool?"
+            "content": "-- Cool?"
           }
         }
       }
