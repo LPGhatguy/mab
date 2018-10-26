@@ -398,12 +398,11 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
 struct ParseFunctionName;
 define_parser!(ParseFunctionName, FunctionName<'state>, |_, state| {
     let (state, segments) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Dot)).parse(state)?;
-    println!("Segmetns {:?}", segments);
 
     let (state, method) = match ParseSymbol(Symbol::Colon).parse(state) {
-        Ok((innerState, _)) => {
-            let (innerInnerrerState, ident) = ParseIdentifier.parse(innerState)?;
-            (innerInnerrerState, Some(ident))
+        Ok((inner_state, _)) => {
+            let (innermost_state, ident) = ParseIdentifier.parse(inner_state)?;
+            (innermost_state, Some(ident))
         },
         Err(ParseAbort::NoMatch) => (state, None),
         Err(e) => return Err(e),
