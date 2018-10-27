@@ -422,7 +422,7 @@ fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> 
 
         let depth = captures.get(1).unwrap().as_str().len() as u32;
 
-        let reg_str = format!("(.*?)\\]={{{}}}\\]", depth); // Expands to something like (.*?)\]={5}\]
+        let reg_str = format!(r".*?]={{{}}}]", depth); // Expands to something like .*?]={5}]
         let end_reg = Regex::new(reg_str.as_str()).unwrap();
 
         if let Some(end_match) = end_reg.captures(rest) {
