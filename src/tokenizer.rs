@@ -259,10 +259,12 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
+    static ref PATTERN_MULTI_LINE_STRING_START: Regex = Regex::new(r"^\[(=*)\[").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
 
+#[derive(Debug)]
 struct AdvanceResult<'a> {
     rest: &'a str,
     contents: &'a str,
@@ -390,6 +392,43 @@ fn parse_string_literal<'a>(current: &'a str, current_position: &SourcePosition)
     Ok((advance_result, TokenKind::StringLiteral(literal)))
 }
 
+fn parse_multi_line_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    let captures = match PATTERN_MULTI_LINE_STRING_START.captures(current) {
+        Some(c) => c,
+        None => return Err(AdvanceError::NoMatch),
+    };
+
+    let start_match = captures.get(0).unwrap();
+
+    let rest = &current[start_match.end()..];
+    let depth = captures.get(1).unwrap().as_str().len() as u32;
+
+    let reg_str = format!(r".*?]={{{}}}]", depth); // Expands to something like .*?]={5}]
+    let end_reg = Regex::new(reg_str.as_str()).unwrap();
+
+    let end_captures = match end_reg.captures(rest) {
+        Some(em) => em,
+        None => return Err(AdvanceError::Error(TokenizeError::UnclosedString {
+            position: *current_position,
+        })),
+    };
+
+    let end_match = end_captures.get(0).unwrap();
+
+    let literal = StringLiteral::LongForm {
+        raw_content: Cow::from(&rest[0..start_match.end() + end_match.start()]),
+        depth,
+    };
+
+    let advance_result = AdvanceResult {
+        rest: &rest[end_match.end()..],
+        contents: "",
+        new_position: current_position.next_position(&current[..start_match.end() + end_match.end()]),
+    };
+
+    Ok((advance_result, TokenKind::StringLiteral(literal)))
+}
+
 fn parse_long_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     Err(AdvanceError::NoMatch)
 }
@@ -398,6 +437,7 @@ fn parse_long_string_literal<'a>(current: &'a str, current_position: &SourcePosi
 fn tokenize_step<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     try_advance!(parse_identifier(current, current_position));
     try_advance!(parse_number_literal(current, current_position));
+    try_advance!(parse_multi_line_string_literal(current, current_position));
     try_advance!(parse_symbol(current, current_position));
     try_advance!(parse_string_literal(current, current_position));
     try_advance!(parse_long_string_literal(current, current_position));
