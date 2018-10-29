@@ -212,6 +212,11 @@ pub enum TokenizeError {
     UnclosedString {
         position: SourcePosition,
     },
+
+    /// An unclosed multi-line comment
+    UnclosedComment {
+        position: SourcePosition,
+    },
 }
 
 lazy_static! {
@@ -259,6 +264,7 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
+    static ref PATTERN_MULTI_LINE_COMMENT_START: Regex = Regex::new(r"^--\[(=*)\[").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
@@ -409,6 +415,36 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
     advance(current, position, &PATTERN_WHITESPACE)
 }
 
+fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
+    if let Some(captures) = PATTERN_MULTI_LINE_COMMENT_START.captures(current) {
+        let start_capture = captures.get(0).unwrap();
+        let rest = &current[start_capture.end()..];
+
+        let depth = captures.get(1).unwrap().as_str().len() as u32;
+
+        let reg_str = format!(r".*?]={{{}}}]", depth); // Expands to something like .*?]={5}]
+        let end_reg = Regex::new(reg_str.as_str()).unwrap();
+
+        if let Some(end_match) = end_reg.captures(rest) {
+            let end_capture = end_match.get(0).unwrap();
+            let contents = &current[start_capture.start()..start_capture.end() + end_capture.end()];
+            let rest = &rest[end_capture.end()..];
+            let new_position = position.next_position(contents);
+
+            let comment = Comment::MultiLine {
+                content: contents[start_capture.end()..start_capture.end() + end_capture.start()].into(),
+                depth
+            };
+
+            Ok((AdvanceResult { rest, contents, new_position}, comment))
+        } else {
+            Err(AdvanceError::Error(TokenizeError::UnclosedComment{position: *position}))
+        }
+    } else {
+        Err(AdvanceError::NoMatch)
+    }
+}
+
 fn parse_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
     if let Some(captures) = PATTERN_SINGLE_LINE_COMMENT.captures(current) {
         let full_capture = captures.get(0).unwrap();
@@ -454,6 +490,11 @@ pub fn tokenize<'a>(source: &'a str) -> Result<Vec<Token<'a>>, TokenizeError> {
                 current_position = result.new_position;
 
                 prefix.push(TokenPrefix::Whitespace(result.contents.into()));
+            } else if let Ok((result, comment)) = parse_multi_line_comment(current, &current_position) {
+                current = result.rest;
+                current_position = result.new_position;
+
+                prefix.push(TokenPrefix::Comment(comment));
             } else if let Ok((result, comment)) = parse_comment(current, &current_position) {
                 current = result.rest;
                 current_position = result.new_position;
