@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use regex::{self, Regex};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum Symbol {
     LeftBrace,
     RightBrace,
@@ -21,10 +21,12 @@ pub enum Symbol {
     Slash,
     Caret,
     Hash,
+    Dot,
     TwoDots,
     Equal,
     Comma,
     Semicolon,
+    Colon,
     Ellipse,
     And,
     Or,
@@ -62,10 +64,12 @@ impl Symbol {
             Symbol::Slash => "/",
             Symbol::Caret => "^",
             Symbol::Hash => "#",
+            Symbol::Dot => ".",
             Symbol::TwoDots => "..",
             Symbol::Equal => "=",
             Symbol::Comma => ",",
             Symbol::Semicolon => ";",
+            Symbol::Colon => ":",
             Symbol::Ellipse => "...",
             Symbol::And => "and",
             Symbol::Or => "or",
@@ -225,12 +229,11 @@ lazy_static! {
         Symbol::LeftBracket, Symbol::RightBracket,
         Symbol::LeftParen, Symbol::RightParen,
 
-        Symbol::Plus, Symbol::Minus, Symbol::Star, Symbol::Slash, Symbol::Caret, Symbol::TwoDots,
+        Symbol::Plus, Symbol::Minus, Symbol::Star, Symbol::Slash, Symbol::Caret,
         Symbol::And, Symbol::Or,
         Symbol::Hash,
         Symbol::Equal,
-        Symbol::Comma, Symbol::Semicolon,
-        Symbol::Ellipse,
+        Symbol::Comma, Symbol::Semicolon, Symbol::Colon,
 
         Symbol::Local, Symbol::Function,
         Symbol::If, Symbol::While, Symbol::Repeat, Symbol::Until, Symbol::For,
@@ -238,6 +241,13 @@ lazy_static! {
         Symbol::In,
         Symbol::True, Symbol::False, Symbol::Nil,
         Symbol::Not,
+
+        // All the dot symbols are moved here because the order that they appear in
+        // the generated regex is crucial to proper parsing.
+        // They must be present in the regex in order of decreasing length.
+        Symbol::Ellipse,
+        Symbol::TwoDots,
+        Symbol::Dot,
     ];
 
     static ref STR_TO_SYMBOL: HashMap<&'static str, Symbol> = {

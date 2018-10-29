@@ -80,7 +80,7 @@ pub struct FunctionCall<'a> {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Assignment<'a> {
     #[serde(borrow)]
-    pub names: Vec<Cow<'a, str>>,
+    pub names: Vec<VarName<'a>>,
     pub values: Vec<Expression<'a>>,
 }
 
@@ -171,6 +171,45 @@ pub enum TableKey<'a> {
 pub struct TableLiteral<'a> {
     #[serde(borrow)]
     pub items: Vec<(Option<TableKey<'a>>, Expression<'a>)>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum Index<'a> {
+    #[serde(borrow)]
+    // '.' Name
+    Name(Cow<'a, str>),
+    // '[' exp ']'
+    Bracketed(Expression<'a>)
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+// suffix ::= call | index
+pub enum Suffix<'a> {
+    #[serde(borrow)]
+    Call(Call<'a>),
+    Index(Index<'a>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum VarName<'a> {
+    #[serde(borrow)]
+    Name(Cow<'a, str>),
+    Expression(Expression<'a>, Vec<Suffix<'a>>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum FunctionArguments<'a> {
+    #[serde(borrow)]
+    List(Vec<Expression<'a>>),
+    String(StringLiteral<'a>),
+    Table(TableLiteral<'a>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum Call<'a> {
+    #[serde(borrow)]
+    Anonymous(FunctionArguments<'a>),
+    Method(Cow<'a, str>, FunctionArguments<'a>),
 }
 
 // stat ::=  ‘;’ |
