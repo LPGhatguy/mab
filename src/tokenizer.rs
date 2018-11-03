@@ -399,6 +399,16 @@ fn parse_string_literal<'a>(current: &'a str, current_position: &SourcePosition)
 }
 
 fn parse_multi_line_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    match parse_multi_line_thing(current, &current_position) {
+        Err(e) => Err(e),
+        Ok((advance_result, raw_content, depth)) =>
+            Ok((advance_result, TokenKind::StringLiteral(
+                StringLiteral::LongForm { raw_content, depth },
+            )))
+    }
+}
+
+fn parse_multi_line_thing<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, Cow<'a, str>, u32), AdvanceError> {
     let captures = match PATTERN_MULTI_LINE_STRING_START.captures(current) {
         Some(c) => c,
         None => return Err(AdvanceError::NoMatch),
@@ -409,7 +419,7 @@ fn parse_multi_line_string_literal<'a>(current: &'a str, current_position: &Sour
     let rest = &current[start_match.end()..];
     let depth = captures.get(1).unwrap().as_str().len() as u32;
 
-    let reg_str = format!(r".*?]={{{}}}]", depth); // Expands to something like .*?]={5}]
+    let reg_str = format!(r"]={{{}}}]", depth); // Expands to something like ]={5}]
     let end_reg = Regex::new(reg_str.as_str()).unwrap();
 
     let end_captures = match end_reg.captures(rest) {
@@ -421,10 +431,7 @@ fn parse_multi_line_string_literal<'a>(current: &'a str, current_position: &Sour
 
     let end_match = end_captures.get(0).unwrap();
 
-    let literal = StringLiteral::LongForm {
-        raw_content: Cow::from(&rest[0..start_match.end() + end_match.start()]),
-        depth,
-    };
+    let content = Cow::from(&rest[..end_match.start()]);
 
     let advance_result = AdvanceResult {
         rest: &rest[end_match.end()..],
@@ -432,10 +439,10 @@ fn parse_multi_line_string_literal<'a>(current: &'a str, current_position: &Sour
         new_position: current_position.next_position(&current[..start_match.end() + end_match.end()]),
     };
 
-    Ok((advance_result, TokenKind::StringLiteral(literal)))
+    Ok((advance_result, content, depth))
 }
 
-fn parse_long_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+fn parse_long_string_literal<'a>(_current: &'a str, _current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     Err(AdvanceError::NoMatch)
 }
 
@@ -456,32 +463,20 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
 }
 
 fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
-    if let Some(captures) = PATTERN_MULTI_LINE_COMMENT_START.captures(current) {
-        let start_capture = captures.get(0).unwrap();
-        let rest = &current[start_capture.end()..];
+    if let None = PATTERN_MULTI_LINE_COMMENT_START.captures(current) {
+        return Err(AdvanceError::NoMatch);
+    }
 
-        let depth = captures.get(1).unwrap().as_str().len() as u32;
+    let position = position.next_position(&current[0..2]);
+    let current = &current[2..];
 
-        let reg_str = format!(r".*?]={{{}}}]", depth); // Expands to something like .*?]={5}]
-        let end_reg = Regex::new(reg_str.as_str()).unwrap();
-
-        if let Some(end_match) = end_reg.captures(rest) {
-            let end_capture = end_match.get(0).unwrap();
-            let contents = &current[start_capture.start()..start_capture.end() + end_capture.end()];
-            let rest = &rest[end_capture.end()..];
-            let new_position = position.next_position(contents);
-
-            let comment = Comment::MultiLine {
-                content: contents[start_capture.end()..start_capture.end() + end_capture.start()].into(),
-                depth
-            };
-
-            Ok((AdvanceResult { rest, contents, new_position}, comment))
-        } else {
-            Err(AdvanceError::Error(TokenizeError::UnclosedComment{position: *position}))
-        }
-    } else {
-        Err(AdvanceError::NoMatch)
+    match parse_multi_line_thing(current, &position) {
+        Ok((a, content, depth)) =>
+            Ok((a, Comment::MultiLine{content, depth})),
+        Err(AdvanceError::Error(TokenizeError::UnclosedString { position })) =>
+            Err(AdvanceError::Error(TokenizeError::UnclosedComment { position })),
+        Err(e) =>
+            Err(e),
     }
 }
 

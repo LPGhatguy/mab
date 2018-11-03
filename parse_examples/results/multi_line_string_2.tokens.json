@@ -59,7 +59,7 @@
     "kind": {
       "StringLiteral": {
         "type": "LongForm",
-        "raw_content": "\n    @ a a a a\n]]\n]=]",
+        "raw_content": "\n    @ a a a a\n]]\n",
         "depth": 1
       }
     },
