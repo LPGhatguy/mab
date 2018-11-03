@@ -1,8 +1,8 @@
 <h1 align="center">Mab, a Lossless Lua Parser in Rust</h1>
 
 <div align="center">
-	<a href="https://travis-ci.org/LPGhatguy/lua-parser">
-		<img src="https://api.travis-ci.org/LPGhatguy/lua-parser.svg?branch=master" alt="Travis-CI build status" />
+	<a href="https://travis-ci.org/LPGhatguy/mab">
+		<img src="https://api.travis-ci.org/LPGhatguy/mab.svg?branch=master" alt="Travis-CI build status" />
 	</a>
 </div>
 

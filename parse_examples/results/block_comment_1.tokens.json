@@ -1,0 +1,31 @@
+[
+  {
+    "kind": "EndOfFile",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      },
+      {
+        "Comment": {
+          "MultiLine": {
+            "content": "\n    @ a a a\n",
+            "depth": 0
+          }
+        }
+      },
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 21,
+      "line": 5,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 21,
+      "line": 5,
+      "column": 0
+    }
+  }
+]

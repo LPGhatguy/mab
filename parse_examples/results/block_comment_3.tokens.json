@@ -1,0 +1,28 @@
+[
+  {
+    "kind": "EndOfFile",
+    "prefix": [
+      {
+        "Comment": {
+          "MultiLine": {
+            "content": "\n--[[\n",
+            "depth": 1
+          }
+        }
+      },
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 15,
+      "line": 4,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 15,
+      "line": 4,
+      "column": 0
+    }
+  }
+]
