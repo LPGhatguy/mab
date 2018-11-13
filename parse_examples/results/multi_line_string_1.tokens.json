@@ -1,0 +1,100 @@
+[
+  {
+    "kind": {
+      "Symbol": "Local"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 5,
+      "line": 1,
+      "column": 6
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "a"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 6,
+      "line": 1,
+      "column": 7
+    },
+    "end_position": {
+      "bytes": 7,
+      "line": 1,
+      "column": 8
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Equal"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    }
+  },
+  {
+    "kind": {
+      "StringLiteral": {
+        "type": "LongForm",
+        "raw_content": "\n    @ a a a a\n",
+        "depth": 0
+      }
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 29,
+      "line": 3,
+      "column": 3
+    }
+  },
+  {
+    "kind": "EndOfFile",
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 30,
+      "line": 4,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 30,
+      "line": 4,
+      "column": 0
+    }
+  }
+]

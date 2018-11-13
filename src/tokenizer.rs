@@ -264,11 +264,13 @@ lazy_static! {
     static ref PATTERN_NUMBER_LITERAL: Regex = Regex::new(r"^((-?0x[A-Fa-f\d]+)|(-?((\d*\.\d+)|(\d+))([eE]-?\d+)?))").unwrap();
     static ref PATTERN_WHITESPACE: Regex = Regex::new(r"^\s+").unwrap();
     static ref PATTERN_SINGLE_LINE_COMMENT: Regex = Regex::new(r"^--(.*)").unwrap();
+    static ref PATTERN_MULTI_LINE_STRING_START: Regex = Regex::new(r"^\[(=*)\[").unwrap();
     static ref PATTERN_MULTI_LINE_COMMENT_START: Regex = Regex::new(r"^--\[(=*)\[").unwrap();
 
     static ref PATTERN_CHARS_AFTER_NEWLINE: Regex = Regex::new(r"\n[^\n]+$").unwrap();
 }
 
+#[derive(Debug)]
 struct AdvanceResult<'a> {
     rest: &'a str,
     contents: &'a str,
@@ -396,7 +398,50 @@ fn parse_string_literal<'a>(current: &'a str, current_position: &SourcePosition)
     Ok((advance_result, TokenKind::StringLiteral(literal)))
 }
 
-fn parse_long_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+fn parse_multi_line_string_literal<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
+    match parse_multi_line_thing(&PATTERN_MULTI_LINE_STRING_START, current, &current_position) {
+        Err(MultiLineError::NoMatch) =>
+            Err(AdvanceError::NoMatch),
+        Err(MultiLineError::Unclosed(position)) =>
+            Err(AdvanceError::Error(TokenizeError::UnclosedString {position})),
+        Ok((advance_result, raw_content, depth)) =>
+            Ok((advance_result, TokenKind::StringLiteral(
+                StringLiteral::LongForm { raw_content, depth },
+            )))
+    }
+}
+
+enum MultiLineError {
+    NoMatch,
+    Unclosed(SourcePosition),
+}
+
+fn parse_multi_line_thing<'a>(re: &Regex, current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, Cow<'a, str>, u32), MultiLineError> {
+    let captures = re.captures(current).ok_or(MultiLineError::NoMatch)?;
+    let start_match = captures.get(0).unwrap();
+
+    let rest = &current[start_match.end()..];
+    let depth = captures.get(1).unwrap().as_str().len() as u32;
+
+    let reg_str = format!(r"]={{{}}}]", depth); // Expands to something like ]={5}]
+    let end_reg = Regex::new(reg_str.as_str()).unwrap();
+
+    let end_captures = end_reg.captures(rest).ok_or(MultiLineError::Unclosed(*current_position))?;
+
+    let end_match = end_captures.get(0).unwrap();
+
+    let content = Cow::from(&rest[..end_match.start()]);
+
+    let advance_result = AdvanceResult {
+        rest: &rest[end_match.end()..],
+        contents: "",
+        new_position: current_position.next_position(&current[..start_match.end() + end_match.end()]),
+    };
+
+    Ok((advance_result, content, depth))
+}
+
+fn parse_long_string_literal<'a>(_current: &'a str, _current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     Err(AdvanceError::NoMatch)
 }
 
@@ -404,6 +449,7 @@ fn parse_long_string_literal<'a>(current: &'a str, current_position: &SourcePosi
 fn tokenize_step<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     try_advance!(parse_identifier(current, current_position));
     try_advance!(parse_number_literal(current, current_position));
+    try_advance!(parse_multi_line_string_literal(current, current_position));
     try_advance!(parse_symbol(current, current_position));
     try_advance!(parse_string_literal(current, current_position));
     try_advance!(parse_long_string_literal(current, current_position));
@@ -416,32 +462,13 @@ fn parse_whitespace<'a>(current: &'a str, position: &SourcePosition) -> Result<A
 }
 
 fn parse_multi_line_comment<'a>(current: &'a str, position: &SourcePosition) -> Result<(AdvanceResult<'a>, Comment<'a>), AdvanceError> {
-    if let Some(captures) = PATTERN_MULTI_LINE_COMMENT_START.captures(current) {
-        let start_capture = captures.get(0).unwrap();
-        let rest = &current[start_capture.end()..];
-
-        let depth = captures.get(1).unwrap().as_str().len() as u32;
-
-        let reg_str = format!(r".*?]={{{}}}]", depth); // Expands to something like .*?]={5}]
-        let end_reg = Regex::new(reg_str.as_str()).unwrap();
-
-        if let Some(end_match) = end_reg.captures(rest) {
-            let end_capture = end_match.get(0).unwrap();
-            let contents = &current[start_capture.start()..start_capture.end() + end_capture.end()];
-            let rest = &rest[end_capture.end()..];
-            let new_position = position.next_position(contents);
-
-            let comment = Comment::MultiLine {
-                content: contents[start_capture.end()..start_capture.end() + end_capture.start()].into(),
-                depth
-            };
-
-            Ok((AdvanceResult { rest, contents, new_position}, comment))
-        } else {
-            Err(AdvanceError::Error(TokenizeError::UnclosedComment{position: *position}))
-        }
-    } else {
-        Err(AdvanceError::NoMatch)
+    match parse_multi_line_thing(&PATTERN_MULTI_LINE_COMMENT_START, current, &position) {
+        Ok((a, content, depth)) =>
+            Ok((a, Comment::MultiLine{content, depth})),
+        Err(MultiLineError::NoMatch) =>
+            Err(AdvanceError::NoMatch),
+        Err(MultiLineError::Unclosed(position)) =>
+            Err(AdvanceError::Error(TokenizeError::UnclosedComment { position })),
     }
 }
 
