@@ -395,13 +395,29 @@ define_parser!(ParseRepeatLoop, RepeatLoop<'state>, |_, state| {
     }))
 });
 
+struct ParseFunctionName;
+define_parser!(ParseFunctionName, FunctionName<'state>, |_, state| {
+    let (state, segments) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Dot)).parse(state)?;
+
+    let (state, method) = match ParseSymbol(Symbol::Colon).parse(state) {
+        Ok((inner_state, _)) => {
+            let (innermost_state, ident) = ParseIdentifier.parse(inner_state)?;
+            (innermost_state, Some(ident))
+        },
+        Err(ParseAbort::NoMatch) => (state, None),
+        Err(e) => return Err(e),
+    };
+
+    Ok((state, FunctionName {segments, method}))
+});
+
 struct ParseFunctionDeclaration;
 define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state| {
     let (state, local) = Optional(ParseSymbol(Symbol::Local)).parse(state)
         .map(|(state, value)| (state, value.is_some()))?;
 
     let (state, _) = ParseSymbol(Symbol::Function).parse(state)?;
-    let (state, name) = ParseIdentifier.parse(state)?;
+    let (state, name) = ParseFunctionName.parse(state)?;
     let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
     let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma), false).parse(state)?;
     let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;

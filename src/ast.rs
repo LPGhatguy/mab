@@ -1,5 +1,6 @@
 use std::borrow::Cow;
 use tokenizer::StringLiteral;
+use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum UnaryOpKind {
@@ -132,10 +133,57 @@ pub struct RepeatLoop<'a> {
     pub body: Chunk<'a>,
 }
 
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
+pub struct FunctionName<'a> {
+    pub segments: Vec<Cow<'a, str>>,
+    pub method: Option<Cow<'a, str>>,
+}
+
+impl<'a> fmt::Display for FunctionName<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = self.segments.join(".");
+        f.write_str(&s)?;
+        if let Some(m) = &self.method {
+            f.write_str(":")?;
+            f.write_str(&m)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod function_name_tests {
+    use super::*;
+
+    #[test]
+    pub fn to_string() {
+        assert_eq!(
+            FunctionName { segments: vec!["one".into()], method: None }.to_string(),
+            "one"
+        );
+
+        assert_eq!(
+            FunctionName { segments: vec!["one".into(), "two".into()], method: None }.to_string(),
+            "one.two"
+        );
+
+        assert_eq!(
+            FunctionName { segments: vec!["one".into(), "two".into()], method: Some("three".into()) }.to_string(),
+            "one.two:three"
+        );
+    }
+}
+
+impl<'a> fmt::Debug for FunctionName<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FunctionDeclaration<'a> {
     #[serde(borrow)]
-    pub name: Cow<'a, str>,
+    pub name: FunctionName<'a>,
     pub body: Chunk<'a>,
     pub parameters: Vec<Cow<'a, str>>,
     pub local: bool,
