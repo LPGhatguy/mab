@@ -441,10 +441,6 @@ fn parse_multi_line_thing<'a>(re: &Regex, current: &'a str, current_position: &S
     Ok((advance_result, content, depth))
 }
 
-fn parse_long_string_literal<'a>(_current: &'a str, _current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
-    Err(AdvanceError::NoMatch)
-}
-
 /// Attempts to advance one token into the stream.
 fn tokenize_step<'a>(current: &'a str, current_position: &SourcePosition) -> Result<(AdvanceResult<'a>, TokenKind<'a>), AdvanceError> {
     try_advance!(parse_identifier(current, current_position));
@@ -452,7 +448,6 @@ fn tokenize_step<'a>(current: &'a str, current_position: &SourcePosition) -> Res
     try_advance!(parse_multi_line_string_literal(current, current_position));
     try_advance!(parse_symbol(current, current_position));
     try_advance!(parse_string_literal(current, current_position));
-    try_advance!(parse_long_string_literal(current, current_position));
 
     Err(AdvanceError::NoMatch)
 }
