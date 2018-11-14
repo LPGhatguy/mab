@@ -10,6 +10,7 @@ pub mod ast;
 pub mod emitter;
 pub mod tokenizer;
 pub mod parser;
+pub mod parser2;
 
 pub use tokenizer::*;
 pub use parser::*;

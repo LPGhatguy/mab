@@ -45,6 +45,18 @@ define_parser!(ParseNumber, Cow<'state, str>, |_, state: ParseState<'state>| {
     }
 });
 
+fn parse_identifier<'state>(state: ParseState<'state>) -> Result<(ParseState<'state>, Cow<'state, str>), ParseAbort> {
+    let next_token = state.peek()
+        .ok_or_else(|| ParseAbort::Error("Unexpected EOF".to_string()))?;
+
+    match &next_token.kind {
+        TokenKind::Identifier(name) => {
+            Ok((state.advance(1), Cow::from(name.as_ref())))
+        },
+        _ => Err(ParseAbort::Error("Unexpected token".to_string())),
+    }
+}
+
 struct ParseIdentifier;
 define_parser!(ParseIdentifier, Cow<'state, str>, |_, state: ParseState<'state>| {
     match state.peek() {
