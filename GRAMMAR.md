@@ -53,13 +53,12 @@ unop ::= `-´ | not | `#´
 Modified rules from http://lua-users.org/lists/lua-l/2010-12/msg00699.html
 ```
 value ::= nil | false | true | Number | String | '...' | function |
-	tableconstructor | anonymousfunction | functioncall | var | '(' exp ')'
+	tableconstructor | functioncall | var | '(' exp ')'
 exp ::= unop exp | value [binop exp]
 prefix ::= '(' exp ')' | Name
 index ::= '[' exp ']' | '.' Name
 call ::= args | ':' Name args
 suffix ::= call | index
 var ::= prefix {suffix} index | Name
-anonymousfunction ::= function funcbody
 functioncall ::= prefix {suffix} call
 ```
