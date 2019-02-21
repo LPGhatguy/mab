@@ -190,6 +190,13 @@ pub struct FunctionDeclaration<'a> {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AnonymousFunction<'a> {
+    #[serde(borrow)]
+    pub body: Chunk<'a>,
+    pub parameters: Vec<Cow<'a, str>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expression<'a> {
     Nil,
     Bool(bool),
@@ -198,6 +205,7 @@ pub enum Expression<'a> {
     String(StringLiteral<'a>),
     VarArg,
     Table(TableLiteral<'a>),
+    AnonymousFunction(AnonymousFunction<'a>),
     FunctionCall(FunctionCall<'a>),
     Name(Cow<'a, str>),
     ParenExpression(Box<Expression<'a>>),

@@ -1,0 +1,44 @@
+{
+  "statements": [
+    {
+      "FunctionCall": {
+        "name_expression": {
+          "Name": "callback"
+        },
+        "arguments": [
+          {
+            "AnonymousFunction": {
+              "body": {
+                "statements": [
+                  {
+                    "FunctionCall": {
+                      "name_expression": {
+                        "Name": "print"
+                      },
+                      "arguments": [
+                        {
+                          "Name": "x"
+                        },
+                        {
+                          "Name": "y"
+                        },
+                        {
+                          "Name": "z"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "parameters": [
+                "x",
+                "y",
+                "z"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
