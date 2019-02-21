@@ -70,9 +70,18 @@ struct ParseChunk;
 define_parser!(ParseChunk, Chunk<'state>, |_, state| {
     let (state, statements) = ZeroOrMore(ParseStatement).parse(state)?;
 
-    Ok((state, Chunk {
-        statements,
-    }))
+    if let Ok((state, _)) = ParseSymbol(Symbol::Return).parse(state) {
+        let (state, returns) = DelimitedZeroOrMore(ParseExpression, ParseSymbol(Symbol::Comma), false).parse(state)?;
+        Ok((state, Chunk {
+            statements,
+            r#return: Some(returns),
+        }))
+    } else {
+        Ok((state, Chunk {
+            statements,
+            r#return: None,
+        }))
+    }
 });
 
 // stat ::= varlist `=´ explist |

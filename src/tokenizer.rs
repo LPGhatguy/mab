@@ -47,6 +47,7 @@ pub enum Symbol {
     False,
     Nil,
     Not,
+    Return,
 }
 
 impl Symbol {
@@ -90,6 +91,7 @@ impl Symbol {
             Symbol::True => "true",
             Symbol::False => "false",
             Symbol::Nil => "nil",
+            Symbol::Return => "return",
         }
     }
 }
@@ -241,7 +243,7 @@ lazy_static! {
         Symbol::Then, Symbol::Do, Symbol::Else, Symbol::ElseIf, Symbol::End,
         Symbol::In,
         Symbol::True, Symbol::False, Symbol::Nil,
-        Symbol::Not,
+        Symbol::Not, Symbol::Return,
     ];
 
     static ref STR_TO_SYMBOL: HashMap<&'static str, Symbol> = {
