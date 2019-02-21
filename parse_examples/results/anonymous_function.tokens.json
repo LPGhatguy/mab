@@ -173,16 +173,16 @@
     },
     "prefix": [
       {
-        "Whitespace": "\r\n\t"
+        "Whitespace": "\n\t"
       }
     ],
     "start_position": {
-      "bytes": 29,
+      "bytes": 28,
       "line": 2,
       "column": 2
     },
     "end_position": {
-      "bytes": 34,
+      "bytes": 33,
       "line": 2,
       "column": 7
     }
@@ -193,12 +193,12 @@
     },
     "prefix": [],
     "start_position": {
-      "bytes": 34,
+      "bytes": 33,
       "line": 2,
       "column": 7
     },
     "end_position": {
-      "bytes": 35,
+      "bytes": 34,
       "line": 2,
       "column": 8
     }
@@ -209,12 +209,12 @@
     },
     "prefix": [],
     "start_position": {
-      "bytes": 35,
+      "bytes": 34,
       "line": 2,
       "column": 8
     },
     "end_position": {
-      "bytes": 36,
+      "bytes": 35,
       "line": 2,
       "column": 9
     }
@@ -225,12 +225,12 @@
     },
     "prefix": [],
     "start_position": {
-      "bytes": 36,
+      "bytes": 35,
       "line": 2,
       "column": 9
     },
     "end_position": {
-      "bytes": 37,
+      "bytes": 36,
       "line": 2,
       "column": 10
     }
@@ -245,12 +245,12 @@
       }
     ],
     "start_position": {
-      "bytes": 38,
+      "bytes": 37,
       "line": 2,
       "column": 11
     },
     "end_position": {
-      "bytes": 39,
+      "bytes": 38,
       "line": 2,
       "column": 12
     }
@@ -261,12 +261,12 @@
     },
     "prefix": [],
     "start_position": {
-      "bytes": 39,
+      "bytes": 38,
       "line": 2,
       "column": 12
     },
     "end_position": {
-      "bytes": 40,
+      "bytes": 39,
       "line": 2,
       "column": 13
     }
@@ -281,12 +281,12 @@
       }
     ],
     "start_position": {
-      "bytes": 41,
+      "bytes": 40,
       "line": 2,
       "column": 14
     },
     "end_position": {
-      "bytes": 42,
+      "bytes": 41,
       "line": 2,
       "column": 15
     }
@@ -297,12 +297,12 @@
     },
     "prefix": [],
     "start_position": {
-      "bytes": 42,
+      "bytes": 41,
       "line": 2,
       "column": 15
     },
     "end_position": {
-      "bytes": 43,
+      "bytes": 42,
       "line": 2,
       "column": 16
     }
@@ -313,16 +313,16 @@
     },
     "prefix": [
       {
-        "Whitespace": "\r\n"
+        "Whitespace": "\n"
       }
     ],
     "start_position": {
-      "bytes": 45,
+      "bytes": 43,
       "line": 3,
       "column": 0
     },
     "end_position": {
-      "bytes": 48,
+      "bytes": 46,
       "line": 3,
       "column": 3
     }
@@ -333,12 +333,12 @@
     },
     "prefix": [],
     "start_position": {
-      "bytes": 48,
+      "bytes": 46,
       "line": 3,
       "column": 3
     },
     "end_position": {
-      "bytes": 49,
+      "bytes": 47,
       "line": 3,
       "column": 4
     }
@@ -347,16 +347,16 @@
     "kind": "EndOfFile",
     "prefix": [
       {
-        "Whitespace": "\r\n"
+        "Whitespace": "\n"
       }
     ],
     "start_position": {
-      "bytes": 51,
+      "bytes": 48,
       "line": 4,
       "column": 0
     },
     "end_position": {
-      "bytes": 51,
+      "bytes": 48,
       "line": 4,
       "column": 0
     }
