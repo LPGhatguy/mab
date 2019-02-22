@@ -10,7 +10,7 @@
         },
         "body": {
           "statements": [],
-          "r#return": [
+          "return": [
             {
               "Number": "3"
             },
@@ -27,5 +27,5 @@
       }
     }
   ],
-  "r#return": null
+  "return": null
 }
