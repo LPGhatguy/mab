@@ -89,6 +89,7 @@ define_parser!(ParseChunk, Chunk<'state>, |_, state| {
 struct ParseStatement;
 define_parser!(ParseStatement, Statement<'state>, |_, state| {
     parse_first_of!(state, {
+        ParseAssignment => Statement::Assignment,
         ParseLocalAssignment => Statement::LocalAssignment,
         ParseFunctionCall => Statement::FunctionCall,
         ParseNumericFor => Statement::NumericFor,
@@ -239,6 +240,18 @@ define_parser!(ParseString, StringLiteral<'state>, |_, state: ParseState<'state>
         Some(&Token { kind: TokenKind::StringLiteral(ref value), .. }) => Ok((state.advance(1), value.clone())),
         _ => Err(ParseAbort::NoMatch),
     }
+});
+
+struct ParseAssignment;
+define_parser!(ParseAssignment, Assignment<'state>, |_, state| {
+    let (state, names) = DelimitedOneOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma)).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::Equal).parse(state)?;
+    let (state, expressions) = DelimitedOneOrMore(ParseExpression, ParseSymbol(Symbol::Comma)).parse(state)?;
+
+    Ok((state, Assignment {
+        names: names,
+        values: expressions,
+    }))
 });
 
 // local namelist [`=´ explist]
