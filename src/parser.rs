@@ -74,12 +74,12 @@ define_parser!(ParseChunk, Chunk<'state>, |_, state| {
         let (state, returns) = DelimitedZeroOrMore(ParseExpression, ParseSymbol(Symbol::Comma), false).parse(state)?;
         Ok((state, Chunk {
             statements,
-            r#return: Some(returns),
+            return_value: Some(returns),
         }))
     } else {
         Ok((state, Chunk {
             statements,
-            r#return: None,
+            return_value: None,
         }))
     }
 });

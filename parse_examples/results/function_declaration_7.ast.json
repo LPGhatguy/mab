@@ -10,12 +10,12 @@
         },
         "body": {
           "statements": [],
-          "return": []
+          "return_value": []
         },
         "parameters": [],
         "local": false
       }
     }
   ],
-  "return": null
+  "return_value": null
 }

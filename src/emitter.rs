@@ -88,7 +88,7 @@ mod tests {
     fn emit_empty_chunk() {
         let chunk = Chunk {
             statements: Vec::new(),
-            r#return: None,
+            return_value: None,
         };
 
         let mut output = String::new();
