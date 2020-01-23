@@ -8,6 +8,15 @@
 
 <hr />
 
+<div align="center">
+	<h2>No Longer Maintained</h2>
+	<h3>
+		Check out <a href="https://github.com/kampfkarren/full-moon">Full Moon</a> instead, mab's successor!
+	</h3>
+</div>
+
+<hr />
+
 This is a work in progress *lossless* Lua 5.1+ parser written in Rust. It will preserve all comments, whitespace, and style distinctions like quotes and escaping.
 
 I want to use Mab for a number of future projects:
