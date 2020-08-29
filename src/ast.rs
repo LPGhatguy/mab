@@ -256,4 +256,5 @@ pub enum Statement<'a> {
 pub struct Chunk<'a> {
     #[serde(borrow)]
     pub statements: Vec<Statement<'a>>,
+    pub return_value: Option<Vec<Expression<'a>>>,
 }

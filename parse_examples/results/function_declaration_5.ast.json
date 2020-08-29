@@ -1,0 +1,25 @@
+{
+  "statements": [
+    {
+      "FunctionDeclaration": {
+        "name": {
+          "segments": [
+            "x"
+          ],
+          "method": null
+        },
+        "body": {
+          "statements": [],
+          "return_value": [
+            {
+              "Number": "3"
+            }
+          ]
+        },
+        "parameters": [],
+        "local": false
+      }
+    }
+  ],
+  "return_value": null
+}

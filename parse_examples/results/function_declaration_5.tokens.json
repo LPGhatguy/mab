@@ -1,0 +1,130 @@
+[
+  {
+    "kind": {
+      "Symbol": "Function"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 0,
+      "line": 1,
+      "column": 1
+    },
+    "end_position": {
+      "bytes": 8,
+      "line": 1,
+      "column": 9
+    }
+  },
+  {
+    "kind": {
+      "Identifier": "x"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 9,
+      "line": 1,
+      "column": 10
+    },
+    "end_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "LeftParen"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 10,
+      "line": 1,
+      "column": 11
+    },
+    "end_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "RightParen"
+    },
+    "prefix": [],
+    "start_position": {
+      "bytes": 11,
+      "line": 1,
+      "column": 12
+    },
+    "end_position": {
+      "bytes": 12,
+      "line": 1,
+      "column": 13
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "Return"
+    },
+    "prefix": [
+      {
+        "Whitespace": "\n\t"
+      }
+    ],
+    "start_position": {
+      "bytes": 14,
+      "line": 2,
+      "column": 2
+    },
+    "end_position": {
+      "bytes": 20,
+      "line": 2,
+      "column": 8
+    }
+  },
+  {
+    "kind": {
+      "NumberLiteral": "3"
+    },
+    "prefix": [
+      {
+        "Whitespace": " "
+      }
+    ],
+    "start_position": {
+      "bytes": 21,
+      "line": 2,
+      "column": 9
+    },
+    "end_position": {
+      "bytes": 22,
+      "line": 2,
+      "column": 10
+    }
+  },
+  {
+    "kind": {
+      "Symbol": "End"
+    },
+    "prefix": [
+      {
+        "Whitespace": "\n"
+      }
+    ],
+    "start_position": {
+      "bytes": 23,
+      "line": 3,
+      "column": 0
+    },
+    "end_position": {
+      "bytes": 26,
+      "line": 3,
+      "column": 3
+    }
+  }
+]
