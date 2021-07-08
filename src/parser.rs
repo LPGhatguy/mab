@@ -211,6 +211,7 @@ struct ParseValue;
 define_parser!(ParseValue, Expression<'state>, |_, state| {
     parse_first_of!(state, {
         ParseNumber => Expression::Number,
+        ParseAnonymousFunction => Expression::AnonymousFunction,
         ParseFunctionCall => Expression::FunctionCall,
         ParseIdentifier => Expression::Name,
         ParseTableLiteral => Expression::Table,
@@ -427,6 +428,21 @@ define_parser!(ParseFunctionDeclaration, FunctionDeclaration<'state>, |_, state|
     Ok((state, FunctionDeclaration {
         local,
         name,
+        parameters,
+        body,
+    }))
+});
+
+struct ParseAnonymousFunction;
+define_parser!(ParseAnonymousFunction, AnonymousFunction<'state>, |_, state | {
+    let (state, _) = ParseSymbol(Symbol::Function).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::LeftParen).parse(state)?;
+    let (state, parameters) = DelimitedZeroOrMore(ParseIdentifier, ParseSymbol(Symbol::Comma), false).parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::RightParen).parse(state)?;
+    let (state, body) = ParseChunk.parse(state)?;
+    let (state, _) = ParseSymbol(Symbol::End).parse(state)?;
+
+    Ok((state, AnonymousFunction {
         parameters,
         body,
     }))
